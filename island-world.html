@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Cantonment Island</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- ══ FIREBASE SDK ══ -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;
+  font-family:'Nunito',sans-serif;color:#fff;touch-action:none}
+
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;z-index:999;background:#0a1628;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.ld-title{font-family:'Fredoka One',cursive;font-size:28px;color:#FFD600;
+  text-shadow:0 0 30px rgba(255,214,0,.5)}
+.ld-bar{width:240px;height:8px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
+.ld-fill{height:100%;background:linear-gradient(90deg,#4caf50,#FFD600);border-radius:99px;
+  width:0%;transition:width .3s ease}
+.ld-msg{font-size:13px;color:rgba(255,255,255,.5);font-weight:700}
+
+/* ── GAME CANVAS ── */
+#gameCanvas{position:fixed;inset:0;width:100%;height:100%;cursor:default;display:block}
+
+/* ── HUD ── */
+.hud{position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;
+  background:linear-gradient(180deg,rgba(5,12,28,.88) 0%,transparent 100%);
+  pointer-events:none}
+.hud-left{display:flex;align-items:center;gap:10px}
+.hud-title{font-family:'Fredoka One',cursive;font-size:clamp(13px,2vw,17px);
+  color:#FFD600;text-shadow:0 0 16px rgba(255,214,0,.4)}
+.visiting-tag{font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px;
+  background:rgba(201,127,255,.25);border:1px solid rgba(201,127,255,.4);
+  color:#C97FFF;display:none}
+.hud-pills{display:flex;gap:7px;pointer-events:all;align-items:center}
+.pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;
+  border:1px solid rgba(255,255,255,.12);background:rgba(5,12,28,.8);
+  font-size:12px;font-weight:800;backdrop-filter:blur(12px)}
+.pill-sp{color:#FFD600;border-color:rgba(255,214,0,.25)}
+.pill-tok{color:#F59E0B;border-color:rgba(245,158,11,.25)}
+.hud-btn{padding:5px 11px;border-radius:99px;border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);
+  cursor:pointer;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;
+  transition:all .15s;pointer-events:all;white-space:nowrap}
+.hud-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+.hud-btn.red{border-color:rgba(255,90,60,.4);color:#FF5A3C;background:rgba(255,90,60,.1)}
+.hud-btn.red:hover{background:rgba(255,90,60,.2)}
+
+/* ── TOUCH JOYSTICK ── */
+#joystick{position:fixed;bottom:28px;left:28px;z-index:50;
+  width:100px;height:100px;border-radius:50%;
+  background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.18);
+  display:none;touch-action:none;user-select:none}
+#joystickKnob{position:absolute;width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.35);border:2px solid rgba(255,255,255,.5);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  transition:none;pointer-events:none}
+
+/* ── ACTION BUTTONS (mobile) ── */
+.action-btns{position:fixed;bottom:28px;right:16px;z-index:50;
+  display:none;flex-direction:column;gap:8px;align-items:flex-end}
+.action-btn{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
+  font-size:22px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);transition:transform .15s}
+.action-btn:active{transform:scale(.9)}
+.btn-interact{background:linear-gradient(135deg,#FFD600,#FF9800)}
+.btn-zone{background:linear-gradient(135deg,#4caf50,#2e7d32)}
+
+/* ── PANELS ── */
+.panel{position:fixed;z-index:80;background:rgba(6,12,26,.97);
+  border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(20px);
+  transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s}
+.panel.hidden{opacity:0;pointer-events:none}
+
+/* Classmates dock panel */
+#dockPanel{bottom:0;right:0;width:min(320px,100vw);height:auto;max-height:70vh;
+  border-radius:18px 0 0 0;transform:translateY(100%);
+  display:flex;flex-direction:column}
+#dockPanel.open{transform:translateY(0)}
+.dock-header{padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.dock-title{font-family:'Fredoka One',cursive;font-size:17px}
+.dock-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:12px;color:rgba(255,255,255,.6)}
+.dock-close:hover{background:rgba(255,255,255,.15);color:#fff}
+.dock-list{overflow-y:auto;padding:12px;flex:1;display:flex;flex-direction:column;gap:8px}
+.dock-list::-webkit-scrollbar{width:3px}
+.dock-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px}
+.dock-student{display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:12px;border:1.5px solid rgba(255,255,255,.07);
+  background:rgba(255,255,255,.04);cursor:pointer;transition:all .18s}
+.dock-student:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.18)}
+.dock-av{width:42px;height:42px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  border:2px solid var(--cc,rgba(255,255,255,.2));
+  background:radial-gradient(#1e3060,#0a1428)}
+.dock-av svg{width:42px;height:42px}
+.dock-info{flex:1}
+.dock-name{font-size:13px;font-weight:800;color:#fff}
+.dock-cls{font-size:10px;font-weight:700;color:var(--cc,rgba(255,255,255,.4))}
+.dock-status{display:flex;align-items:center;gap:5px;margin-top:3px}
+.online-dot{width:7px;height:7px;border-radius:50%;background:#3CFF8A;
+  box-shadow:0 0 6px rgba(60,255,138,.7);flex-shrink:0}
+.offline-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0}
+.dock-status-txt{font-size:10px;color:rgba(255,255,255,.5);font-weight:700}
+.dock-visit-btn{padding:5px 10px;border-radius:8px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#4caf50,#2e7d32);color:#fff;
+  font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;transition:all .15s}
+.dock-visit-btn:hover{filter:brightness(1.12)}
+.dock-go-home{width:100%;padding:12px;margin:4px 12px 12px;width:calc(100% - 24px);
+  border-radius:12px;border:none;cursor:pointer;
+  background:rgba(255,90,60,.15);border:1px solid rgba(255,90,60,.35);
+  color:#FF5A3C;font-family:'Fredoka One',cursive;font-size:15px;
+  display:none;transition:all .15s}
+.dock-go-home:hover{background:rgba(255,90,60,.25)}
+
+/* Interaction bubble */
+.interact-bubble{position:fixed;z-index:70;
+  background:rgba(6,12,26,.96);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:16px;padding:12px 14px;min-width:200px;max-width:260px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);backdrop-filter:blur(16px);
+  animation:bubblePop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes bubblePop{from{transform:scale(.7) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.bubble-name{font-family:'Fredoka One',cursive;font-size:14px;color:#FFD600;margin-bottom:10px}
+.bubble-actions{display:flex;flex-wrap:wrap;gap:6px}
+.bub-btn{padding:7px 11px;border-radius:10px;border:1.5px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);cursor:pointer;
+  font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;transition:all .18s;
+  display:flex;align-items:center;gap:5px}
+.bub-btn:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff}
+.bub-btn.gold{border-color:rgba(255,214,0,.35);color:#FFD600;background:rgba(255,214,0,.08)}
+.bub-btn.gold:hover{background:rgba(255,214,0,.18)}
+.bub-btn.green{border-color:rgba(60,255,138,.35);color:#3CFF8A;background:rgba(60,255,138,.07)}
+.bub-btn.purple{border-color:rgba(201,127,255,.35);color:#C97FFF;background:rgba(201,127,255,.07)}
+
+/* Compliment picker */
+.compliment-list{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto}
+.comp-item{padding:8px 12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);cursor:pointer;font-size:12px;font-weight:700;
+  color:rgba(255,255,255,.8);transition:all .15s}
+.comp-item:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff}
+
+/* Speech bubble (floating above avatar on canvas) — rendered via CSS overlay */
+.speech{position:fixed;z-index:65;pointer-events:none;
+  background:rgba(255,255,255,.95);color:#1a1a2e;
+  border-radius:12px;padding:7px 11px;font-size:12px;font-weight:800;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);max-width:160px;text-align:center;
+  animation:speechIn .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.speech::after{content:'';position:absolute;bottom:-7px;left:50%;
+  transform:translateX(-50%);border:7px solid transparent;
+  border-top-color:rgba(255,255,255,.95);border-bottom:none}
+@keyframes speechIn{from{transform:scale(.7) translateY(4px);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* Zone enter hint */
+.zone-hint{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  z-index:60;background:rgba(6,12,26,.9);border:1px solid rgba(255,255,255,.15);
+  border-radius:12px;padding:9px 16px;font-size:13px;font-weight:800;
+  color:#fff;pointer-events:none;backdrop-filter:blur(12px);
+  animation:hintIn .3s ease;white-space:nowrap;display:none}
+@keyframes hintIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* Toast */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-12px);
+  z-index:200;opacity:0;background:rgba(6,12,26,.96);
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  padding:10px 18px;font-family:'Fredoka One',cursive;font-size:14px;color:#fff;
+  box-shadow:0 6px 24px rgba(0,0,0,.5);backdrop-filter:blur(16px);
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Visitor stamp notification */
+.stamp-notif{position:fixed;bottom:90px;right:16px;z-index:70;
+  background:rgba(6,12,26,.96);border:1.5px solid rgba(201,127,255,.35);
+  border-radius:14px;padding:12px 14px;max-width:220px;
+  animation:stampIn .4s cubic-bezier(.34,1.56,.64,1);display:none}
+@keyframes stampIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+.stamp-title{font-family:'Fredoka One',cursive;font-size:13px;color:#C97FFF;margin-bottom:6px}
+.stamp-names{font-size:11px;color:rgba(255,255,255,.7);line-height:1.7;font-weight:700}
+
+/* Boat travel overlay */
+#boatOverlay{position:fixed;inset:0;z-index:300;
+  background:rgba(5,20,50,.92);display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.boat-ico{font-size:56px;animation:boatRock 1s ease-in-out infinite}
+@keyframes boatRock{0%,100%{transform:rotate(-5deg) translateY(0)}50%{transform:rotate(5deg) translateY(-8px)}}
+.boat-msg{font-family:'Fredoka One',cursive;font-size:20px;color:#fff;text-align:center}
+.boat-sub{font-size:13px;color:rgba(255,255,255,.5);font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div id="loading">
+  <div class="ld-title">🌲 Cantonment Island</div>
+  <div class="ld-bar"><div class="ld-fill" id="ldFill"></div></div>
+  <div class="ld-msg" id="ldMsg">Loading world…</div>
+</div>
+
+<!-- Game canvas -->
+<canvas id="gameCanvas"></canvas>
+
+<!-- HUD -->
+<div class="hud">
+  <div class="hud-left">
+    <div class="hud-title">🌲 Cantonment Island</div>
+    <div class="visiting-tag" id="visitingTag">Visiting <span id="visitingName"></span>'s island</div>
+  </div>
+  <div class="hud-pills">
+    <div class="pill pill-sp">⭐ <span id="hudSP">0</span></div>
+    <div class="pill pill-tok">🪙 <span id="hudTok">0</span></div>
+    <button class="hud-btn" onclick="toggleDock()">⛵ Classmates</button>
+    <a class="hud-btn" href="english-island.html">🗺️ Map</a>
+    <button class="hud-btn red" id="goHomeBtn" onclick="goHome()" style="display:none">🏠 My Island</button>
+  </div>
+</div>
+
+<!-- Touch joystick -->
+<div id="joystick"><div id="joystickKnob"></div></div>
+
+<!-- Mobile action buttons -->
+<div class="action-btns" id="actionBtns">
+  <button class="action-btn btn-interact" id="mobileInteract" onclick="triggerNearestInteract()" title="Interact">💬</button>
+  <button class="action-btn btn-zone" id="mobileZone" onclick="triggerNearestZone()" title="Enter zone">🚪</button>
+</div>
+
+<!-- Dock panel -->
+<div class="panel" id="dockPanel">
+  <div class="dock-header">
+    <div class="dock-title">⛵ Classmates</div>
+    <div class="dock-close" onclick="toggleDock()">✕</div>
+  </div>
+  <div class="dock-list" id="dockList"></div>
+  <button class="dock-go-home" id="dockGoHome" onclick="goHome()">🏠 Return to My Island</button>
+</div>
+
+<!-- Interaction bubble (dynamic) -->
+<div id="interactBubble" style="display:none"></div>
+
+<!-- Zone enter hint -->
+<div class="zone-hint" id="zoneHint"></div>
+
+<!-- Boat overlay -->
+<div id="boatOverlay" style="display:flex;display:none">
+  <div class="boat-ico">⛵</div>
+  <div class="boat-msg" id="boatMsg">Setting sail…</div>
+  <div class="boat-sub" id="boatSub">Hold on tight!</div>
+</div>
+
+<!-- Visitor stamp notification -->
+<div class="stamp-notif" id="stampNotif">
+  <div class="stamp-title">👣 Recent visitors</div>
+  <div class="stamp-names" id="stampNames"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// ██████╗  ██████╗ ███╗   ██╗███████╗██╗ ██████╗
+// ██╔════╝██╔═══██╗████╗  ██║██╔════╝██║██╔════╝
+// ██║     ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗
+// ██║     ██║   ██║██║╚██╗██║██╔══╝  ██║██║   ██║
+// ╚██████╗╚██████╔╝██║ ╚████║██║     ██║╚██████╔╝
+//  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝
+// ═══════════════════════════════════════════════════════
+
+// ── PASTE YOUR FIREBASE CONFIG HERE ──────────────────────
+// Step 1: Go to console.firebase.google.com
+// Step 2: Your project → Project Settings → Your apps → SDK setup
+// Step 3: Copy the firebaseConfig object and paste it below
+const FIREBASE_CONFIG = {
+  apiKey:            "PASTE_YOUR_API_KEY_HERE",
+  authDomain:        "PASTE_YOUR_AUTH_DOMAIN_HERE",
+  databaseURL:       "PASTE_YOUR_DATABASE_URL_HERE",
+  projectId:         "PASTE_YOUR_PROJECT_ID_HERE",
+  storageBucket:     "PASTE_YOUR_STORAGE_BUCKET_HERE",
+  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
+  appId:             "PASTE_YOUR_APP_ID_HERE"
+};
+// ─────────────────────────────────────────────────────────
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwihbBr7sA6LvqLTAUD6wK-xoUgslCkyqWenIWYxnRPidn85ihhqcbwKW8I_dcFF_uzOw/exec';
+
+// ═══════════════════════════════════════════════════════
+// ISLAND MAP  (0=water 1=shore 2=grass 3=tree 4=path 5=flowers 6=pond 7=bridge)
+// ═══════════════════════════════════════════════════════
+const TILE = { WATER:0, SHORE:1, GRASS:2, TREE:3, PATH:4, FLOWER:5, POND:6, BRIDGE:7 };
+const MAP_W = 26, MAP_H = 15, TILE_SIZE = 48;
+
+const ISLAND_MAP = [
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+  [0,1,2,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,2,2,1,0],
+  [0,1,3,2,2,2,4,4,4,4,2,2,2,2,4,4,4,4,2,2,2,2,2,3,1,0],
+  [0,1,2,2,2,4,2,2,2,4,2,2,2,2,4,2,2,4,2,5,5,2,2,2,1,0],
+  [0,1,2,3,2,4,2,2,2,4,4,4,4,4,4,2,2,4,2,5,5,2,3,2,1,0],
+  [0,1,2,2,2,4,2,2,2,2,2,2,6,6,2,2,2,4,2,2,2,2,2,2,1,0],
+  [0,1,3,2,2,4,4,4,7,7,2,2,6,6,2,2,4,4,4,2,2,2,2,3,1,0],
+  [0,1,2,2,2,2,2,2,2,4,2,2,2,2,2,2,4,2,2,2,5,5,2,2,1,0],
+  [0,1,2,2,5,5,2,2,2,4,4,4,4,4,4,4,4,2,2,2,5,5,2,2,1,0],
+  [0,1,2,3,5,5,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,1,0],
+  [0,1,2,2,2,2,2,2,2,2,4,4,4,4,4,2,2,2,2,2,2,2,2,2,1,0],
+  [0,1,3,2,2,2,2,2,2,2,4,2,2,2,4,2,2,2,2,2,2,2,2,3,1,0],
+  [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+];
+
+// ═══════════════════════════════════════════════════════
+// ZONES
+// ═══════════════════════════════════════════════════════
+const ZONES = [
+  { id:'gc',  name:'Library Tower',  sub:'Grammar Cloze',   ico:'📖', col:'#4A90D9',
+    tx:4,  ty:3,  file:'grammar-cloze.html',
+    photo:'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=300&q=75' },
+  { id:'rs',  name:'Debate Stage',   sub:'Reported Speech', ico:'🏛️', col:'#E8603A',
+    tx:19, ty:3,  file:'reported-speech.html',
+    photo:'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=300&q=75' },
+  { id:'vt',  name:'Observatory',    sub:'Visual Text',     ico:'🔭', col:'#9B59B6',
+    tx:20, ty:7,  file:'visual-text.html',
+    photo:'https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=300&q=75' },
+  { id:'syn', name:'Discovery Lab',  sub:'Synthesis',       ico:'⚗️', col:'#27AE60',
+    tx:4,  ty:10, file:'synthesis.html',
+    photo:'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=300&q=75' },
+  { id:'sp',  name:'Scroll Cavern',  sub:'Spelling',        ico:'📜', col:'#D4A017',
+    tx:11, ty:11, file:'spelling-quest-corrected.html',
+    photo:'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=300&q=75' },
+];
+
+const CLASS_CFG = {
+  '4 Care':        {col:'#FF5A3C',glow:'rgba(255,90,60,.4)'},
+  '4 Graciousness':{col:'#3CB8FF',glow:'rgba(60,184,255,.4)'},
+  '4 Integrity':   {col:'#FFB83C',glow:'rgba(255,184,60,.4)'},
+  '4 Resilience':  {col:'#3CFF8A',glow:'rgba(60,255,138,.4)'},
+  '4 Respect':     {col:'#C97FFF',glow:'rgba(201,127,255,.4)'},
+};
+
+const COMPLIMENTS = [
+  "Great work today! 🌟","You're so smart! 🧠","Keep it up! 💪",
+  "You inspire me! ✨","You're awesome! 🎉","Good luck today! 🍀",
+  "You've got this! 🔥","Love your energy! ⚡","You're a star! ⭐",
+  "Super impressive! 🏆"
+];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let hero        = {};
+let progress    = {};
+let tokens      = 0;
+let db          = null;
+let firebaseOK  = false;
+let visitingIsland = null; // null = own island, else hero name of owner
+let remoteAvatars  = {};   // { heroName: { x,y,dir,frame,cfg,cls,lastSeen } }
+let interactCooldowns = {};
+let activeBubbles  = [];
+let speechBubbles  = [];
+let nearestZone    = null;
+let dockOpen       = false;
+let classmates     = []; // from Firebase presence
+
+// Canvas + camera
+const C = document.getElementById('gameCanvas');
+const ctx = C.getContext('2d');
+let camX = 0, camY = 0;
+let W = window.innerWidth, H = window.innerHeight;
+
+// Player
+const player = {
+  x: 9 * TILE_SIZE + TILE_SIZE/2,
+  y: 5 * TILE_SIZE + TILE_SIZE/2,
+  vx:0, vy:0, dir:'down', frame:0, frameTimer:0, moving:false,
+  speed: 2.8
+};
+
+// Input
+const keys = {};
+let joystickActive = false, joyX = 0, joyY = 0;
+let joystickOrigin = {x:0,y:0};
+
+// Pre-rendered avatar images (canvas→image for performance)
+let avatarImages = {}; // { key: HTMLCanvasElement }
+let zoneImages   = {}; // { id: HTMLImageElement }
+
+// Time of day (0-1 over 24h mapped to 8am-6pm school day)
+function getDayFraction() {
+  const h = new Date().getHours(), m = new Date().getMinutes();
+  const t = h + m/60;
+  return Math.max(0, Math.min(1, (t - 7) / 11)); // 7am=0, 6pm=1
+}
+
+// ═══════════════════════════════════════════════════════
+// COLOUR HELPERS
+// ═══════════════════════════════════════════════════════
+function shade(hex, amt) {
+  hex = hex.replace('#','');
+  if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  const n=parseInt(hex,16), a=amt<0?0:255, p=Math.abs(amt)/100;
+  const cl=(ch)=>Math.round((a-ch)*p+ch);
+  return '#'+[(n>>16)&255,(n>>8)&255,n&255].map(v=>Math.max(0,Math.min(255,cl(v))).toString(16).padStart(2,'0')).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// AVATAR RENDERING (SVG paths → canvas)
+// ═══════════════════════════════════════════════════════
+const SKINS    = ['#FDDCB0','#F0C27F','#C68642','#8D5524','#4A2912'];
+const HAIR_C   = ['#0d0d0d','#2c1204','#6b3a0f','#b5812e','#d4c14a','#e05530','#7b4bb5','#e8e8e8'];
+const EYE_C    = ['#2c1204','#1a3a6c','#1a5c20','#7b4bb5','#8b5510','#0d0d0d'];
+const SHIRTS   = ['#3CB8FF','#FF5A3C','#3CFF8A','#FFD600','#4A90D9','#C97FFF','#E91E8C','#8BC34A'];
+const HAIR_STYLES = ['Short','Curly','Long Waves','Spiky','Side Braids','Bun'];
+
+function avatarCacheKey(cfg) {
+  return `${cfg.skin||0}_${cfg.hairCol||0}_${cfg.hairStyle||0}_${cfg.eyeCol||0}_${cfg.shirtIdx||0}_${cfg.hatId||'none'}_${cfg.faceId||'smile'}_${cfg.fxId||'none'}`;
+}
+
+function renderAvatarToCanvas(cfg, size=64) {
+  const key = avatarCacheKey(cfg);
+  if(avatarImages[key]) return avatarImages[key];
+
+  const off = document.createElement('canvas');
+  off.width = size; off.height = size;
+  const c = off.getContext('2d');
+
+  const sk  = SKINS[cfg.skin||0];
+  const hc  = HAIR_C[cfg.hairCol||0];
+  const shirt = SHIRTS[cfg.shirtIdx||0] || cfg.shirtCol || '#3CB8FF';
+  const hs  = cfg.hairStyle||0;
+
+  // Scale factor: our SVG viewBox is 200×220, we want 'size'
+  const s = size / 200;
+  c.scale(s, s);
+
+  // Shadow
+  c.shadowColor='rgba(0,0,0,0.4)'; c.shadowBlur=8; c.shadowOffsetY=4;
+
+  // BODY
+  c.fillStyle = shirt;
+  c.beginPath();
+  c.moveTo(52,200); c.bezierCurveTo(46,175,46,155,46,145);
+  c.bezierCurveTo(54,128,100,122,100,122);
+  c.bezierCurveTo(100,122,146,128,154,145);
+  c.bezierCurveTo(154,155,154,175,148,200);
+  c.fill();
+
+  c.shadowBlur=0; c.shadowOffsetY=0;
+
+  // NECK
+  c.fillStyle = sk;
+  c.beginPath(); c.roundRect(88,120,24,18,7); c.fill();
+
+  // HEAD
+  c.fillStyle = sk;
+  c.beginPath(); c.ellipse(100,100,54,58,0,0,Math.PI*2); c.fill();
+
+  // HAIR base
+  c.fillStyle = hc;
+  c.beginPath(); c.ellipse(100,72,46,22,0,0,Math.PI*2); c.fill();
+  c.beginPath();
+  c.moveTo(54,90); c.bezierCurveTo(50,70,58,50,100,28);
+  c.bezierCurveTo(142,50,150,70,146,90); c.fill();
+
+  if(hs===1){// Curly
+    c.beginPath(); c.arc(62,80,14,0,Math.PI*2); c.fill();
+    c.beginPath(); c.arc(138,80,14,0,Math.PI*2); c.fill();
+  } else if(hs===2){// Long
+    c.beginPath(); c.moveTo(54,95); c.bezierCurveTo(46,130,52,170,58,185); c.lineTo(48,185); c.bezierCurveTo(42,165,44,125,54,90); c.fill();
+    c.beginPath(); c.moveTo(146,95); c.bezierCurveTo(154,130,148,170,142,185); c.lineTo(152,185); c.bezierCurveTo(158,165,156,125,146,90); c.fill();
+  } else if(hs===3){// Spiky
+    c.fillStyle=shade(hc,-22);
+    [[100,40,84,68,116,68],[74,46,62,72,88,70],[126,46,138,72,112,70]].forEach(([x,y,x1,y1,x2,y2])=>{
+      c.beginPath(); c.moveTo(x,y); c.lineTo(x1,y1); c.lineTo(x2,y2); c.fill();
+    });
+  } else if(hs===4){// Braids
+    c.strokeStyle=shade(hc,-22); c.lineWidth=10; c.lineCap='round';
+    c.beginPath(); c.moveTo(54,92); c.bezierCurveTo(48,125,54,160,52,178); c.stroke();
+    c.beginPath(); c.moveTo(146,92); c.bezierCurveTo(152,125,146,160,148,178); c.stroke();
+  } else if(hs===5){// Bun
+    c.fillStyle=shade(hc,-22); c.beginPath(); c.arc(100,48,20,0,Math.PI*2); c.fill();
+    c.fillStyle=hc; c.beginPath(); c.arc(100,48,13,0,Math.PI*2); c.fill();
+  }
+
+  // EARS
+  c.fillStyle = sk;
+  c.beginPath(); c.ellipse(51,102,11,14,0,0,Math.PI*2); c.fill();
+  c.beginPath(); c.ellipse(149,102,11,14,0,0,Math.PI*2); c.fill();
+  c.fillStyle=shade(sk,-18);
+  c.beginPath(); c.ellipse(51,102,6.5,9,0,0,Math.PI*2); c.fill();
+  c.beginPath(); c.ellipse(149,102,6.5,9,0,0,Math.PI*2); c.fill();
+
+  // EYES
+  c.fillStyle='white';
+  c.beginPath(); c.ellipse(80,98,13,15,0,0,Math.PI*2); c.fill();
+  c.beginPath(); c.ellipse(120,98,13,15,0,0,Math.PI*2); c.fill();
+  c.fillStyle = EYE_C[cfg.eyeCol||0];
+  c.beginPath(); c.arc(81,100,9,0,Math.PI*2); c.fill();
+  c.beginPath(); c.arc(121,100,9,0,Math.PI*2); c.fill();
+  c.fillStyle='#0d0d0d';
+  c.beginPath(); c.arc(82,101,5.5,0,Math.PI*2); c.fill();
+  c.beginPath(); c.arc(122,101,5.5,0,Math.PI*2); c.fill();
+  c.fillStyle='white';
+  c.beginPath(); c.arc(85,97,2.5,0,Math.PI*2); c.fill();
+  c.beginPath(); c.arc(125,97,2.5,0,Math.PI*2); c.fill();
+
+  // EYEBROWS
+  c.strokeStyle=shade(hc,-10); c.lineWidth=3.5; c.lineCap='round';
+  c.beginPath(); c.moveTo(68,84); c.quadraticCurveTo(80,78,92,83); c.stroke();
+  c.beginPath(); c.moveTo(108,83); c.quadraticCurveTo(120,78,132,84); c.stroke();
+
+  // NOSE
+  c.strokeStyle=shade(sk,-18); c.lineWidth=2; c.lineCap='round';
+  c.beginPath(); c.moveTo(96,110); c.quadraticCurveTo(100,118,104,110); c.stroke();
+
+  // MOUTH
+  c.strokeStyle='#b03020'; c.lineWidth=2.5;
+  c.beginPath(); c.moveTo(80,118); c.quadraticCurveTo(100,132,120,118); c.stroke();
+
+  // CHEEKS
+  c.fillStyle='rgba(255,160,140,0.3)';
+  c.beginPath(); c.ellipse(64,112,14,9,0,0,Math.PI*2); c.fill();
+  c.beginPath(); c.ellipse(136,112,14,9,0,0,Math.PI*2); c.fill();
+
+  avatarImages[key] = off;
+  return off;
+}
+
+// Small 32px version for HUD/dock
+function getAvatarImg(cfg, size=32) {
+  const key = avatarCacheKey(cfg)+'_'+size;
+  if(avatarImages[key]) return avatarImages[key];
+  const big = renderAvatarToCanvas(cfg, 128);
+  const off = document.createElement('canvas');
+  off.width=size; off.height=size;
+  const c=off.getContext('2d');
+  c.drawImage(big,0,0,size,size);
+  avatarImages[key]=off;
+  return off;
+}
+
+// ═══════════════════════════════════════════════════════
+// TILE COLOURS (Enchanted Forest palette)
+// ═══════════════════════════════════════════════════════
+function drawTile(c, tx, ty, screenX, screenY, tod) {
+  const t = ISLAND_MAP[ty]?.[tx] ?? TILE.WATER;
+  const brt = 0.7 + tod * 0.35; // dawn to dusk brightness
+
+  // Vary shade slightly by position for organic feel
+  const noiseOff = ((tx*7+ty*13)%8) * 0.012;
+
+  switch(t) {
+    case TILE.WATER:
+      const wt = tod * 0.3;
+      c.fillStyle = `rgb(${Math.round((15+wt*25))},${Math.round((40+wt*30))},${Math.round((90+wt*20))})`;
+      break;
+    case TILE.SHORE:
+      c.fillStyle = `hsl(42,${55+noiseOff*100}%,${Math.round((55+noiseOff*20)*brt)}%)`;
+      break;
+    case TILE.GRASS:
+      c.fillStyle = `hsl(${118+noiseOff*20},${55+noiseOff*20}%,${Math.round((28+noiseOff*18)*brt)}%)`;
+      break;
+    case TILE.TREE:
+      c.fillStyle = `hsl(128,${50+noiseOff*15}%,${Math.round((18+noiseOff*10)*brt)}%)`;
+      break;
+    case TILE.PATH:
+      c.fillStyle = `hsl(36,${45+noiseOff*15}%,${Math.round((38+noiseOff*14)*brt)}%)`;
+      break;
+    case TILE.FLOWER:
+      c.fillStyle = `hsl(${118+noiseOff*20},${55+noiseOff*20}%,${Math.round((30+noiseOff*16)*brt)}%)`;
+      break;
+    case TILE.POND:
+      c.fillStyle = `hsl(210,${60+noiseOff*15}%,${Math.round((28+noiseOff*14)*brt)}%)`;
+      break;
+    case TILE.BRIDGE:
+      c.fillStyle = `hsl(32,${50+noiseOff*15}%,${Math.round((42+noiseOff*16)*brt)}%)`;
+      break;
+    default:
+      c.fillStyle='#0a1628';
+  }
+  c.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+}
+
+function drawTileDecoration(c, tx, ty, screenX, screenY, tod) {
+  const t = ISLAND_MAP[ty]?.[tx] ?? TILE.WATER;
+  const brt = 0.7 + tod * 0.35;
+  const mid = screenX + TILE_SIZE/2;
+
+  if(t === TILE.TREE) {
+    // Draw tree
+    const trunkH = 18, trunkW = 8;
+    c.fillStyle = `hsl(28,55%,${Math.round(18*brt)}%)`;
+    c.fillRect(mid - trunkW/2, screenY + TILE_SIZE - trunkH, trunkW, trunkH);
+    // Canopy layers
+    const greens = [
+      `hsl(140,${45+((tx*3+ty)%5)*4}%,${Math.round(17*brt)}%)`,
+      `hsl(130,${48+((tx+ty*4)%5)*4}%,${Math.round(22*brt)}%)`,
+      `hsl(120,${50+((tx*5+ty*2)%6)*4}%,${Math.round(26*brt)}%)`,
+    ];
+    [[0,20,24],[0,10,20],[0,2,16]].forEach(([ox,oy,r],i)=>{
+      c.fillStyle=greens[i];
+      c.beginPath(); c.arc(mid+ox, screenY+oy, r, 0, Math.PI*2); c.fill();
+    });
+    // Night firefly glow on trees
+    if(tod < 0.25 || tod > 0.85) {
+      c.fillStyle=`rgba(255,255,150,${0.5 + 0.3*Math.sin(Date.now()*0.003 + tx+ty)})`;
+      c.beginPath(); c.arc(mid+6, screenY+8, 2.5, 0, Math.PI*2); c.fill();
+    }
+  }
+
+  if(t === TILE.FLOWER) {
+    const colours=['#ff6b9d','#ffd166','#a8e6cf','#c9b1ff','#ff8fab'];
+    const fc = colours[(tx*3+ty*7)%colours.length];
+    c.fillStyle=`rgba(255,255,255,${0.15*brt})`;
+    for(let fi=0;fi<4;fi++){
+      const ang=fi*Math.PI/2 + (tx+ty)*0.4;
+      c.beginPath(); c.arc(mid+Math.cos(ang)*6, screenY+TILE_SIZE/2+Math.sin(ang)*6, 4, 0, Math.PI*2); c.fill();
+    }
+    c.fillStyle=fc;
+    for(let fi=0;fi<4;fi++){
+      const ang=fi*Math.PI/2 + (tx+ty)*0.4;
+      c.beginPath(); c.arc(mid+Math.cos(ang)*6, screenY+TILE_SIZE/2+Math.sin(ang)*6, 3.5, 0, Math.PI*2); c.fill();
+    }
+    c.fillStyle='#fff5b1';
+    c.beginPath(); c.arc(mid, screenY+TILE_SIZE/2, 4, 0, Math.PI*2); c.fill();
+  }
+
+  if(t === TILE.POND) {
+    const t2 = Date.now()*0.001;
+    c.fillStyle=`hsl(200,60%,${Math.round(22*brt)}%)`;
+    c.fillRect(screenX+4, screenY+4, TILE_SIZE-8, TILE_SIZE-8);
+    // Shimmer
+    c.strokeStyle=`rgba(255,255,255,${0.08 + 0.04*Math.sin(t2+tx)})`;
+    c.lineWidth=1.5;
+    c.beginPath(); c.moveTo(screenX+10, screenY+TILE_SIZE/2);
+    c.lineTo(screenX+TILE_SIZE-10, screenY+TILE_SIZE/2); c.stroke();
+    c.beginPath(); c.moveTo(screenX+14, screenY+TILE_SIZE/2-6);
+    c.lineTo(screenX+TILE_SIZE-14, screenY+TILE_SIZE/2-6); c.stroke();
+  }
+
+  if(t === TILE.BRIDGE) {
+    c.fillStyle=`hsl(32,50%,${Math.round(36*brt)}%)`;
+    c.fillRect(screenX, screenY+16, TILE_SIZE, 16);
+    // Planks
+    c.fillStyle=`hsl(28,45%,${Math.round(28*brt)}%)`;
+    for(let bi=0;bi<3;bi++) c.fillRect(screenX+bi*18+2, screenY+16, 14, 16);
+    // Railings
+    c.fillStyle=`hsl(28,40%,${Math.round(32*brt)}%)`;
+    c.fillRect(screenX, screenY+12, TILE_SIZE, 5);
+    c.fillRect(screenX, screenY+32, TILE_SIZE, 4);
+  }
+
+  if(t === TILE.PATH) {
+    // Subtle cobblestone dots
+    c.fillStyle=`rgba(0,0,0,${0.08*brt})`;
+    const cx=(tx*53+ty*37)%4, cy=(tx*41+ty*61)%3;
+    c.beginPath(); c.arc(screenX+12+cx*8, screenY+10+cy*10, 4, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.arc(screenX+32+cx*6, screenY+26+cy*7, 3.5, 0, Math.PI*2); c.fill();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ZONE BUILDING DRAWING
+// ═══════════════════════════════════════════════════════
+function drawZoneBuilding(c, zone, sx, sy, done, tod) {
+  const brt = 0.7 + tod*0.35;
+  const w=TILE_SIZE*2, h=TILE_SIZE*2.5;
+
+  // Shadow
+  c.fillStyle='rgba(0,0,0,0.35)';
+  c.beginPath(); c.ellipse(sx+w/2, sy+h+8, w*0.45, 10, 0, 0, Math.PI*2); c.fill();
+
+  // Zone-specific building shapes
+  const col = zone.col;
+  const dark = shade(col,-25), light = shade(col,18);
+
+  // Base structure
+  c.fillStyle = dark;
+  c.fillRect(sx+4, sy+h*0.4, w-8, h*0.6);
+
+  c.fillStyle = col;
+  c.fillRect(sx+8, sy+h*0.3, w-16, h*0.7);
+
+  // Roof
+  c.fillStyle = light;
+  c.beginPath(); c.moveTo(sx, sy+h*0.35); c.lineTo(sx+w/2, sy); c.lineTo(sx+w, sy+h*0.35); c.closePath(); c.fill();
+  c.fillStyle = shade(col,8);
+  c.beginPath(); c.moveTo(sx+4, sy+h*0.35); c.lineTo(sx+w/2, sy+4); c.lineTo(sx+w-4, sy+h*0.35); c.closePath(); c.fill();
+
+  // Door
+  c.fillStyle='rgba(0,0,0,0.5)';
+  c.beginPath(); c.roundRect(sx+w/2-8, sy+h*0.65, 16, h*0.35, [3,3,0,0]); c.fill();
+
+  // Window
+  if(w>60){
+    c.fillStyle=done?`rgba(255,255,200,0.7)`:`rgba(200,230,255,0.3)`;
+    c.fillRect(sx+12, sy+h*0.38, 14, 14);
+    c.fillRect(sx+w-26, sy+h*0.38, 14, 14);
+  }
+
+  // Glow aura for completed zones
+  if(done) {
+    const grd = c.createRadialGradient(sx+w/2, sy+h/2, 0, sx+w/2, sy+h/2, w);
+    grd.addColorStop(0,`${col}22`); grd.addColorStop(1,'transparent');
+    c.fillStyle=grd; c.fillRect(sx-w, sy-w, w*4, h*3);
+    // Gold flag
+    c.fillStyle='#FFD600'; c.fillRect(sx+w-6, sy-12, 3, 16);
+    c.beginPath(); c.moveTo(sx+w-3, sy-12); c.lineTo(sx+w+10, sy-6); c.lineTo(sx+w-3, sy); c.fill();
+  }
+
+  // Icon label
+  c.font=`${TILE_SIZE*0.55}px serif`;
+  c.textAlign='center'; c.textBaseline='middle';
+  c.fillText(zone.ico, sx+w/2, sy+h*0.18);
+
+  // Name tag
+  c.font=`bold ${Math.round(TILE_SIZE*0.22)}px Nunito,sans-serif`;
+  c.textAlign='center'; c.textBaseline='top';
+  c.fillStyle='rgba(0,0,0,0.6)';
+  c.fillText(zone.name, sx+w/2+1, sy+h+5);
+  c.fillStyle='#fff';
+  c.fillText(zone.name, sx+w/2, sy+h+4);
+
+  // Night window glow
+  if(tod < 0.2 || tod > 0.88) {
+    c.fillStyle=`rgba(255,255,180,${0.3*(done?1:0.4)})`;
+    c.fillRect(sx+12, sy+h*0.38, 14, 14);
+    if(w>60) c.fillRect(sx+w-26, sy+h*0.38, 14, 14);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// PLAYER / REMOTE AVATAR DRAWING
+// ═══════════════════════════════════════════════════════
+function drawAvatar(c, cfg, x, y, dir, frame, isLocal, name, cls, speechText) {
+  const sz = 52;
+  const halfSz = sz/2;
+
+  // Shadow
+  c.fillStyle='rgba(0,0,0,0.35)';
+  c.beginPath(); c.ellipse(x, y+halfSz-4, halfSz*0.65, 7, 0, 0, Math.PI*2); c.fill();
+
+  // Walk bob
+  const bob = isLocal && player.moving ? Math.sin(frame * Math.PI / 2) * 3 : 0;
+  const drawY = y - halfSz + bob;
+
+  // Direction tilt (slight lean into movement)
+  c.save();
+  let tilt = 0;
+  if(dir==='left') tilt=-0.08; else if(dir==='right') tilt=0.08;
+  c.translate(x, y); c.rotate(tilt); c.translate(-x, -y);
+
+  // Avatar image
+  const img = renderAvatarToCanvas(cfg, 128);
+  c.drawImage(img, x-halfSz, drawY, sz, sz*1.1);
+
+  // Local player highlight ring
+  if(isLocal) {
+    const clsCfg = CLASS_CFG[cls]||{col:'#FFD600',glow:'rgba(255,214,0,.4)'};
+    c.strokeStyle = clsCfg.col;
+    c.lineWidth = 2.5;
+    c.beginPath(); c.arc(x, y-halfSz*0.5+bob, halfSz*0.62, 0, Math.PI*2); c.stroke();
+  }
+
+  c.restore();
+
+  // Name tag
+  const tagY = drawY - 8;
+  const firstName = name.split(' ')[0] || name;
+  c.font = `bold ${isLocal?13:11}px Nunito,sans-serif`;
+  c.textAlign='center'; c.textBaseline='bottom';
+  const tw = c.measureText(firstName).width;
+  const pad = 5;
+  // Badge background
+  c.fillStyle = isLocal ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0.55)';
+  c.beginPath(); c.roundRect(x-tw/2-pad, tagY-18, tw+pad*2, 16, 4); c.fill();
+  // Class colour dot
+  const clsCol = (CLASS_CFG[cls]||{col:'#fff'}).col;
+  c.fillStyle=clsCol; c.beginPath(); c.arc(x-tw/2-pad+6, tagY-10, 3, 0, Math.PI*2); c.fill();
+  c.fillStyle='#fff'; c.fillText(firstName, x, tagY-2);
+
+  // Speech bubble
+  if(speechText) {
+    const bw = Math.min(160, c.measureText(speechText).width + 20);
+    const bh = 26;
+    const bx = x - bw/2;
+    const by = drawY - 44;
+    c.fillStyle='rgba(255,255,255,0.95)';
+    c.beginPath(); c.roundRect(bx, by, bw, bh, 8); c.fill();
+    c.fillStyle='rgba(255,255,255,0.95)';
+    c.beginPath(); c.moveTo(x-6,by+bh); c.lineTo(x,by+bh+8); c.lineTo(x+6,by+bh); c.fill();
+    c.fillStyle='#1a1a2e';
+    c.font='bold 11px Nunito,sans-serif'; c.textAlign='center'; c.textBaseline='middle';
+    c.fillText(speechText, x, by+bh/2);
+  }
+}
+
+// Dock/boat marker
+function drawDock(c, sx, sy, tod) {
+  const brt = 0.7+tod*0.35;
+  c.fillStyle=`hsl(32,55%,${Math.round(30*brt)}%)`;
+  c.fillRect(sx, sy+TILE_SIZE*0.6, TILE_SIZE, TILE_SIZE*0.4);
+  c.fillStyle=`hsl(32,50%,${Math.round(26*brt)}%)`;
+  for(let di=0;di<3;di++) c.fillRect(sx+di*18+2, sy+TILE_SIZE*0.6, 14, TILE_SIZE*0.4);
+  // Boat
+  c.font=`${TILE_SIZE*0.55}px serif`; c.textAlign='center'; c.textBaseline='middle';
+  c.fillText('⛵', sx+TILE_SIZE/2, sy+TILE_SIZE*0.38);
+  c.font=`bold 9px Nunito,sans-serif`; c.textAlign='center'; c.textBaseline='top';
+  c.fillStyle='rgba(0,0,0,0.6)';
+  c.fillText('VISIT', sx+TILE_SIZE/2+1, sy+TILE_SIZE*0.82);
+  c.fillStyle='#fff'; c.fillText('VISIT', sx+TILE_SIZE/2, sy+TILE_SIZE*0.8);
+}
+
+// ═══════════════════════════════════════════════════════
+// ATMOSPHERE / SKY BACKGROUND
+// ═══════════════════════════════════════════════════════
+function drawSky(c, tod) {
+  // Morning orange → noon blue → dusk purple
+  let skyTop, skyBot;
+  if(tod < 0.2) { // dawn
+    skyTop = `hsl(${220+tod*50},${60-tod*20}%,${8+tod*15}%)`;
+    skyBot = `hsl(${30+tod*60},80%,${30+tod*20}%)`;
+  } else if(tod < 0.7) { // day
+    const t2=(tod-0.2)/0.5;
+    skyTop = `hsl(${220+t2*10},${65-t2*10}%,${15+t2*8}%)`;
+    skyBot = `hsl(${200+t2*10},${60-t2*10}%,${40-t2*10}%)`;
+  } else { // dusk
+    const t3=(tod-0.7)/0.3;
+    skyTop = `hsl(${245+t3*15},${55+t3*10}%,${12-t3*4}%)`;
+    skyBot = `hsl(${20-t3*10},${70-t3*10}%,${35-t3*20}%)`;
+  }
+  const grd = c.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0,skyTop); grd.addColorStop(1,skyBot);
+  c.fillStyle=grd; c.fillRect(0,0,W,H);
+
+  // Stars at night
+  if(tod < 0.15 || tod > 0.9) {
+    const t4=Date.now()*0.001;
+    c.fillStyle=`rgba(255,255,255,${tod<0.15?0.6*(1-tod/0.15):0.6*((tod-0.9)/0.1)})`;
+    for(let si=0;si<60;si++){
+      const sx2=(si*137.5)%W, sy2=(si*89.3)%H*0.6;
+      const br=0.4+0.6*Math.abs(Math.sin(t4+si*0.7));
+      c.globalAlpha=br; c.beginPath(); c.arc(sx2,sy2,0.8+si%2*0.6,0,Math.PI*2); c.fill();
+    }
+    c.globalAlpha=1;
+  }
+
+  // Sun/moon
+  const bodyX = W*0.75, bodyY = H*(0.15 + (1-tod)*0.25);
+  if(tod > 0.05 && tod < 0.95) { // Sun
+    const sunR=Math.min(W,H)*0.038;
+    const sunAlpha = Math.min(1, Math.min(tod,1-tod)*8);
+    const grd2=c.createRadialGradient(bodyX,bodyY,0,bodyX,bodyY,sunR*2.5);
+    grd2.addColorStop(0,`rgba(255,240,140,${sunAlpha})`);
+    grd2.addColorStop(0.4,`rgba(255,200,60,${sunAlpha*0.4})`);
+    grd2.addColorStop(1,'transparent');
+    c.fillStyle=grd2; c.fillRect(bodyX-sunR*3,bodyY-sunR*3,sunR*6,sunR*6);
+    c.fillStyle=`rgba(255,245,160,${sunAlpha})`;
+    c.beginPath(); c.arc(bodyX,bodyY,sunR,0,Math.PI*2); c.fill();
+  } else { // Moon
+    const moonR=Math.min(W,H)*0.032;
+    c.fillStyle='rgba(255,248,200,0.9)';
+    c.beginPath(); c.arc(bodyX,bodyY,moonR,0,Math.PI*2); c.fill();
+    c.fillStyle='rgba(200,190,150,0.3)';
+    c.beginPath(); c.arc(bodyX+moonR*0.3,bodyY-moonR*0.2,moonR*0.55,0,Math.PI*2); c.fill();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// MAIN RENDER LOOP
+// ═══════════════════════════════════════════════════════
+let lastFrameTime = 0;
+function gameLoop(ts) {
+  const dt = Math.min((ts - lastFrameTime)/16.67, 3);
+  lastFrameTime = ts;
+
+  update(dt);
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+function update(dt) {
+  if(visitingIsland) return; // Can't move on other people's islands (spectator)
+
+  // Input → velocity
+  let dx=0, dy=0;
+  if(keys['ArrowLeft']||keys['a']||keys['A']) dx=-1;
+  if(keys['ArrowRight']||keys['d']||keys['D']) dx=1;
+  if(keys['ArrowUp']||keys['w']||keys['W']) dy=-1;
+  if(keys['ArrowDown']||keys['s']||keys['S']) dy=1;
+  if(joystickActive){ dx=joyX; dy=joyY; }
+
+  // Normalise diagonal
+  const len = Math.sqrt(dx*dx+dy*dy);
+  if(len>0){ dx/=len; dy/=len; }
+
+  const speed = player.speed * dt;
+  const nx = player.x + dx*speed;
+  const ny = player.y + dy*speed;
+  const t = ISLAND_MAP[Math.floor(ny/TILE_SIZE)]?.[Math.floor(nx/TILE_SIZE)]??TILE.WATER;
+  const walkable = [TILE.GRASS,TILE.PATH,TILE.FLOWER,TILE.BRIDGE,TILE.SHORE].includes(t);
+
+  // Separate axis collision
+  const xt = ISLAND_MAP[Math.floor(player.y/TILE_SIZE)]?.[Math.floor(nx/TILE_SIZE)]??TILE.WATER;
+  const yt = ISLAND_MAP[Math.floor(ny/TILE_SIZE)]?.[Math.floor(player.x/TILE_SIZE)]??TILE.WATER;
+  const xWalk = [TILE.GRASS,TILE.PATH,TILE.FLOWER,TILE.BRIDGE,TILE.SHORE].includes(xt);
+  const yWalk = [TILE.GRASS,TILE.PATH,TILE.FLOWER,TILE.BRIDGE,TILE.SHORE].includes(yt);
+
+  if(xWalk) player.x = nx;
+  if(yWalk) player.y = ny;
+
+  player.moving = (dx!==0||dy!==0);
+  if(dx<0) player.dir='left'; else if(dx>0) player.dir='right';
+  else if(dy<0) player.dir='up'; else if(dy>0) player.dir='down';
+
+  // Walk animation
+  if(player.moving){
+    player.frameTimer += dt;
+    if(player.frameTimer >= 6){ player.frame=(player.frame+1)%4; player.frameTimer=0; }
+  } else player.frame=0;
+
+  // Camera tracking (smooth)
+  const targetCamX = player.x - W/2;
+  const targetCamY = player.y - H/2;
+  const maxCamX = MAP_W*TILE_SIZE - W;
+  const maxCamY = MAP_H*TILE_SIZE - H;
+  camX += (Math.max(0,Math.min(maxCamX,targetCamX)) - camX) * 0.1;
+  camY += (Math.max(0,Math.min(maxCamY,targetCamY)) - camY) * 0.1;
+
+  // Check zone proximity
+  checkZoneProximity();
+
+  // Check avatar proximity for interaction
+  checkAvatarProximity();
+
+  // Publish presence every 3s
+  publishPresence();
+
+  // Animate remote avatars
+  Object.values(remoteAvatars).forEach(ra=>{
+    if(ra.moving) {
+      ra.frameTimer=(ra.frameTimer||0)+dt;
+      if(ra.frameTimer>=6){ ra.frame=(ra.frame+1)%4; ra.frameTimer=0; }
+    }
+  });
+}
+
+function render() {
+  C.width=W; C.height=H; // Only resize if needed — done on resize event
+
+  const tod = getDayFraction();
+
+  // Sky
+  drawSky(ctx, tod);
+
+  // Apply camera transform
+  ctx.save();
+  ctx.translate(-camX, -camY);
+
+  // PASS 1: Ground tiles
+  const startCol=Math.max(0,Math.floor(camX/TILE_SIZE)-1);
+  const endCol=Math.min(MAP_W,Math.ceil((camX+W)/TILE_SIZE)+1);
+  const startRow=Math.max(0,Math.floor(camY/TILE_SIZE)-1);
+  const endRow=Math.min(MAP_H,Math.ceil((camY+H)/TILE_SIZE)+1);
+
+  for(let row=startRow; row<endRow; row++){
+    for(let col=startCol; col<endCol; col++){
+      drawTile(ctx, col, row, col*TILE_SIZE, row*TILE_SIZE, tod);
+    }
+  }
+
+  // PASS 2: Tile decorations (flowers, ponds, bridges, trees — below player)
+  for(let row=startRow; row<endRow; row++){
+    for(let col=startCol; col<endCol; col++){
+      const t=ISLAND_MAP[row]?.[col];
+      if(t!==TILE.TREE) drawTileDecoration(ctx, col, row, col*TILE_SIZE, row*TILE_SIZE, tod);
+    }
+  }
+
+  // PASS 3: Zone buildings + dock (depth sorted by Y)
+  const dockCol=22, dockRow=12;
+  const drawables=[];
+  ZONES.forEach(z=>{
+    const done=isZoneDone(z.id);
+    drawables.push({ y:z.ty*TILE_SIZE+TILE_SIZE*2.5, fn:()=>drawZoneBuilding(ctx,z,z.tx*TILE_SIZE,z.ty*TILE_SIZE,done,tod) });
+  });
+  drawables.push({ y:dockRow*TILE_SIZE+TILE_SIZE, fn:()=>drawDock(ctx,dockCol*TILE_SIZE,dockRow*TILE_SIZE,tod) });
+  drawables.sort((a,b)=>a.y-b.y);
+  drawables.forEach(d=>d.fn());
+
+  // PASS 4: Remote avatars (sorted by Y)
+  const allAvatars=[];
+  Object.entries(remoteAvatars).forEach(([name,ra])=>{
+    if(Date.now()-ra.lastSeen > 30000) return; // Stale
+    const speech=speechBubbles.find(b=>b.name===name&&Date.now()<b.expires);
+    allAvatars.push({ y:ra.y, fn:()=>drawAvatar(ctx,ra.cfg||{},ra.x,ra.y,ra.dir||'down',ra.frame||0,false,name,ra.cls,speech?.text) });
+  });
+  allAvatars.sort((a,b)=>a.y-b.y);
+  allAvatars.forEach(a=>a.fn());
+
+  // PASS 5: Local player
+  if(!visitingIsland){
+    const speech=speechBubbles.find(b=>b.name===hero.name&&Date.now()<b.expires);
+    drawAvatar(ctx, hero, player.x, player.y, player.dir, player.frame, true, hero.name, hero.cls, speech?.text);
+  }
+
+  // PASS 6: Tree tops (over everything)
+  for(let row=startRow; row<endRow; row++){
+    for(let col=startCol; col<endCol; col++){
+      const t=ISLAND_MAP[row]?.[col];
+      if(t===TILE.TREE) drawTileDecoration(ctx, col, row, col*TILE_SIZE, row*TILE_SIZE, tod);
+    }
+  }
+
+  ctx.restore();
+
+  // PASS 7: Atmosphere overlay (time-of-day tint)
+  if(tod < 0.15) { // Dawn blue tint
+    ctx.fillStyle=`rgba(20,40,100,${0.25*(1-tod/0.15)})`;
+    ctx.fillRect(0,0,W,H);
+  } else if(tod > 0.85) { // Dusk orange
+    ctx.fillStyle=`rgba(80,30,10,${0.2*((tod-0.85)/0.15)})`;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  // Clean up expired speech bubbles
+  speechBubbles=speechBubbles.filter(b=>Date.now()<b.expires);
+}
+
+// ═══════════════════════════════════════════════════════
+// PROXIMITY CHECKS
+// ═══════════════════════════════════════════════════════
+function checkZoneProximity() {
+  nearestZone = null;
+  const hint=document.getElementById('zoneHint');
+  // Dock check
+  const dockPx=(22+0.5)*TILE_SIZE, dockPy=(12+0.5)*TILE_SIZE;
+  if(dist(player.x,player.y,dockPx,dockPy)<TILE_SIZE*2) {
+    nearestZone='dock';
+    hint.textContent='⛵ Press E or tap to visit classmates';
+    hint.style.display='block'; return;
+  }
+  for(const z of ZONES){
+    const zx=(z.tx+1)*TILE_SIZE, zy=(z.ty+1.25)*TILE_SIZE;
+    if(dist(player.x,player.y,zx,zy)<TILE_SIZE*2.2){
+      nearestZone=z;
+      const done=isZoneDone(z.id);
+      hint.textContent=`${z.ico} ${z.name} — ${done?'✅ Completed':'Press E or tap to enter'}`;
+      hint.style.display='block'; return;
+    }
+  }
+  hint.style.display='none';
+}
+
+let proximityTriggered={};
+function checkAvatarProximity() {
+  if(dockOpen) return;
+  const RADIUS=72;
+  Object.entries(remoteAvatars).forEach(([name,ra])=>{
+    if(Date.now()-ra.lastSeen>15000) return;
+    const d=dist(player.x,player.y,ra.x,ra.y);
+    if(d<RADIUS && !proximityTriggered[name]) {
+      proximityTriggered[name]=true;
+      showInteractBubble(name, ra);
+    } else if(d>=RADIUS) {
+      proximityTriggered[name]=false;
+      if(document.getElementById('interactBubble')._target===name)
+        hideInteractBubble();
+    }
+  });
+}
+
+function dist(x1,y1,x2,y2){ return Math.sqrt((x2-x1)**2+(y2-y1)**2); }
+
+// ═══════════════════════════════════════════════════════
+// INTERACTION BUBBLE
+// ═══════════════════════════════════════════════════════
+function showInteractBubble(name, ra) {
+  const bubble = document.getElementById('interactBubble');
+  bubble._target = name;
+  const firstName = name.split(' ')[0];
+  bubble.className='interact-bubble';
+  bubble.innerHTML=`
+    <div class="bubble-name">👋 ${firstName} is nearby!</div>
+    <div class="bubble-actions">
+      <button class="bub-btn" onclick="doWave('${name}')">👋 Wave</button>
+      <button class="bub-btn gold" onclick="doStar('${name}')">⭐ Give Star</button>
+      <button class="bub-btn green" onclick="showCompliments('${name}')">💬 Compliment</button>
+      <button class="bub-btn purple" onclick="visitIsland('${name}')">🏝️ Visit Island</button>
+    </div>`;
+  bubble.style.cssText='display:block;bottom:120px;left:50%;transform:translateX(-50%)';
+  setTimeout(()=>hideInteractBubble(), 8000);
+}
+
+function hideInteractBubble() {
+  const b=document.getElementById('interactBubble');
+  b.style.display='none'; b._target=null;
+}
+
+function showCompliments(targetName) {
+  const bubble=document.getElementById('interactBubble');
+  const firstName=targetName.split(' ')[0];
+  bubble.innerHTML=`
+    <div class="bubble-name">💬 Compliment ${firstName}</div>
+    <div class="compliment-list">
+      ${COMPLIMENTS.map(c=>`<div class="comp-item" onclick="sendCompliment('${targetName}','${c}')">${c}</div>`).join('')}
+    </div>`;
+}
+
+function triggerNearestInteract() {
+  const nearest = Object.entries(remoteAvatars)
+    .filter(([n,r])=>Date.now()-r.lastSeen<15000)
+    .sort(([,a],[,b])=>dist(player.x,player.y,a.x,a.y)-dist(player.x,player.y,b.x,b.y))[0];
+  if(nearest && dist(player.x,player.y,nearest[1].x,nearest[1].y)<100)
+    showInteractBubble(nearest[0],nearest[1]);
+}
+
+function triggerNearestZone() {
+  if(nearestZone && nearestZone!=='dock') enterZone(nearestZone);
+  else if(nearestZone==='dock') toggleDock();
+}
+
+// ═══════════════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════════════
+async function doWave(targetName) {
+  const cd=interactCooldowns[`wave_${targetName}`];
+  if(cd&&Date.now()<cd){ showToast('⏳ Wait a moment!'); return; }
+  interactCooldowns[`wave_${targetName}`]=Date.now()+5000;
+  addSpeechBubble(hero.name,'👋 Hiiii!',2500);
+  hideInteractBubble();
+  await firebaseInteract('wave',targetName,'👋 Hiiii!');
+  showToast(`👋 Waved at ${targetName.split(' ')[0]}!`);
+}
+
+async function doStar(targetName) {
+  const today=new Date().toDateString();
+  const cdKey=`star_${targetName}_${today}`;
+  if(localStorage.getItem(cdKey)){ showToast('⭐ Already gave a star today!'); return; }
+  localStorage.setItem(cdKey,'1');
+  hideInteractBubble();
+  addSpeechBubble(hero.name,'⭐ Here\'s a star!',3000);
+  await firebaseInteract('star',targetName,'⭐');
+  // Award 1 SP to recipient via Apps Script
+  try {
+    fetch(SCRIPT_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'star',from:hero.name,to:targetName,cls:hero.cls})});
+  } catch(e){}
+  showToast(`⭐ Gave a star to ${targetName.split(' ')[0]}!`);
+}
+
+async function sendCompliment(targetName, text) {
+  const cd=interactCooldowns[`comp_${targetName}`];
+  if(cd&&Date.now()<cd){ showToast('⏳ Wait 30s between compliments!'); return; }
+  interactCooldowns[`comp_${targetName}`]=Date.now()+30000;
+  hideInteractBubble();
+  addSpeechBubble(hero.name,text.split(' ').slice(0,3).join(' ')+'…',4000);
+  await firebaseInteract('compliment',targetName,text);
+  // Log compliment to Apps Script (teacher can see)
+  try {
+    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'compliment',from:hero.name,to:targetName,msg:text,cls:hero.cls})});
+  } catch(e){}
+  showToast(`💬 Sent compliment to ${targetName.split(' ')[0]}!`);
+}
+
+function addSpeechBubble(name, text, duration=3000) {
+  speechBubbles=speechBubbles.filter(b=>b.name!==name);
+  speechBubbles.push({name, text, expires:Date.now()+duration});
+}
+
+async function firebaseInteract(type,to,msg) {
+  if(!firebaseOK) return;
+  const id=`${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+  await db.ref(`interactions/${id}`).set({from:hero.name,to,type,msg,ts:Date.now()});
+  // Auto-delete after 10s
+  setTimeout(()=>db.ref(`interactions/${id}`).remove().catch(()=>{}),10000);
+}
+
+// ═══════════════════════════════════════════════════════
+// INCOMING INTERACTIONS LISTENER
+// ═══════════════════════════════════════════════════════
+function listenForInteractions() {
+  if(!firebaseOK) return;
+  db.ref('interactions').on('child_added', snap=>{
+    const d=snap.val();
+    if(!d||d.to!==hero.name) return;
+    if(Date.now()-d.ts>15000) return; // Ignore stale
+    const from=d.from.split(' ')[0];
+    if(d.type==='wave')       { showToast(`👋 ${from} waved at you!`); addSpeechBubble(d.from,'👋',2000); }
+    if(d.type==='star')       { showToast(`⭐ ${from} gave you a star!`); document.getElementById('hudSP').textContent=parseInt(document.getElementById('hudSP').textContent)+1; }
+    if(d.type==='compliment') { showToast(`💬 ${from}: "${d.msg}"`); addSpeechBubble(d.from,d.msg.slice(0,20),5000); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// VISIT SYSTEM
+// ═══════════════════════════════════════════════════════
+async function visitIsland(ownerName) {
+  hideInteractBubble(); closePanel();
+  const overlay=document.getElementById('boatOverlay');
+  document.getElementById('boatMsg').textContent=`Sailing to ${ownerName.split(' ')[0]}'s island…`;
+  document.getElementById('boatSub').textContent='Hold on tight!';
+  overlay.style.display='flex';
+  await new Promise(r=>setTimeout(r,2000));
+  // Log visitor stamp
+  if(firebaseOK) {
+    const dateKey=new Date().toDateString().replace(/ /g,'_');
+    await db.ref(`visitors/${ownerName}/${hero.name}_${dateKey}`).set({ts:Date.now(),name:hero.name}).catch(()=>{});
+  }
+  visitingIsland=ownerName;
+  // Reset player to spawn
+  player.x=9*TILE_SIZE+TILE_SIZE/2; player.y=5*TILE_SIZE+TILE_SIZE/2;
+  overlay.style.display='none';
+  document.getElementById('visitingTag').style.display='block';
+  document.getElementById('visitingName').textContent=ownerName.split(' ')[0]+"'s";
+  document.getElementById('goHomeBtn').style.display='block';
+  document.getElementById('dockGoHome').style.display='block';
+  showToast(`🏝️ Welcome to ${ownerName.split(' ')[0]}'s island!`);
+}
+
+function goHome() {
+  closePanel();
+  const overlay=document.getElementById('boatOverlay');
+  document.getElementById('boatMsg').textContent='Heading home…';
+  document.getElementById('boatSub').textContent='Your island awaits!';
+  overlay.style.display='flex';
+  setTimeout(()=>{
+    visitingIsland=null;
+    player.x=9*TILE_SIZE+TILE_SIZE/2; player.y=5*TILE_SIZE+TILE_SIZE/2;
+    overlay.style.display='none';
+    document.getElementById('visitingTag').style.display='none';
+    document.getElementById('goHomeBtn').style.display='none';
+    document.getElementById('dockGoHome').style.display='none';
+    showToast('🏠 Welcome home!');
+  },1800);
+}
+
+// ═══════════════════════════════════════════════════════
+// DOCK PANEL
+// ═══════════════════════════════════════════════════════
+function toggleDock() {
+  dockOpen=!dockOpen;
+  const panel=document.getElementById('dockPanel');
+  panel.classList.toggle('open',dockOpen);
+  if(dockOpen) renderDock();
+}
+function closePanel(){ dockOpen=false; document.getElementById('dockPanel').classList.remove('open'); }
+
+function renderDock() {
+  const list=document.getElementById('dockList');
+  const allStudents=Object.entries(remoteAvatars);
+  const online=allStudents.filter(([n,r])=>Date.now()-r.lastSeen<20000);
+  const offline=allStudents.filter(([n,r])=>Date.now()-r.lastSeen>=20000);
+
+  if(!allStudents.length){
+    list.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.4);font-size:13px;font-weight:700">No classmates loaded yet…<br>They\'ll appear when they log in!</div>';
+    return;
+  }
+
+  const renderStudent=([name,ra],isOnline)=>{
+    const cfg=CLASS_CFG[ra.cls||hero.cls]||{col:'#888'};
+    const firstName=name.split(' ')[0];
+    return `<div class="dock-student" onclick="visitIsland('${name}')">
+      <div class="dock-av" style="--cc:${cfg.col}">
+        <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">${buildMiniSVG(ra.cfg||{})}</svg>
+      </div>
+      <div class="dock-info">
+        <div class="dock-name">${firstName}</div>
+        <div class="dock-cls" style="--cc:${cfg.col}">${ra.cls||''}</div>
+        <div class="dock-status">
+          <div class="${isOnline?'online-dot':'offline-dot'}"></div>
+          <span class="dock-status-txt">${isOnline?'Online now':'Offline'}</span>
+        </div>
+      </div>
+      ${isOnline?`<button class="dock-visit-btn" onclick="event.stopPropagation();visitIsland('${name}')">Visit</button>`:''}
+    </div>`;
+  };
+
+  list.innerHTML=
+    (online.length?`<div style="font-size:10px;font-weight:800;letter-spacing:1px;color:rgba(60,255,138,.7);padding:4px 0 8px;text-transform:uppercase">Online (${online.length})</div>`+online.map(s=>renderStudent(s,true)).join(''):'') +
+    (offline.length?`<div style="font-size:10px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.25);padding:12px 0 8px;text-transform:uppercase">Offline</div>`+offline.slice(0,10).map(s=>renderStudent(s,false)).join(''):'');
+}
+
+// Mini SVG for dock avatars
+function buildMiniSVG(cfg) {
+  const sk=SKINS[cfg.skin||0], hc=HAIR_C[cfg.hairCol||0];
+  const shirt=SHIRTS[cfg.shirtIdx||0]||'#3CB8FF', ec=EYE_C[cfg.eyeCol||0];
+  return `
+    <ellipse cx="100" cy="175" rx="55" ry="35" fill="${shirt}"/>
+    <rect x="87" y="118" width="26" height="20" rx="8" fill="${sk}"/>
+    <ellipse cx="100" cy="100" rx="54" ry="58" fill="${sk}"/>
+    <ellipse cx="100" cy="68" rx="48" ry="24" fill="${hc}"/>
+    <path d="M52 90 Q48 68 58 50 Q72 28 100 26 Q128 28 142 50 Q152 68 148 90" fill="${hc}"/>
+    <ellipse cx="80" cy="98" rx="13" ry="15" fill="white"/>
+    <ellipse cx="120" cy="98" rx="13" ry="15" fill="white"/>
+    <circle cx="81" cy="100" r="8" fill="${ec}"/>
+    <circle cx="121" cy="100" r="8" fill="${ec}"/>
+    <circle cx="83" cy="97" r="2.5" fill="white"/>
+    <circle cx="123" cy="97" r="2.5" fill="white"/>
+    <path d="M80 118 Q100 132 120 118" stroke="#b03020" stroke-width="2.5" fill="rgba(255,130,110,0.2)" stroke-linecap="round"/>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+// ZONE ENTRY
+// ═══════════════════════════════════════════════════════
+function enterZone(zone) {
+  if(visitingIsland){ showToast('🏝️ You can\'t study on someone else\'s island!'); return; }
+  const p=new URLSearchParams({hero:hero.name,cls:hero.cls,zone:zone.id,returnTo:'island-world.html'});
+  window.location.href=`${zone.file}?${p}`;
+}
+
+// ═══════════════════════════════════════════════════════
+// FIREBASE PRESENCE
+// ═══════════════════════════════════════════════════════
+let lastPublish=0;
+async function publishPresence() {
+  if(!firebaseOK) return;
+  if(Date.now()-lastPublish < 3000) return;
+  lastPublish=Date.now();
+  const cfg={skin:hero.skin||0,hairCol:hero.hairCol||0,hairStyle:hero.hairStyle||0,
+    eyeCol:hero.eyeCol||0,shirtIdx:hero.shirtIdx||0};
+  await db.ref(`presence/${hero.name}`).set({
+    x:Math.round(player.x), y:Math.round(player.y),
+    dir:player.dir, cfg, cls:hero.cls,
+    island:visitingIsland||hero.name, ts:Date.now()
+  }).catch(()=>{});
+}
+
+function listenPresence() {
+  if(!firebaseOK) return;
+  db.ref('presence').on('value', snap=>{
+    const all=snap.val()||{};
+    Object.entries(all).forEach(([name,data])=>{
+      if(name===hero.name) return;
+      if(data.cls!==hero.cls) return; // Only show same-class avatars (privacy + performance)
+      remoteAvatars[name]={
+        x:data.x, y:data.y, dir:data.dir||'down',
+        cfg:data.cfg||{}, cls:data.cls,
+        frame:remoteAvatars[name]?.frame||0,
+        frameTimer:remoteAvatars[name]?.frameTimer||0,
+        lastSeen:data.ts||Date.now()
+      };
+    });
+    // Update dock if open
+    if(dockOpen) renderDock();
+  });
+
+  // Listen for visitor stamps on my island
+  db.ref(`visitors/${hero.name}`).on('value', snap=>{
+    const stamps=snap.val()||{};
+    const today=new Date().toDateString().replace(/ /g,'_');
+    const todayVisitors=Object.entries(stamps)
+      .filter(([k])=>k.includes(today))
+      .map(([k,v])=>v.name?.split(' ')[0]||k.split('_')[0]);
+    if(todayVisitors.length){
+      document.getElementById('stampNames').textContent=todayVisitors.join(' · ');
+      const notif=document.getElementById('stampNotif');
+      notif.style.display='block';
+      setTimeout(()=>notif.style.display='none', 6000);
+    }
+  });
+}
+
+// Disconnect cleanly
+window.addEventListener('beforeunload',()=>{
+  if(firebaseOK&&hero.name) db.ref(`presence/${hero.name}`).remove().catch(()=>{});
+});
+
+// ═══════════════════════════════════════════════════════
+// PROGRESS
+// ═══════════════════════════════════════════════════════
+function isZoneDone(id){ return !!(progress[id]?.master); }
+function isZoneStarted(id){ return !!(progress[id]?.apprentice); }
+
+// ═══════════════════════════════════════════════════════
+// INPUT HANDLING
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown', e=>{
+  keys[e.key]=true;
+  if(e.key==='e'||e.key==='E'){
+    if(nearestZone==='dock') toggleDock();
+    else if(nearestZone) enterZone(nearestZone);
+  }
+  if(e.key==='Escape'){ closePanel(); hideInteractBubble(); }
+});
+document.addEventListener('keyup', e=>{ keys[e.key]=false; });
+
+// Joystick
+const joyEl=document.getElementById('joystick');
+const joyKnob=document.getElementById('joystickKnob');
+joyEl.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  const t=e.touches[0];
+  const r=joyEl.getBoundingClientRect();
+  joystickOrigin={x:r.left+r.width/2, y:r.top+r.height/2};
+  joystickActive=true;
+},{passive:false});
+joyEl.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  const t=e.touches[0];
+  const dx=t.clientX-joystickOrigin.x, dy=t.clientY-joystickOrigin.y;
+  const len=Math.sqrt(dx*dx+dy*dy), maxR=36;
+  const nx=len>maxR?dx/len*maxR:dx, ny=len>maxR?dy/len*maxR:dy;
+  joyX=nx/maxR; joyY=ny/maxR;
+  joyKnob.style.transform=`translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+},{passive:false});
+joyEl.addEventListener('touchend', ()=>{
+  joystickActive=false; joyX=0; joyY=0;
+  joyKnob.style.transform='translate(-50%,-50%)';
+});
+
+// Canvas click (zone buildings + dock)
+C.addEventListener('click', e=>{
+  const wx=e.clientX+camX, wy=e.clientY+camY;
+  // Dock
+  const dockPx=22*TILE_SIZE, dockPy=12*TILE_SIZE;
+  if(wx>=dockPx&&wx<dockPx+TILE_SIZE&&wy>=dockPy&&wy<dockPy+TILE_SIZE){ toggleDock(); return; }
+  // Zones
+  for(const z of ZONES){
+    const zx=z.tx*TILE_SIZE, zy=z.ty*TILE_SIZE;
+    if(wx>=zx&&wx<zx+TILE_SIZE*2&&wy>=zy&&wy<zy+TILE_SIZE*2.5){
+      enterZone(z); return;
+    }
+  }
+});
+
+window.addEventListener('resize',()=>{ W=window.innerWidth; H=window.innerHeight; });
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ═══════════════════════════════════════════════════════
+// DETECT TOUCH DEVICE
+// ═══════════════════════════════════════════════════════
+function isTouchDevice(){ return 'ontouchstart' in window||navigator.maxTouchPoints>0; }
+function setupControls(){
+  if(isTouchDevice()){
+    document.getElementById('joystick').style.display='block';
+    document.getElementById('actionBtns').style.display='flex';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// RETURN FROM COMPONENT
+// ═══════════════════════════════════════════════════════
+function checkReturn(){
+  const p=new URLSearchParams(location.search);
+  const score=p.get('score'), zone=p.get('zone');
+  if(score&&zone){
+    const pct=parseInt(score);
+    if(!progress[zone]) progress[zone]={};
+    if(pct>=60) progress[zone].apprentice=true;
+    if(pct>=75) progress[zone].scholar=true;
+    if(pct>=90){ progress[zone].master=true; showToast('🏆 Zone Complete! Great work!'); }
+    localStorage.setItem(`cton_prog_${hero.name}`,JSON.stringify(progress));
+    history.replaceState({},'',location.pathname);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// BOOT SEQUENCE
+// ═══════════════════════════════════════════════════════
+async function boot(){
+  setLoad(10,'Loading hero data…');
+
+  // Load hero
+  const savedHero=localStorage.getItem('cton_hero');
+  if(!savedHero){
+    window.location.href='english-island.html';
+    return;
+  }
+  try{ Object.assign(hero,JSON.parse(savedHero)); }catch(e){}
+  if(!hero.name||!hero.cls){ window.location.href='english-island.html'; return; }
+
+  // Load progress + tokens
+  const savedProg=localStorage.getItem(`cton_prog_${hero.name}`);
+  if(savedProg) try{ Object.assign(progress,JSON.parse(savedProg)); }catch(e){}
+  tokens=parseInt(localStorage.getItem(`cton_tok_${hero.name}`)||'0');
+
+  document.getElementById('hudSP').textContent = Object.keys(progress).reduce((s,k)=>{
+    const p=progress[k]||{}; return s+(p.apprentice?5:0)+(p.scholar?5:0)+(p.master?10:0);
+  },0);
+  document.getElementById('hudTok').textContent = tokens;
+
+  setLoad(30,'Connecting to Firebase…');
+
+  // Init Firebase
+  try{
+    if(FIREBASE_CONFIG.apiKey==='PASTE_YOUR_API_KEY_HERE') throw new Error('Not configured');
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.database();
+    // Test connection
+    await db.ref('.info/connected').once('value');
+    firebaseOK=true;
+    setLoad(60,'Syncing with classmates…');
+    listenPresence();
+    listenForInteractions();
+    await publishPresence();
+  }catch(err){
+    console.warn('Firebase not configured or unavailable:', err.message);
+    firebaseOK=false;
+    showToast('⚠️ Firebase not configured — solo mode');
+  }
+
+  setLoad(80,'Building island…');
+
+  // Pre-render hero avatar
+  renderAvatarToCanvas(hero, 128);
+
+  // Load zone images
+  ZONES.forEach(z=>{ const img=new Image(); img.src=z.photo; zoneImages[z.id]=img; });
+
+  setLoad(95,'Starting world…');
+  await new Promise(r=>setTimeout(r,300));
+
+  checkReturn();
+  setupControls();
+
+  // Hide loading, show game
+  document.getElementById('loading').style.opacity='0';
+  setTimeout(()=>document.getElementById('loading').style.display='none',500);
+
+  setLoad(100,'Ready!');
+  W=window.innerWidth; H=window.innerHeight;
+  requestAnimationFrame(gameLoop);
+}
+
+function setLoad(pct, msg){
+  document.getElementById('ldFill').style.width=pct+'%';
+  document.getElementById('ldMsg').textContent=msg;
+}
+
+boot();
+</script>
+</body>
+</html>
