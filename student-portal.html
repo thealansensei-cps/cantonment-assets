@@ -183,6 +183,99 @@ select:disabled{opacity:.4;cursor:not-allowed}
   .island-grid{grid-template-columns:1fr}
   .side-col.left{order:2}.island-col{order:1}.side-col.right{order:3}
 }
+
+/* ══════════════════════════════
+   TEACHER DASHBOARD
+══════════════════════════════ */
+/* Teacher login button — subtle, bottom corner */
+.teacher-btn{position:fixed;bottom:14px;right:14px;z-index:50;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4);font-size:10px;font-weight:700;padding:5px 10px;border-radius:8px;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;letter-spacing:.5px}
+.teacher-btn:hover{background:rgba(255,255,255,.14);color:rgba(255,255,255,.7)}
+
+/* Teacher login modal */
+.t-login-overlay{position:fixed;inset:0;z-index:100;background:rgba(6,14,36,.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.t-login-overlay.show{opacity:1;pointer-events:all}
+.t-login-box{background:#0d1b3e;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:28px 24px;max-width:320px;width:100%;text-align:center}
+.t-login-title{font-family:'Fredoka One',cursive;font-size:22px;color:#fff;margin-bottom:4px}
+.t-login-sub{font-size:12px;color:rgba(255,255,255,.5);font-weight:700;margin-bottom:18px}
+.t-pw-input{width:100%;padding:12px 14px;border:2px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.06);color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;outline:none;transition:border-color .2s;margin-bottom:10px;text-align:center;letter-spacing:3px}
+.t-pw-input:focus{border-color:#2e7dd4}
+.t-pw-input::placeholder{letter-spacing:0;color:rgba(255,255,255,.3)}
+.t-login-err{font-size:12px;color:#ff6b6b;font-weight:700;margin-bottom:10px;display:none}
+.t-login-err.show{display:block}
+.btn-t-enter{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#1a73c8,#2e9ed8);color:#fff;font-family:'Fredoka One',cursive;font-size:17px;cursor:pointer;margin-bottom:8px;transition:filter .15s}
+.btn-t-enter:hover{filter:brightness(1.1)}
+.btn-t-cancel{width:100%;padding:9px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:transparent;color:rgba(255,255,255,.45);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-t-cancel:hover{border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.7)}
+
+/* Dashboard screen */
+#dash-screen{display:none;width:100%;max-width:1100px;animation:riseCard .5s ease both}
+#dash-screen.show{display:block}
+.dash-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;flex-wrap:wrap}
+.dash-title{font-family:'Fredoka One',cursive;font-size:22px;color:#fff}
+.dash-title span{color:var(--gold)}
+.dash-meta{font-size:11px;color:rgba(255,255,255,.45);font-weight:700}
+.btn-dash-logout{background:rgba(255,107,107,.2);border:1px solid rgba(255,107,107,.35);color:#ffaaaa;font-size:11px;font-weight:800;border-radius:20px;padding:4px 12px;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s}
+.btn-dash-logout:hover{background:rgba(255,107,107,.35);color:#fff}
+
+/* Stat strip */
+.dash-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.ds-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;text-align:center}
+.ds-val{font-family:'Fredoka One',cursive;font-size:28px;color:#fff}
+.ds-lbl{font-size:10px;font-weight:800;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.ds-sub{font-size:11px;font-weight:700;margin-top:4px}
+.text-green{color:#2ecc71}.text-red{color:#ff6b6b}.text-gold{color:var(--gold)}
+
+/* Dash grid */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.dash-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:16px;overflow:hidden}
+.dash-card.full{grid-column:1/-1}
+.dc-title{font-family:'Fredoka One',cursive;font-size:14px;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.dc-title::after{content:'';flex:1;height:1px;background:rgba(255,204,0,.15)}
+
+/* Class filter tabs */
+.dash-class-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.dct{padding:4px 10px;border-radius:8px;font-size:10px;font-weight:800;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.55);cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif}
+.dct.active{background:rgba(46,125,212,.3);border-color:#2e7dd4;color:#fff}
+
+/* Student table */
+.stu-table{width:100%;border-collapse:collapse;font-size:11px}
+.stu-table th{padding:6px 8px;text-align:left;font-size:9px;font-weight:800;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.08)}
+.stu-table td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.8);font-weight:600}
+.stu-table tr:last-child td{border-bottom:none}
+.stu-table tr:hover td{background:rgba(255,255,255,.04)}
+.badge-done{background:rgba(46,204,113,.15);color:#2ecc71;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:800}
+.badge-miss{background:rgba(255,107,107,.15);color:#ff6b6b;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:800}
+.badge-part{background:rgba(255,204,0,.12);color:var(--gold);border-radius:5px;padding:1px 6px;font-size:9px;font-weight:800}
+.badge-none{background:rgba(255,255,255,.07);color:rgba(255,255,255,.35);border-radius:5px;padding:1px 6px;font-size:9px;font-weight:800}
+
+/* Inactive alert list */
+.inactive-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto}
+.inactive-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);border-radius:9px}
+.inactive-name{font-size:11px;font-weight:800;color:#fff;flex:1}
+.inactive-cls{font-size:10px;color:rgba(255,255,255,.4);font-weight:700}
+.inactive-days{font-size:10px;font-weight:800;color:#ff6b6b}
+
+/* Progress chart bars */
+.prog-chart{display:flex;flex-direction:column;gap:8px}
+.prog-row{display:flex;align-items:center;gap:8px}
+.prog-label{font-size:10px;font-weight:800;color:rgba(255,255,255,.7);width:80px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.prog-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.prog-val{font-family:'Fredoka One',cursive;font-size:11px;color:#fff;width:28px;text-align:right;flex-shrink:0}
+
+/* Login timeline */
+.timeline{display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto}
+.tl-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.04)}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tl-name{font-size:11px;font-weight:700;color:#fff;flex:1}
+.tl-cls{font-size:9px;color:rgba(255,255,255,.4);font-weight:700}
+.tl-time{font-size:10px;color:rgba(255,255,255,.5);font-weight:600;white-space:nowrap}
+
+@media(max-width:700px){
+  .dash-stats{grid-template-columns:repeat(2,1fr)}
+  .dash-grid{grid-template-columns:1fr}
+  .dash-card.full{grid-column:1}
+}
 </style>
 </head>
 <body>
@@ -320,6 +413,103 @@ select:disabled{opacity:.4;cursor:not-allowed}
 </div>
 
 <div class="footer">🏫 Cantonment Primary School · P4 English 2026</div>
+</div>
+
+<!-- TEACHER ACCESS BUTTON -->
+<button class="teacher-btn" onclick="openTeacherLogin()">🔑 Teacher</button>
+
+<!-- TEACHER LOGIN MODAL -->
+<div class="t-login-overlay" id="t-login-overlay">
+  <div class="t-login-box">
+    <div style="font-size:36px;margin-bottom:8px">👩‍🏫</div>
+    <div class="t-login-title">Teacher Access</div>
+    <div class="t-login-sub">Enter teacher password to view dashboard</div>
+    <input class="t-pw-input" type="password" id="t-pw" placeholder="Password" onkeydown="if(event.key==='Enter')doTeacherLogin()">
+    <div class="t-login-err" id="t-pw-err">Incorrect password. Try again.</div>
+    <button class="btn-t-enter" onclick="doTeacherLogin()">🚀 Enter Dashboard</button>
+    <button class="btn-t-cancel" onclick="closeTeacherLogin()">Cancel</button>
+  </div>
+</div>
+
+<!-- TEACHER DASHBOARD SCREEN -->
+<div class="page" id="dash-screen" style="display:none;position:relative;z-index:1;padding:16px">
+  <div style="width:100%;max-width:1100px">
+    <div class="dash-topbar">
+      <div>
+        <div class="dash-title">📊 Teacher <span>Dashboard</span></div>
+        <div class="dash-meta" id="dash-meta">Cantonment Primary · P4 English 2026</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="dash-class-tabs" id="dash-class-tabs" style="margin-bottom:0"></div>
+        <button class="btn-dash-logout" onclick="doTeacherLogout()">← Exit</button>
+      </div>
+    </div>
+
+    <!-- STAT STRIP -->
+    <div class="dash-stats">
+      <div class="ds-card">
+        <div class="ds-val" id="ds-total-students">0</div>
+        <div class="ds-lbl">Total Students</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-val text-green" id="ds-logged-in">0</div>
+        <div class="ds-lbl">Logged In This Week</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-val text-red" id="ds-inactive">0</div>
+        <div class="ds-lbl">Not Yet Active</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-val text-gold" id="ds-completed">0%</div>
+        <div class="ds-lbl">Exercises Completed</div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+
+      <!-- STUDENT TABLE — scores + login timestamp -->
+      <div class="dash-card full">
+        <div class="dc-title">📋 Student Overview</div>
+        <div style="overflow-x:auto">
+          <table class="stu-table" id="stu-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Name</th>
+                <th>✏️ GC</th><th>💬 RS</th><th>🖼️ VT</th><th>🔀 SYN</th><th>🔤 SP</th>
+                <th>Total</th><th>Last Login</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="stu-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PROGRESS CHART — top students bar chart -->
+      <div class="dash-card">
+        <div class="dc-title">🏆 Top Students (Total Score)</div>
+        <div class="prog-chart" id="prog-chart"></div>
+      </div>
+
+      <!-- COMPONENT COMPLETION CHART -->
+      <div class="dash-card">
+        <div class="dc-title">📈 Component Completion Rate</div>
+        <div class="prog-chart" id="comp-chart"></div>
+      </div>
+
+      <!-- INACTIVE STUDENTS ALERT -->
+      <div class="dash-card">
+        <div class="dc-title">⚠️ Not Accessed This Week</div>
+        <div class="inactive-list" id="inactive-list"></div>
+      </div>
+
+      <!-- RECENT LOGIN TIMESTAMPS -->
+      <div class="dash-card">
+        <div class="dc-title">🕐 Recent Logins</div>
+        <div class="timeline" id="login-timeline"></div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <script>
@@ -745,6 +935,215 @@ function renderAll(){
     c.appendChild(s);
   }
 })();
+
+// ══════════════════════════════════════════
+// TEACHER DASHBOARD
+// ══════════════════════════════════════════
+const TEACHER_PASSWORD = 'cps2026'; // Change this!
+const CLASS_COLORS = {
+  '4 Care':'#ff5a3c','4 Graciousness':'#3cb8ff',
+  '4 Resilience':'#3cff8a','4 Respect':'#c97fff',
+  '4 Integrity':'#ffb83c','Family':'#ff69b4'
+};
+let dashActiveClass = '4 Care';
+
+function openTeacherLogin(){
+  $('t-login-overlay').classList.add('show');
+  setTimeout(()=>$('t-pw').focus(),200);
+}
+function closeTeacherLogin(){
+  $('t-login-overlay').classList.remove('show');
+  $('t-pw').value='';
+  $('t-pw-err').classList.remove('show');
+}
+function doTeacherLogin(){
+  const pw = $('t-pw').value.trim();
+  if(pw === TEACHER_PASSWORD){
+    closeTeacherLogin();
+    // hide student UI
+    $('login-card').style.display='none';
+    $('island-screen').classList.remove('show');
+    // show dashboard
+    $('dash-screen').style.display='flex';
+    buildDashClassTabs();
+    renderDash(dashActiveClass);
+  } else {
+    $('t-pw-err').classList.add('show');
+    $('t-pw').value='';
+    $('t-pw').focus();
+  }
+}
+function doTeacherLogout(){
+  $('dash-screen').style.display='none';
+  $('login-card').style.display='';
+}
+
+function buildDashClassTabs(){
+  const el = $('dash-class-tabs');
+  el.innerHTML = [...CLASSES,'All'].map(c =>
+    `<button class="dct ${c===dashActiveClass?'active':''}" onclick="switchDashClass('${c}')">${c==='All'?'All Classes':c.replace('4 ','')}</button>`
+  ).join('');
+}
+function switchDashClass(cls){
+  dashActiveClass = cls;
+  buildDashClassTabs();
+  renderDash(cls);
+}
+
+// Get all student data for a class (or all classes)
+function getAllStudentData(cls){
+  const rows = [];
+  const classList = cls==='All' ? CLASSES : [cls];
+  classList.forEach(c => {
+    const students = Object.keys(ROSTER[c]||{});
+    students.forEach(name => {
+      const key = 'stu_'+name.replace(/\s/g,'_')+'_'+c.replace(/\s/g,'_');
+      let d = {}; try{d=JSON.parse(localStorage.getItem(key))||{}}catch(e){}
+      const scores = {};
+      let total = 0;
+      COMP_LIST.forEach(g => {
+        const s = d['score_'+GAMES[g].zone]||0;
+        scores[GAMES[g].zone] = s;
+        total += s;
+      });
+      const doneCount = COMP_LIST.filter(g => GAMES[g].lockable && d['done_'+GAMES[g].zone]).length;
+      const lastLogin  = d['lastLogin'] || null;
+      const thisWeekPts = COMP_LIST.reduce((t,g)=>{
+        return t + (d['week_'+GAMES[g].zone+'_'+weekKey(0)]||0);
+      },0);
+      rows.push({ name, cls:c, scores, total, doneCount, lastLogin, thisWeekPts });
+    });
+  });
+  return rows.sort((a,b)=>b.total-a.total);
+}
+
+function renderDash(cls){
+  const rows = getAllStudentData(cls);
+  const total = rows.length;
+  const now = Date.now();
+  const weekMs = 7*24*60*60*1000;
+  const loggedThisWeek = rows.filter(r => r.lastLogin && (now - r.lastLogin) < weekMs).length;
+  const inactive = rows.filter(r => !r.lastLogin || (now - r.lastLogin) >= weekMs);
+  const totalPossible = rows.length * 4; // 4 lockable components
+  const totalDone = rows.reduce((t,r)=>t+r.doneCount,0);
+  const completionPct = totalPossible > 0 ? Math.round(totalDone/totalPossible*100) : 0;
+
+  // Stat strip
+  $('ds-total-students').textContent = total;
+  $('ds-logged-in').textContent = loggedThisWeek;
+  $('ds-inactive').textContent = inactive.length;
+  $('ds-completed').textContent = completionPct + '%';
+  $('dash-meta').textContent = cls==='All' ? 'All Classes · '+total+' students' : cls+' · '+total+' students · '+new Date().toLocaleDateString('en-SG',{weekday:'long',day:'numeric',month:'long'});
+
+  // Student table
+  const tbody = $('stu-tbody');
+  tbody.innerHTML = rows.map((r,i)=>{
+    const sinceLogin = r.lastLogin ? formatDashTime(r.lastLogin) : 'Never';
+    const statusCls  = !r.lastLogin ? 'badge-none' : (now-r.lastLogin)<weekMs ? 'badge-done' : 'badge-miss';
+    const statusTxt  = !r.lastLogin ? 'Never' : (now-r.lastLogin)<weekMs ? 'Active' : 'Inactive';
+    const shortName  = r.name.split(',')[0].split(' ').slice(0,2).join(' ');
+    const clsBadge   = cls==='All' ? `<span style="font-size:9px;color:${CLASS_COLORS[r.cls]||'#fff'};font-weight:800">${r.cls.replace('4 ','')}</span> ` : '';
+    return `<tr>
+      <td style="color:rgba(255,255,255,.3)">${i+1}</td>
+      <td>${clsBadge}${shortName}</td>
+      <td>${r.scores['gc']||'—'}</td>
+      <td>${r.scores['rs']||'—'}</td>
+      <td>${r.scores['vt']||'—'}</td>
+      <td>${r.scores['syn']||'—'}</td>
+      <td>${r.scores['sp']||'—'}</td>
+      <td style="color:var(--gold);font-family:'Fredoka One',cursive">${r.total}</td>
+      <td style="color:rgba(255,255,255,.5)">${sinceLogin}</td>
+      <td><span class="${statusCls}">${statusTxt}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Top students bar chart (top 8)
+  const top8 = rows.slice(0,8);
+  const maxPts = top8[0]?.total || 1;
+  $('prog-chart').innerHTML = top8.map(r=>{
+    const pct = Math.round(r.total/maxPts*100);
+    const col = CLASS_COLORS[r.cls] || '#2e7dd4';
+    const shortN = r.name.split(',')[0].split(' ').slice(-1)[0];
+    return `<div class="prog-row">
+      <div class="prog-label">${shortN}</div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="prog-val">${r.total}</div>
+    </div>`;
+  }).join('');
+
+  // Component completion chart
+  $('comp-chart').innerHTML = COMP_LIST.filter(g=>GAMES[g].lockable).map(g=>{
+    const done  = rows.filter(r=>r.doneCount>0 && r.scores[GAMES[g].zone]>0).length;
+    const pct   = total>0 ? Math.round(done/total*100) : 0;
+    const colors= {grammar:'#2e9ed8',reported:'#f39c12',vtc:'#2ecc71',synthesis:'#a78bfa',spelling:'#e74c3c'};
+    return `<div class="prog-row">
+      <div class="prog-label">${GAMES[g].icon} ${GAMES[g].name.split(' ')[0]}</div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%;background:${colors[g]||'#2e7dd4'}"></div></div>
+      <div class="prog-val">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // Inactive students
+  const inactiveEl = $('inactive-list');
+  if(inactive.length===0){
+    inactiveEl.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,.35);font-weight:700;padding:8px 0;text-align:center">🎉 All students active this week!</div>`;
+  } else {
+    inactiveEl.innerHTML = inactive.slice(0,20).map(r=>{
+      const days = r.lastLogin ? Math.floor((now-r.lastLogin)/86400000) : null;
+      const daysStr = days===null ? 'Never logged in' : days+'d ago';
+      const shortN = r.name.split(',')[0].split(' ').slice(0,2).join(' ');
+      return `<div class="inactive-row">
+        <span style="font-size:14px">⚠️</span>
+        <div class="inactive-name">${shortN}</div>
+        <div class="inactive-cls">${r.cls.replace('4 ','')}</div>
+        <div class="inactive-days">${daysStr}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Recent logins timeline (sorted by login time, most recent first)
+  const withLogin = rows.filter(r=>r.lastLogin).sort((a,b)=>b.lastLogin-a.lastLogin).slice(0,15);
+  const tlEl = $('login-timeline');
+  if(withLogin.length===0){
+    tlEl.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,.35);font-weight:700;text-align:center;padding:8px">No logins recorded yet.</div>`;
+  } else {
+    tlEl.innerHTML = withLogin.map(r=>{
+      const col = CLASS_COLORS[r.cls]||'#2e7dd4';
+      const shortN = r.name.split(',')[0].split(' ').slice(0,2).join(' ');
+      return `<div class="tl-row">
+        <div class="tl-dot" style="background:${col}"></div>
+        <div class="tl-name">${shortN}</div>
+        <div class="tl-cls">${r.cls.replace('4 ','')}</div>
+        <div class="tl-time">${formatDashTime(r.lastLogin)}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function formatDashTime(ts){
+  if(!ts) return '—';
+  const d = new Date(ts);
+  const diff = (Date.now()-ts)/1000;
+  if(diff<60)  return 'Just now';
+  if(diff<3600)return Math.round(diff/60)+'m ago';
+  if(diff<86400)return Math.round(diff/3600)+'h ago';
+  return d.toLocaleDateString('en-SG',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
+}
+
+// Track login timestamp whenever a student logs in
+const _origDoLogin = doLogin;
+function doLogin(){
+  _origDoLogin.call(this);
+  // After login, record timestamp
+  setTimeout(()=>{
+    if(student.name){
+      const key = 'stu_'+student.name.replace(/\s/g,'_')+'_'+student.cls.replace(/\s/g,'_');
+      let d={}; try{d=JSON.parse(localStorage.getItem(key))||{}}catch(e){}
+      d.lastLogin = Date.now();
+      localStorage.setItem(key, JSON.stringify(d));
+    }
+  },200);
+}
 </script>
 </body>
 </html>
