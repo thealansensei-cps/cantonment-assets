@@ -3,33 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Debate Stage — Reported Speech</title>
+<title>Discovery Lab — Synthesis</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0D0F1A;--surface:#13162A;--surface2:#1A1F36;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#E8EAF6;--muted:rgba(232,234,246,0.45);--accent:#E8A020;--accent2:#F5C842;--teal:#34D399;--coral:#F87171;--radius:18px;--radius-sm:10px}
+:root{--bg:#0D0F1A;--surface:#13162A;--surface2:#1A1F36;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#E8EAF6;--muted:rgba(232,234,246,0.45);--accent:#7C3AED;--accent2:#A78BFA;--teal:#34D399;--coral:#F87171;--radius:18px;--radius-sm:10px}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(232,160,32,.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(52,211,153,.07) 0%,transparent 55%)}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(124,58,237,.12) 0%,transparent 60%)}
 .wrap{max-width:680px;margin:0 auto;padding:20px 16px 56px;position:relative;z-index:1}
 .hdr{text-align:center;padding:28px 0 20px}
-.hdr-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.3);border-radius:99px;padding:5px 14px;margin-bottom:14px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent2)}
-.hdr-logo{width:70px;height:70px;background:linear-gradient(135deg,var(--accent),#D97706);border-radius:24px;display:inline-flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:12px;box-shadow:0 8px 32px rgba(232,160,32,.35);animation:float 4s ease-in-out infinite}
+.hdr-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);border-radius:99px;padding:5px 14px;margin-bottom:14px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent2)}
+.hdr-logo{width:70px;height:70px;background:linear-gradient(135deg,var(--accent),#6D28D9);border-radius:24px;display:inline-flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:12px;box-shadow:0 8px 32px rgba(124,58,237,.35);animation:float 4s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(1deg)}}
 .hdr-title{font-family:'Instrument Serif',serif;font-size:clamp(26px,6vw,42px);font-weight:400;color:#fff;margin-bottom:8px}
 .hdr-title span{color:var(--accent2);font-style:italic}
 .hdr-sub{font-size:13px;color:var(--muted)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)}
-.progress-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.texts-area{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.text-box{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:14px}
+.text-label{font-size:10px;font-weight:800;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.text-body{font-size:13px;line-height:1.7;color:var(--text)}
+.text-body em{color:var(--accent2);font-style:normal;font-weight:700}
+@media(max-width:500px){.texts-area{grid-template-columns:1fr}}
+.progress-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .progress-bar{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .4s}
 .progress-txt{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
-.q-num{font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
-.direct-speech{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px;font-family:'Instrument Serif',serif;font-size:17px;color:#fff;margin-bottom:16px;font-style:italic}
-.q-label{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:12px}
+.q-num{font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.q-text{font-size:15px;color:var(--text);margin-bottom:14px;line-height:1.6}
 .mcq-opts{display:flex;flex-direction:column;gap:8px}
-.mcq-opt{background:var(--surface2);border:1.5px solid var(--border2);border-radius:11px;padding:12px 16px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;font-family:inherit;text-align:left}
-.mcq-opt:hover{border-color:var(--accent);background:rgba(232,160,32,.1);color:#fff}
+.mcq-opt{background:var(--surface2);border:1.5px solid var(--border2);border-radius:11px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;font-family:inherit;text-align:left}
+.mcq-opt:hover{border-color:var(--accent);background:rgba(124,58,237,.1);color:#fff}
 .mcq-opt.correct{border-color:var(--teal);background:rgba(52,211,153,.15);color:var(--teal)}
 .mcq-opt.wrong{border-color:var(--coral);background:rgba(248,113,113,.12);color:var(--coral)}
 .hint-box{display:none;margin-top:12px;padding:11px 14px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:10px;font-size:13px;color:#FBBF24;font-weight:600}
@@ -39,8 +44,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .feedback.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--teal)}
 .feedback.bad{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--coral)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:11px;padding:12px 22px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#D97706);color:#fff;box-shadow:0 4px 18px rgba(232,160,32,.35)}
-.btn-primary:hover{transform:translateY(-2px)}
 .btn-success{background:linear-gradient(135deg,#10B981,#059669);color:#fff;box-shadow:0 4px 18px rgba(16,185,129,.4)}
 .btn-success:hover{transform:translateY(-2px);filter:brightness(1.08)}
 .btn-success:disabled{opacity:.5;cursor:not-allowed;transform:none}
@@ -64,20 +67,23 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <body>
 <div class="wrap">
   <div class="hdr">
-    <div class="hdr-badge">🏛️ Debate Stage</div>
-    <div class="hdr-logo">💬</div>
-    <h1 class="hdr-title">Reported <span>Speech</span></h1>
-    <p class="hdr-sub" id="heroLabel">Choose the correct reported speech</p>
+    <div class="hdr-badge">⚗️ Discovery Lab</div>
+    <div class="hdr-logo">🔀</div>
+    <h1 class="hdr-title">Synthesis <span>Writing</span></h1>
+    <p class="hdr-sub" id="heroLabel">Read two texts and answer questions</p>
   </div>
 
   <div class="card" id="quizCard">
+    <div class="texts-area">
+      <div class="text-box"><div class="text-label">Text 1 — Blog Post</div><div class="text-body">Many students in Singapore spend too much time on screens. Research shows that children aged 7 to 12 spend an average of <em>four hours</em> a day on devices. Experts say this can affect sleep, eyesight and concentration. Parents are encouraged to set <em>screen time limits</em> to protect their children's health.</div></div>
+      <div class="text-box"><div class="text-label">Text 2 — Forum Reply</div><div class="text-body">I disagree that screen time is always harmful. Tablets and computers help children <em>learn interactively</em> and develop digital skills they will need in the future. The key is balance — children should be taught <em>responsible use</em>, not just told to put devices down.</div></div>
+    </div>
     <div class="progress-row">
       <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:10%"></div></div>
       <div class="progress-txt" id="progressTxt">1 / 10</div>
     </div>
     <div class="q-num" id="qNum">Question 1 of 10</div>
-    <div class="direct-speech" id="directSpeech"></div>
-    <div class="q-label">Choose the correct reported speech:</div>
+    <div class="q-text" id="qText"></div>
     <div class="mcq-opts" id="mcqOpts"></div>
     <div class="hint-box" id="hintBox"></div>
     <div class="feedback" id="feedback"></div>
@@ -111,16 +117,16 @@ const hero={name:urlP.get('hero')||'Student',cls:urlP.get('cls')||'',returnTo:ur
 document.getElementById('heroLabel').textContent='Hello, '+hero.name+'! 👋';
 
 const QUESTIONS=[
-  {direct:'"I am going to the library," Ahmad said.',opts:['Ahmad said that he was going to the library.','Ahmad said that he is going to the library.','Ahmad said that I was going to the library.','Ahmad said he will go to the library.'],answer:0,hint:'Change "am" → "was", "I" → "he".'},
-  {direct:'"We have finished our homework," Priya told her mother.',opts:['Priya told her mother that they had finished their homework.','Priya told her mother that we have finished our homework.','Priya told her mother that they have finished their homework.','Priya told her mother that she had finished her homework.'],answer:0,hint:'"have finished" → "had finished". "We" → "they".'},
-  {direct:'"You must submit your work tomorrow," the teacher told the students.',opts:['The teacher told the students that they must submit their work the next day.','The teacher told the students that you must submit your work tomorrow.','The teacher told the students that they had to submit their work the next day.','The teacher told the students that they should submit their work tomorrow.'],answer:2,hint:'"must" → "had to", "tomorrow" → "the next day".'},
-  {direct:'"I will help you with the project," Mei said to Ravi.',opts:['Mei told Ravi that she will help him with the project.','Mei told Ravi that she would help him with the project.','Mei said to Ravi that she would help you with the project.','Mei told Ravi that I would help you with the project.'],answer:1,hint:'"will" → "would", "you" → "him".'},
-  {direct:'"We are going to Sentosa this weekend," Father said.',opts:['Father said that we are going to Sentosa that weekend.','Father said that they were going to Sentosa this weekend.','Father said that they were going to Sentosa that weekend.','Father said that we were going to Sentosa the next weekend.'],answer:2,hint:'"are going" → "were going", "this weekend" → "that weekend".'},
-  {direct:'"You have done very well," Mrs Tan told the class.',opts:['Mrs Tan told the class that you have done very well.','Mrs Tan told the class that they had done very well.','Mrs Tan told the class that they have done very well.','Mrs Tan told the class that we had done very well.'],answer:1,hint:'"have done" → "had done", "you" → "they".'},
-  {direct:'"I cannot find my pencil case," David said.',opts:['David said that he cannot find his pencil case.','David said that he could not find my pencil case.','David said that he could not find his pencil case.','David said that I could not find his pencil case.'],answer:2,hint:'"cannot" → "could not", "my" → "his".'},
-  {direct:'"Do not stay up too late," Mother told me.',opts:['Mother told me to not stay up too late.','Mother told me that do not stay up too late.','Mother told me not to stay up too late.','Mother said to me that I should not stay up too late.'],answer:2,hint:'Commands: "told + person + (not) to + verb".'},
-  {direct:'"Can I borrow your eraser?" Kevin asked Siti.',opts:['Kevin asked Siti if he can borrow her eraser.','Kevin asked Siti could he borrow her eraser.','Kevin asked Siti whether he could borrow her eraser.','Kevin asked Siti that he could borrow her eraser.'],answer:2,hint:'Questions: "asked + if/whether + subject + could".'},
-  {direct:'"The school will hold a sports day next Friday," the principal announced.',opts:['The principal announced that the school would hold a sports day the following Friday.','The principal announced that the school will hold a sports day next Friday.','The principal announced that the school would hold a sports day next Friday.','The principal announced that they will hold a sports day the following Friday.'],answer:0,hint:'"will" → "would", "next Friday" → "the following Friday".'}
+  {q:'What is the main concern raised in Text 1?',opts:["Children do not enjoy using devices","Excessive screen time harms children's health","Parents do not monitor their children enough","Digital skills are not important"],answer:1,hint:'Look for words like "affect sleep, eyesight and concentration".'},
+  {q:'According to Text 1, how many hours do children aged 7–12 spend on devices daily on average?',opts:['Two hours','Three hours','Four hours','Five hours'],answer:2,hint:'Look for the specific number mentioned in Text 1.'},
+  {q:"What is the writer of Text 2's opinion about screen time?",opts:['Screen time should be completely banned','Screen time is always harmful to children','Screen time can be beneficial if used responsibly','Screen time has no effect on children at all'],answer:2,hint:'The writer "disagrees that screen time is always harmful" — what do they suggest instead?'},
+  {q:'Which word in Text 2 is closest in meaning to "in a hands-on, engaging way"?',opts:['responsibly','interactively','balance','digital'],answer:1,hint:'Think about which word suggests learning through doing.'},
+  {q:'Both texts agree that:',opts:['children should not use devices at all','screen time must be completely avoided','some form of control or balance over screen time is needed','devices help children develop important skills'],answer:2,hint:'What does Text 1 say parents should do? What does Text 2 say the key is?'},
+  {q:'Text 1 and Text 2 DIFFER in that:',opts:['Text 1 thinks devices are harmful while Text 2 sees potential benefits','Both texts agree that devices are completely harmless','Text 1 talks about parents while Text 2 talks about teachers','They discuss completely different topics'],answer:0,hint:'What does each text emphasise about devices?'},
+  {q:'The phrase "screen time limits" in Text 1 suggests that parents should:',opts:['buy fewer devices for their children','allow children unlimited access to devices','control how long children use devices','teach children to build their own devices'],answer:2,hint:'What does "limits" mean in this context?'},
+  {q:'Which word from Text 2 has a similar meaning to "in charge of their own use"?',opts:['interactively','balance','responsible','digital'],answer:2,hint:'Which word relates to being careful and thoughtful about actions?'},
+  {q:'Based on both texts, what would be the BEST solution to screen time issues?',opts:['Ban all devices for children under 12','Allow unlimited screen time for learning only','Set time limits and teach children responsible use','Let children decide their own screen time'],answer:2,hint:'Combine the advice from both texts.'},
+  {q:'The word "balance" in Text 2 is closest in meaning to:',opts:['equality between two sides','a healthy mixture of different things','a physical weighing scale','fairness in treating people'],answer:1,hint:'In context, "balance" refers to mixing screen time with other activities.'}
 ];
 
 let qi=0,score=0,answered=false,submitted=false;
@@ -130,32 +136,23 @@ function renderQ(){
   document.getElementById('progressFill').style.width=((qi+1)/QUESTIONS.length*100)+'%';
   document.getElementById('progressTxt').textContent=(qi+1)+' / '+QUESTIONS.length;
   document.getElementById('qNum').textContent='Question '+(qi+1)+' of '+QUESTIONS.length;
-  document.getElementById('directSpeech').textContent=q.direct;
+  document.getElementById('qText').textContent=q.q;
   document.getElementById('hintBox').className='hint-box';
   document.getElementById('feedback').className='feedback';
   answered=false;
-  const optsEl=document.getElementById('mcqOpts');
-  optsEl.innerHTML=q.opts.map((o,i)=>
+  document.getElementById('mcqOpts').innerHTML=q.opts.map((o,i)=>
     `<button class="mcq-opt" onclick="pickOpt(${i},this)">${String.fromCharCode(65+i)}. ${o}</button>`
   ).join('');
 }
 
 function pickOpt(i,btn){
-  if(answered)return;
-  answered=true;
+  if(answered)return;answered=true;
   const q=QUESTIONS[qi];
   const opts=document.querySelectorAll('.mcq-opt');
   opts.forEach(o=>o.style.pointerEvents='none');
-  if(i===q.answer){
-    score++;btn.classList.add('correct');
-    const fb=document.getElementById('feedback');fb.className='feedback show ok';fb.textContent='✅ Correct!';
-  } else {
-    btn.classList.add('wrong');opts[q.answer].classList.add('correct');
-    const fb=document.getElementById('feedback');fb.className='feedback show bad';fb.textContent='❌ Not quite. The correct answer is highlighted.';
-  }
-  setTimeout(()=>{
-    if(qi<QUESTIONS.length-1){qi++;renderQ();}else showResult();
-  },1400);
+  if(i===q.answer){score++;btn.classList.add('correct');const fb=document.getElementById('feedback');fb.className='feedback show ok';fb.textContent='✅ Correct!';}
+  else{btn.classList.add('wrong');opts[q.answer].classList.add('correct');const fb=document.getElementById('feedback');fb.className='feedback show bad';fb.textContent='❌ Not quite. The correct answer is highlighted.';}
+  setTimeout(()=>{if(qi<QUESTIONS.length-1){qi++;renderQ();}else showResult();},1400);
 }
 
 function showHint(){const h=document.getElementById('hintBox');h.textContent='💡 '+QUESTIONS[qi].hint;h.classList.add('show')}
@@ -175,24 +172,11 @@ function showResult(){
 
 async function doSubmit(){
   if(submitted)return;
-  const btn=document.getElementById('submitBtn');
-  btn.disabled=true;btn.textContent='⏳ Submitting...';
+  const btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='⏳ Submitting...';
   submitted=true;
-  const total=QUESTIONS.length,pct=Math.round(score/total*100);
-  const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
-  try{
-    await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-      action:'saveScore',name:hero.name,cls:hero.cls,
-      zone:'rs',topic:'Reported Speech',
-      score,total,stars,coins:score*10,
-      ts:new Date().toISOString()
-    })});
-  }catch(e){console.warn(e)}
-  const ret=hero.returnTo
-    +'?hero='+encodeURIComponent(hero.name)
-    +'&cls='+encodeURIComponent(hero.cls)
-    +'&zone=rs&score='+score+'&total='+total+'&stars='+stars;
-  window.location.href=ret;
+  const total=QUESTIONS.length,pct=Math.round(score/total*100),stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
+  try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'saveScore',name:hero.name,cls:hero.cls,zone:'syn',topic:'Synthesis',score,total,stars,coins:score*10,ts:new Date().toISOString()})})}catch(e){console.warn(e)}
+  window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls)+'&zone=syn&score='+score+'&total='+total+'&stars='+stars;
 }
 
 function restart(){qi=0;score=0;answered=false;submitted=false;document.getElementById('quizCard').style.display='block';document.getElementById('resultScreen').classList.remove('show');renderQ()}
