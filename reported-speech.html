@@ -77,9 +77,26 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   font-family:'Nunito',sans-serif;transition:all .15s;text-decoration:none;
 }
 .btn-island-return:hover{background:rgba(0,212,190,.25);color:#fff}
+
+/* ── HERO BAR ── */
+#heroBar{
+  background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.1);
+  padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  position:relative;z-index:10;
+}
+.hero-badge{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);
+  border-radius:99px;padding:5px 14px;font-size:11px;font-weight:600;color:#34D399}
+.hero-name{font-size:13px;font-weight:700;color:#E8EAF6}
+.hero-cls{font-size:10px;color:rgba(232,234,246,0.45);font-weight:500;margin-top:1px}
+.btn-back-island{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.5);font-size:11px;font-weight:700;border-radius:8px;
+  padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-back-island:hover{background:rgba(255,255,255,.13);color:#fff}
 </style>
 </head>
 <body>
+<!-- ── HERO BAR — shows logged-in student ── -->
+<div id="heroBar"></div>
 
 <div class="game-topbar">
   <div class="gtb-left">
@@ -134,8 +151,30 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwihbBr7sA6LvqLTAUD6wK-xoUgslCkyqWenIWYxnRPidn85ihhqcbwKW8I_dcFF_uzOw/exec';
 const urlP=new URLSearchParams(location.search);
-const hero={name:urlP.get('hero')||'Student',cls:urlP.get('cls')||'',returnTo:urlP.get('returnTo')||'student-portal.html'};
-document.getElementById('heroLabel').textContent='Hello, '+hero.name+'! 👋';
+const _stored=(function(){try{return JSON.parse(sessionStorage.getItem('student')||'{}');}catch(e){return {};}})();
+const hero={name:urlP.get('hero')||_stored.name||'',cls:urlP.get('cls')||_stored.cls||'',returnTo:urlP.get('returnTo')||'student-portal.html'};
+
+// ── Render hero bar ──
+(function(){
+  const bar = document.getElementById('heroBar');
+  if(!bar) return;
+  if(hero.name){
+    bar.innerHTML =
+      '<div class="hero-badge">\u2713 Logged in</div>' +
+      '<div>' +
+        '<div class="hero-name">' + hero.name + '</div>' +
+        '<div class="hero-cls">' + hero.cls + '</div>' +
+      '</div>' +
+      '<div style="margin-left:auto;font-size:10px;color:rgba(232,234,246,.45);letter-spacing:.5px">Scores auto-save on completion</div>' +
+      '<button class="btn-back-island" onclick="goBack()">← Island</button>';
+  } else {
+    bar.innerHTML =
+      '<div style="font-size:12px;color:#FBBF24;font-weight:700">\u26a0\ufe0f Not logged in \u2014 go back to the portal to log in first.</div>' +
+      '<button class="btn-back-island" onclick="window.location.href=hero.returnTo">← Island</button>';
+  }
+})();
+
+
 
 const QUESTIONS=[
   {direct:'"I am going to the library," Ahmad said.',opts:['Ahmad said that he was going to the library.','Ahmad said that he is going to the library.','Ahmad said that I was going to the library.','Ahmad said he will go to the library.'],answer:0,hint:'Change "am" → "was", "I" → "he".'},
