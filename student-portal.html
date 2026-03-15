@@ -150,6 +150,7 @@ select:disabled{opacity:.4;cursor:not-allowed}
 .pin-vtc .pin-head{background:linear-gradient(135deg,#1a8a50,#2ecc71)}
 .pin-synthesis .pin-head{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
 .pin-spelling .pin-head{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+.pin-chat    .pin-head{background:linear-gradient(135deg,#0d9488,#00d4be)}
 
 /* lock badge */
 .lock-badge{position:absolute;top:-6px;right:-6px;background:#ff6b6b;color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(45deg);z-index:2}
@@ -383,6 +384,12 @@ select:disabled{opacity:.4;cursor:not-allowed}
           <div class="pin-head"><span class="pin-head-inner">🔤</span></div>
           <div class="pin-shadow"></div>
         </div>
+
+        <div class="map-pin pin-chat" id="pin-chat" style="left:76%;top:58%" onclick="handlePinClick('chat')">
+          <div class="pin-tooltip"><div class="pin-tooltip-name">💬 Island Hangout</div><div class="pin-tooltip-sub">Chat &amp; play with friends!</div></div>
+          <div class="pin-head"><span class="pin-head-inner">💬</span></div>
+          <div class="pin-shadow"></div>
+        </div>
       </div>
       <div class="tap-hint">👆 Tap a pin to enter that zone</div>
     </div>
@@ -609,10 +616,12 @@ const GAMES = {
   reported:  { file:'reported-speech.html', icon:'💬', name:'Reported Speech', zone:'rs',  lockable:true  },
   vtc:       { file:'visual-text.html',     icon:'🖼️', name:'Visual Text',     zone:'vt',  lockable:true  },
   synthesis: { file:'synthesis.html',       icon:'🔀', name:'Synthesis',       zone:'syn', lockable:true  },
-  spelling:  { file:'spelling.html', icon:'🔤', name:'Spelling', zone:'sp', lockable:false }
+  spelling:  { file:'spelling.html', icon:'🔤', name:'Spelling', zone:'sp', lockable:false },
+  chat:      { file:'chatroom.html', icon:'💬', name:'Hangout',  zone:'',   lockable:false }
 };
 
 const COMP_LIST = ['grammar','reported','vtc','synthesis','spelling'];
+const ALL_PINS  = ['grammar','reported','vtc','synthesis','spelling','chat'];
 const CLASSES   = ['4 Care','4 Graciousness','4 Resilience','4 Respect','4 Integrity','Family'];
 
 // Demo accounts — excluded from leaderboards, rewards and dashboards
@@ -785,9 +794,10 @@ function renderLeaderboard(cls) {
 }
 
 function renderPins() {
-  COMP_LIST.forEach(g => {
+  ALL_PINS.forEach(g => {
     const el = document.getElementById('pin-'+g);
     if(!el) return;
+    if(!GAMES[g]) return;
     const done = isDone(g);
     if(done) {
       el.classList.add('pin-done');
