@@ -69,9 +69,35 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .set-tab.active{background:rgba(74,144,217,.2);border-color:var(--accent);color:var(--accent2)}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e2340;border:1px solid var(--border2);border-radius:11px;padding:11px 22px;font-size:13px;font-weight:600;color:var(--text);transition:transform .3s ease;z-index:999;pointer-events:none;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
+
+.game-topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(13,15,26,.92);backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  padding:8px 16px;display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:0;
+}
+.gtb-left{display:flex;align-items:center;gap:10px}
+.gtb-title{font-family:'Instrument Serif',serif;font-size:16px;color:#fff}
+.btn-island-return{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,212,190,.15);border:1px solid rgba(0,212,190,.35);
+  color:#00d4be;font-size:12px;font-weight:800;
+  border-radius:10px;padding:6px 14px;cursor:pointer;
+  font-family:'Nunito',sans-serif;transition:all .15s;text-decoration:none;
+}
+.btn-island-return:hover{background:rgba(0,212,190,.25);color:#fff}
 </style>
 </head>
 <body>
+
+<div class="game-topbar">
+  <div class="gtb-left">
+    <span style="font-size:20px">🏝️</span>
+    <span class="gtb-title">English Island</span>
+  </div>
+  <button class="btn-island-return" onclick="goBack()">🏝️ Return to Island</button>
+</div>
 <div class="wrap">
   <div class="hdr">
     <div class="hdr-badge">📖 Library Tower</div>
@@ -115,6 +141,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <div class="btn-row" style="justify-content:center;flex-direction:column;align-items:center;gap:10px">
       <button class="btn btn-success" id="submitBtn" onclick="doSubmit()">📤 Submit Score & Return to Island</button>
       <button class="btn btn-ghost" onclick="restart()">↩ Try Again</button>
+      <button class="btn btn-island-return" style="padding:12px 22px;font-size:14px" onclick="goBack()">🏝️ Back to Island</button>
     </div>
   </div>
 </div>
