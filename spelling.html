@@ -28,6 +28,34 @@
   --glow:     0 0 40px rgba(124,110,250,0.18);
   --glow2:    0 0 60px rgba(124,110,250,0.30);
 }
+
+/* ── IDENTITY BAR ── */
+#identityBar{
+  background:var(--surface);border-bottom:1px solid rgba(124,110,250,0.3);
+  padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  position:relative;z-index:10;
+}
+.id-badge{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);
+  border-radius:99px;padding:5px 14px;font-size:11px;font-weight:600;color:var(--teal)}
+.id-name{font-size:13px;font-weight:700;color:var(--text)}
+.id-cls{font-size:10px;color:var(--muted);font-weight:500;margin-top:1px}
+.id-auto{margin-left:auto;font-size:10px;color:var(--muted);letter-spacing:.5px}
+.id-warn{font-size:12px;color:var(--gold)}
+.id-warn a{color:var(--gold);font-weight:700}
+
+/* ── SUBMIT TOAST ── */
+#submitToast{
+  position:fixed;bottom:80px;right:24px;z-index:99999;
+  background:var(--surface);border:1px solid rgba(52,211,153,0.4);
+  border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);opacity:0;
+  transform:translateY(20px);transition:all .35s ease;pointer-events:none;
+}
+#submitToast.show{opacity:1;transform:translateY(0)}
+.toast-icon{font-size:20px;flex-shrink:0}
+.toast-title{font-size:12px;font-weight:700;color:var(--teal)}
+.toast-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg);
@@ -395,6 +423,19 @@ body.kbd-open { padding-bottom: 280px; }
 </head>
 <body>
 <canvas id="confetti"></canvas>
+
+<!-- Identity bar (reads from localStorage) -->
+<div id="identityBar"></div>
+
+<!-- Submit toast -->
+<div id="submitToast">
+  <div class="toast-icon">📊</div>
+  <div>
+    <div class="toast-title" id="toastTitle">Score saved!</div>
+    <div class="toast-sub" id="toastSub">Your result has been recorded.</div>
+  </div>
+</div>
+
 <div class="wrap">
 <div class="hdr">
   <div class="hdr-badge">✦ Cantonment Primary School</div>
@@ -403,11 +444,10 @@ body.kbd-open { padding-bottom: 280px; }
   <div class="hdr-sub">Listen · Spell · Conquer</div>
 </div>
 <div id="setupScreen">
+  <!-- Playback settings only — identity comes from localStorage -->
   <div class="card">
-    <div class="card-title"><span class="card-icon">👤</span>Who are you?</div>
+    <div class="card-title"><span class="card-icon">🔊</span>Playback Settings</div>
     <div class="setup-grid">
-      <div><div class="field-label">Class</div><select id="classSelect"></select></div>
-      <div><div class="field-label">Your Name</div><select id="studentSelect"><option value="">Choose class first</option></select></div>
       <div><div class="field-label">Voice</div><select id="voiceSelect"><option value="">Default</option></select></div>
       <div><div class="field-label">Speed</div>
         <select id="speedSelect">
@@ -418,6 +458,10 @@ body.kbd-open { padding-bottom: 280px; }
       </div>
     </div>
   </div>
+  <!-- Hidden selects kept for leaderboard saveScore() compatibility -->
+  <select id="classSelect" style="display:none"></select>
+  <select id="studentSelect" style="display:none"></select>
+
   <div class="card">
     <div class="card-title"><span class="card-icon">📋</span>Pick Your Word List</div>
     <div class="book-tabs" id="bookTabs"></div>
@@ -483,1036 +527,91 @@ body.kbd-open { padding-bottom: 280px; }
 </div>
 <script>
 const CLASS_STUDENTS={"4 Care":["AARON JAMES MC HUGH","AXTON SHANG FUSHENG","AYDEN BIN AZAHAR","AYSHA ALIYA AZRYN","CANDICE HO ZIHAN","CHUA SHAN TING, CELESTE","CLARA LILLIAN PEREIRA","DAI JIATAI","DAO TUAN HUY HARVEY","DAPHNE ALEXANDRA YI TING LO","ELIZABETH SUBANEKNAN","FARAZ ARSHAD RAMADHAN ARDIWINATA","GOSWAMI AMAY","HO DING KANG, EDWARD","JAYDEN GOPU LEE JIE EN","MARCUS LIGTENBERG","MASONN KOH SHAO YU","MAXENCE GARNIER","MUHAMMAD UMAR BIN AZIZ AHMAD","NG ZI HAO JAMESON","RANASINGHE SIENNA TARYN","SAHANA SAFRIN BINTE MOHAMED ARIFF","SARIKA SANMAN SHETTY","SIM EN XUAN, JERINA","SKYLER TAN GUAN MIN","SUNG SEBASTIAN","SYURAHBIL BIN SHAHRILL","THUT LYAN MOE","VIKRANT KHAITAN","WONG YUU MINN JULIAN","YIU CHUN HEI KADEN"],"4 Graciousness":["AENI AQISYA BINTE MUHAMMAD AEWANDA","AGARWAL NISHANT","ARIDASU AASHINYA SRI","AVALYN ONG HUI QI","CHEONG YONG JUN WESLEY","DOMINIC FONG YU BIN","ERIC HEIN HTET KYAW","GAZI AVERO","GLENDA LEE EN LE","GOH KHUN LEE","GU EVEREST","HANNAH LOH YU EN","HU YUYANG","JAKE ARJUN THYAGARAJAN","KOJIMA SHINTARO","LIAO YUQUAN, LANCE","LUCAS CUI ZHENGPING","MOHAMED NIZAMUDEEN ZAAFIRA","MUHAMMAD ADRYAN BIN MOHAMED IRWAN","NAKANOSONO TAIGA","NGO BAO NAM","OLIVER JOSEPH LOWE","PASTRANA MARC GABRIEL HIDALGO","PATEL VIHAAN KIRAN","SCHLAGER LEON ALEXANDER","SHAZRIL BIN MUHAMMAD NIZAM","SOPHIE LOUISE HEMMINGS","TAN JING EN REX","TAN JUN WEI","WANG MANTING","WILSON PETER HAN-WEN","HAYLEY KAYLEIGH LONGDEN"],"4 Resilience":["AGRAWAL AMAY","AHMAD HANIF BIN RASHID","ALESSA HANA WINATA","ASHWIN PARTHI","BHONE THUTA PAING","CAYVIER KOH ZHENG JIE","CHAN YEN LING ISABELLE","DASHIELL ONG YU HAN","DAYA KAUR D/O SARBJIT SINGH","EE JUN QI, TRISTAN","ELIYA'NURSHEZA BINTE MUHAMMAD HAZMAN","GAGANPREET KAUR D/O HARPRIT SINGH SIDHU","HE CHUNQI","ISAAC LIN QIXIANG","JADEN FOO YAN KAI","JAYDEN TEE TZU LE","LIM SERIN","LUCAS LOW","MUHAMMAD ELIAS AASYAHFI BIN MUHAMMAD FARHAN","MURALIKRISHNAN HARISHWARAMOORTHY","NAFIHA JEHAAN","NGUYEN VI","PANCHAPAGESAN SUDHARSHAN","RIHAAN SARKAR","SHEN ZHIYUAN","SIDDHARTH PANTA","SIM GEK BOON THEOPHANIE","THONGLUE CHANAPAT","XIAO YA NING JOANNE","XU XIAOCHEN","ZOEY LI","ZAIM AKILI IYLIA"],"4 Respect":["AGARWAL RAMANSH HARSH","ARUL LOURDURAJ STEEVEJOE","BENJAMIN WONG GUANLIN","DU ZHENGHENG","HAMZAH BIN BACHTIAR","JADE LOUISE BOISSEAU","JAKE ANG JIA LE","JIA ZEKAI","JULIA THANT SIN","KADEN CHUA DE RONG","LAURYN GRACE OVERY","LEE HAJUN","LEE SEUNG WOO","LIN MU-CHEN","LIN XUAN YING KARISA","MALHOTRA AVA","MATHILDA TAY","MUHAMMAD DAMIER SKY BIN MUHAMMAD SHAHRUL AMEEN","NAGUULAN RAVISHANKAR","NUR UFAIRAH PUTRI PUTRA ALFIAN","ONG WEI TING CHLOE","PHAM MINH KHANH CHI","SHAYEIN ARUSHA CUACA","SHIVANSH JAIN","TAY ZHI YUAN, ERIC","THADANI AHAAN ROHIT","TIO WEN LE","TOH JING XUAN JOSLYN","WANG HAIGE","WARREN CHEN BOYUAN","WISUTTI JOAQUIN"],"4 Integrity":["ALEEYA ARTABIA PRASETYOWIBOWO","CHUNG YUE EN, GUINEVERE","COLLIN ALICE DOROTHY MARIE","DANIEL CAI JIEHAN","DAVE LIM DOW FENG","GUNERATNE BRYN TULLIUS CHAN SHUN","JEONG ICHAN","JOSHUA CHONG KWOK ERN","KOH KAY XUAN IRIS","LEE EN HUI","LIM DURIN","LIM HUI YU","MAK GUAN XUAN","MARTIN NEDVED","MUHAMMAD UBAY HYDE BIN MUHAMMAD ALIFFIZWAN","NAFISAH RANIAH BINTE SHAHRIR","NAVEEN SINGH DHILLON S/O JASMINDER SINGH DHILLON","NIKOLA STOJANAC","NOAH LAKRA","NUR NAURA AALIYAH BINTE MUHAMMAD AFIQ","OMKAR VAIDHYA RAMASWAMI","ONG YAN ZHE, JERRIC","PUTRI NUR IMELDA BINTE MUHAMMAD IKHMAL","SADIKOT RIYAAZ MUBIN","SEOW YI XUN, MATTHEW","SHANNAN LIM","SI RUISHEN","SIM EN WEI, JAVION","SOFIA MAIRA BINTE MOHAMAD SHAFIEE","SONG SHOUFU","SOPHIE ANNE COPLAND","SYED AHMED HARRIS MOHAMED AFFAN KABEER","XU ZIMO","YUKI ITO"]};
-const LISTS = [
-  {
-    "id": 101,
-    "title": "Term 1 · List 1",
-    "theme": "Excitement",
-    "book": "Book 1",
-    "items": [
-      {
-        "prompt": "Henry's skin tingled with excitement as he watched the race.",
-        "answer": "tingled with excitement"
-      },
-      {
-        "prompt": "He heard his children's shouts from the garden, shrill with excitement.",
-        "answer": "shrill with excitement"
-      },
-      {
-        "prompt": "Tom was quivering all over with excitement.",
-        "answer": "quivering"
-      },
-      {
-        "prompt": "The crowd let out a stupendous cheer as the team scored a home goal.",
-        "answer": "stupendous cheer"
-      },
-      {
-        "prompt": "Their pulses raced as they neared their final goal.",
-        "answer": "pulses raced"
-      },
-      {
-        "prompt": "They stared at him in blank amazement.",
-        "answer": "blank amazement"
-      },
-      {
-        "prompt": "My mind was whirling with excitement.",
-        "answer": "whirling with excitement"
-      },
-      {
-        "prompt": "He tossed his bag and ran out to join the crowd of onlookers.",
-        "answer": "ran out to join"
-      },
-      {
-        "prompt": "Her face lit up as her eyes widened.",
-        "answer": "face lit up"
-      },
-      {
-        "prompt": "The children clambered down from the roller-coaster, exhilarated.",
-        "answer": "exhilarated"
-      }
-    ],
-    "dictation": "The moment had finally arrived. Excitement rolled over all the students in waves as they sat on the benches arranged around the highlight of the event. John held his breath as the rest did the countdown. Finally, his principal lit the tinder. Everyone was in high spirits for the P4 campfire."
-  },
-  {
-    "id": 102,
-    "title": "Term 1 · List 2",
-    "theme": "Unit 1: Making Ice Cream",
-    "book": "Book 1",
-    "items": [
-      {
-        "prompt": "The class monitor took the PE equipment from the storeroom.",
-        "answer": "equipment"
-      },
-      {
-        "prompt": "Mother measured the ingredients needed to bake my birthday cake.",
-        "answer": "measured the ingredients"
-      },
-      {
-        "prompt": "Jane added some sugar into her coffee and waited for it to dissolve.",
-        "answer": "dissolve"
-      },
-      {
-        "prompt": "The chef sprinkled some salt over his dish.",
-        "answer": "sprinkled"
-      },
-      {
-        "prompt": "The ice clinked against the glass jars and made some noise.",
-        "answer": "clinked against"
-      },
-      {
-        "prompt": "It is important to keep the temperature low to allow the cream to solidify.",
-        "answer": "temperature"
-      },
-      {
-        "prompt": "The children witnessed an accident while on their way to school.",
-        "answer": "witnessed an accident"
-      },
-      {
-        "prompt": "The little girl held her mother's hand as they walked towards the traffic light junction.",
-        "answer": "traffic light junction"
-      },
-      {
-        "prompt": "The onlookers heard the screeching of brakes before the loud bang.",
-        "answer": "screeching of brakes"
-      },
-      {
-        "prompt": "The paramedics lifted the victim onto the stretcher.",
-        "answer": "paramedics lifted the victim"
-      }
-    ],
-    "dictation": "We kept our eyes on the clock. We wanted to open the jars and check the ice cream, but our teacher said we had to be patient. When we eventually opened them, the ice cream had turned smooth and creamy. All the hard work was worthwhile!"
-  },
-  {
-    "id": 103,
-    "title": "Term 1 · List 3",
-    "theme": "Relief",
-    "book": "Book 1",
-    "items": [
-      {
-        "prompt": "The lady gave an audible sigh of relief when she had found her handbag.",
-        "answer": "audible sigh of relief"
-      },
-      {
-        "prompt": "Gary heaved a sigh of relief when he learnt that he had passed his exams.",
-        "answer": "heaved a sigh of relief"
-      },
-      {
-        "prompt": "Mr Lim could breathe more easily when he heard that his wife is out of danger.",
-        "answer": "breathe more easily"
-      },
-      {
-        "prompt": "To Peter's great relief, no one asked him about his absence from school.",
-        "answer": "great relief"
-      },
-      {
-        "prompt": "Jonathan could relax after completing his assignment.",
-        "answer": "relax"
-      },
-      {
-        "prompt": "The passenger on the delayed flight were filled with relief when their plane took off.",
-        "answer": "filled with relief"
-      },
-      {
-        "prompt": "\"Finally!\" she thought in relief.",
-        "answer": "Finally!"
-      },
-      {
-        "prompt": "To the mother's vast relief, the baby stopped crying and fell asleep.",
-        "answer": "vast relief"
-      },
-      {
-        "prompt": "He felt as though a huge weight had been lifted off his shoulder.",
-        "answer": "lifted off his shoulder"
-      },
-      {
-        "prompt": "So great was her relief at the news that she hugged her friend.",
-        "answer": "So great was her relief"
-      }
-    ],
-    "dictation": "Ann took a deep breath. She was first off the starting blocks the moment she heard the starting pistol. While nearing the finish line, she saw her rivals catching up. Ann, with all her might, sprinted towards the finish line to come in first. She gave an audible sigh of relief when she saw her name in first place."
-  },
-  {
-    "id": 104,
-    "title": "Term 1 · List 4",
-    "theme": "Unit 2: Life of a Vet",
-    "book": "Book 1",
-    "items": [
-      {
-        "prompt": "A veterinarian specialises in the treatment of animals.",
-        "answer": "veterinarian"
-      },
-      {
-        "prompt": "Rabbits are known to be delicate and sensitive creatures.",
-        "answer": "delicate and sensitive creatures"
-      },
-      {
-        "prompt": "The nurse assured the patient that he will feel better soon.",
-        "answer": "assured"
-      },
-      {
-        "prompt": "You need to consider if you can handle the responsibilities before owning a pet.",
-        "answer": "handle the responsibilities"
-      },
-      {
-        "prompt": "My brother volunteers to help out at an animal shelter every weekend.",
-        "answer": "volunteers"
-      },
-      {
-        "prompt": "The doctor prescribed me some medicine upon close examination.",
-        "answer": "close examination"
-      },
-      {
-        "prompt": "I suffered minor injuries when I fell off the bicycle.",
-        "answer": "suffered minor injuries"
-      },
-      {
-        "prompt": "Accidents are preventable if we take safety procedures.",
-        "answer": "Accidents are preventable"
-      },
-      {
-        "prompt": "My dog became partially paralysed after the unfortunate incident.",
-        "answer": "partially paralysed"
-      },
-      {
-        "prompt": "There are many pets available for adoption.",
-        "answer": "adoption"
-      }
-    ],
-    "dictation": "Cutie is a mischievous and busybody cat who is interested in everything around her. She likes to sit by the door of the clinic and greet every client that steps in. Sometimes, she jumps onto the reception counter to have a good view of everything that is happening. Everyone loves to pat on Cutie's head."
-  },
-  {
-    "id": 105,
-    "title": "Term 1 · List 5",
-    "theme": "Curiosity",
-    "book": "Book 1",
-    "items": [
-      {
-        "prompt": "He raised an eyebrow and looked at me questioningly.",
-        "answer": "questioningly"
-      },
-      {
-        "prompt": "She shot a quizzical look as she opened the door. \"Yes?\" she said.",
-        "answer": "quizzical look"
-      },
-      {
-        "prompt": "A small crowd gathered around her, whispering among themselves in hushed tones.",
-        "answer": "hushed tones"
-      },
-      {
-        "prompt": "As I pretended to read my papers, I stole a glance at him from the corner of my eye.",
-        "answer": "stole a glance"
-      },
-      {
-        "prompt": "I craned my neck and strained my eyes to see what lay ahead.",
-        "answer": "strained my eyes"
-      },
-      {
-        "prompt": "I pressed my ear against the door trying to make out what my parents were arguing about in their room.",
-        "answer": "trying to make out"
-      },
-      {
-        "prompt": "I listened intently hoping to catch what they were discussing.",
-        "answer": "listened intently"
-      },
-      {
-        "prompt": "The inquisitive children asked a lot of questions.",
-        "answer": "inquisitive"
-      },
-      {
-        "prompt": "My aunt has a keen nose for gossip.",
-        "answer": "keen nose"
-      },
-      {
-        "prompt": "The unsolved mystery kept her awake at night.",
-        "answer": "unsolved"
-      }
-    ],
-    "dictation": "Kumar has an unerring nose for gossip and his sharp, inquisitive eyes miss nothing. One day, he realised that his neighbour's house lights were on. He felt it strange as he knew his neighbour was away on holiday. Kumar decided to take a closer look and saw an intruder inside."
-  },
-  {
-    "id": 106,
-    "title": "Term 1 · List 6",
-    "theme": "Unit 3: The Paralympic Games",
-    "book": "Book 1",
-    "items": [
-      {
-        "prompt": "The paralympic games attract the best athletes from all around the world.",
-        "answer": "athletes"
-      },
-      {
-        "prompt": "Having physical disabilities does not hinder them from excelling in sports.",
-        "answer": "physical disabilities"
-      },
-      {
-        "prompt": "The wheelchairs used in the paralympic games are specially designed to move fast.",
-        "answer": "specially designed"
-      },
-      {
-        "prompt": "Many sports games require strategy and accuracy.",
-        "answer": "strategy and accuracy"
-      },
-      {
-        "prompt": "The referee blows his whistle to stop the game.",
-        "answer": "referee"
-      },
-      {
-        "prompt": "The children won medals and trophies during their sports day.",
-        "answer": "medals and trophies"
-      },
-      {
-        "prompt": "The team fought hard against their opponents.",
-        "answer": "opponents"
-      },
-      {
-        "prompt": "Spectators roared loudly when the football player scored a goal.",
-        "answer": "Spectators roared loudly"
-      },
-      {
-        "prompt": "The school boy helped the visually impaired elderly to cross the road.",
-        "answer": "visually impaired"
-      },
-      {
-        "prompt": "Despite the challenges, my brother did well in his PSLE examinations.",
-        "answer": "challenges"
-      }
-    ],
-    "dictation": "The Paralympic Games have become some of the largest sporting events in the world. They celebrate ability beyond disability. Not only do the games showcase the talent of the athletes, but they also train them to be resilient. Watching the paralympic athletes provide a source of inspiration for us to always try our best and not give up."
-  },
-  {
-    "id": 1,
-    "title": "Term 2 · List 1",
-    "theme": "Disappointment",
-    "book": "Book 2",
-    "items": [
-      {
-        "prompt": "I buried my face in my hands and sighed.",
-        "answer": "sighed"
-      },
-      {
-        "prompt": "To my utter dismay, I had left my lunch money on the table.",
-        "answer": "utter dismay"
-      },
-      {
-        "prompt": "She shook her head and left without saying a single syllable.",
-        "answer": "shook her head"
-      },
-      {
-        "prompt": "Her face fell when she saw the single two-dollar note in the red packet.",
-        "answer": "face fell"
-      },
-      {
-        "prompt": "I moaned in despair throwing my hands up in the air.",
-        "answer": "despair"
-      },
-      {
-        "prompt": "She shrugged nonchalantly and snorted, 'Who cares?' but her eyes reddened.",
-        "answer": "eyes reddened"
-      },
-      {
-        "prompt": "She had pinned all her hopes on him but he had shattered all her dreams.",
-        "answer": "shattered"
-      },
-      {
-        "prompt": "Nodding grudgingly she turned and left, head hung low and shoulders stooped.",
-        "answer": "shoulders stooped"
-      },
-      {
-        "prompt": "Her voice faltered as it trailed off.",
-        "answer": "faltered"
-      },
-      {
-        "prompt": "She was forlorn when she found out the trip was cancelled.",
-        "answer": "forlorn"
-      }
-    ],
-    "dictation": "Patrick had been saving up diligently to buy the stalk of flower for his mother for Mother's Day. However, when he went to the bookshop during his recess, the flowers were sold out. Disappointment was written all over his face."
-  },
-  {
-    "id": 2,
-    "title": "Term 2 · List 2",
-    "theme": "Unit 4: The World Beyond Us",
-    "book": "Book 2",
-    "items": [
-      {
-        "prompt": "Outer space is an infinitely huge place with trillions of stars.",
-        "answer": "infinitely"
-      },
-      {
-        "prompt": "Many people gathered to watch the solar eclipse.",
-        "answer": "solar eclipse"
-      },
-      {
-        "prompt": "Some species of the tigers are facing extinction.",
-        "answer": "extinction"
-      },
-      {
-        "prompt": "We should observe and appreciate the natural phenomena happening around us.",
-        "answer": "natural phenomena"
-      },
-      {
-        "prompt": "Scientists use technology to predict disasters.",
-        "answer": "predict"
-      },
-      {
-        "prompt": "A system refers to a group of things that interact.",
-        "answer": "interact"
-      },
-      {
-        "prompt": "Some plants have unique features to survive under harsh weather.",
-        "answer": "unique features"
-      },
-      {
-        "prompt": "My father regularly travels for his work.",
-        "answer": "regularly travels"
-      },
-      {
-        "prompt": "Jenny reflected on her actions and decided to apologise.",
-        "answer": "reflected"
-      },
-      {
-        "prompt": "My aunt went through many challenges during the early phases of her career.",
-        "answer": "phases"
-      }
-    ],
-    "dictation": "People from all over came together to witness the amazing solar eclipse. As the surface of the Sun was covered completely, the sky became as dark as night. This only lasted a few minutes before the sky turned bright again."
-  },
-  {
-    "id": 3,
-    "title": "Term 2 · List 3",
-    "theme": "Anxiety",
-    "book": "Book 2",
-    "items": [
-      {
-        "prompt": "Axel paced up and down the corridor.",
-        "answer": "paced up and down"
-      },
-      {
-        "prompt": "Charlie watched the snarling dog apprehensively.",
-        "answer": "apprehensively"
-      },
-      {
-        "prompt": "Suresh fidgeted nervously before the competition started.",
-        "answer": "fidgeted nervously"
-      },
-      {
-        "prompt": "Joyce was restless as she waited to hear the score.",
-        "answer": "restless"
-      },
-      {
-        "prompt": "Harvinder cast anxious looks at his father who was coughing badly.",
-        "answer": "cast anxious looks"
-      },
-      {
-        "prompt": "Alex glanced frantically around the room as he looked for his wallet.",
-        "answer": "glanced frantically"
-      },
-      {
-        "prompt": "Susie looked through her bag in a frenzy of panic for her mobile phone.",
-        "answer": "frenzy of panic"
-      },
-      {
-        "prompt": "Anson's heart almost skipped a beat.",
-        "answer": "skipped a beat"
-      },
-      {
-        "prompt": "Passers-by gave the lost child, who was crying hysterically, concerned looks.",
-        "answer": "crying hysterically"
-      },
-      {
-        "prompt": "The patient was worried sick after hearing the bad news.",
-        "answer": "worried sick"
-      }
-    ],
-    "dictation": "Joseph fidgeted anxiously with his pen. He was such a bundle of nerves that he could not sit still. He trembled like a leaf as he walked down the corridor towards the principal's office."
-  },
-  {
-    "id": 4,
-    "title": "Term 2 · List 4",
-    "theme": "Unit 5: Ruby's Sunflower",
-    "book": "Book 2",
-    "items": [
-      {
-        "prompt": "Ruby's cheeks gave off a rosy glow.",
-        "answer": "rosy glow"
-      },
-      {
-        "prompt": "Her hair was adorned with a pink clip.",
-        "answer": "adorned with"
-      },
-      {
-        "prompt": "Saul was clad in a checkered shirt.",
-        "answer": "clad"
-      },
-      {
-        "prompt": "Mr Buckley flashed a toothless grin.",
-        "answer": "toothless grin"
-      },
-      {
-        "prompt": "The school organised a gardening contest.",
-        "answer": "contest"
-      },
-      {
-        "prompt": "The chief judge decided to disqualify the team.",
-        "answer": "chief judge"
-      },
-      {
-        "prompt": "The form teacher announced the winners of the competition.",
-        "answer": "announced"
-      },
-      {
-        "prompt": "John was in the lead during the race.",
-        "answer": "in the lead"
-      },
-      {
-        "prompt": "Mother washed the shoes and they were as good as new.",
-        "answer": "as good as new"
-      },
-      {
-        "prompt": "Her fingers were tightly crossed as she waited for the results.",
-        "answer": "fingers were tightly crossed"
-      }
-    ],
-    "dictation": "Ken punched the air with delight when he heard that he was in the top position. He collected his prize in front of the whole school. Everyone gave him a loud round of applause. Ken smiled from ear to ear with pride."
-  },
-  {
-    "id": 5,
-    "title": "Term 2 · List 5",
-    "theme": "Tiredness",
-    "book": "Book 2",
-    "items": [
-      {
-        "prompt": "I felt exhausted after a hard day's work.",
-        "answer": "exhausted"
-      },
-      {
-        "prompt": "My mother felt drowsy and weary during her night shift.",
-        "answer": "felt drowsy and weary"
-      },
-      {
-        "prompt": "He was fast asleep the moment his head touched the pillow.",
-        "answer": "fast asleep"
-      },
-      {
-        "prompt": "She was extremely tired and kept yawning endlessly.",
-        "answer": "yawning endlessly"
-      },
-      {
-        "prompt": "His eyes were bloodshot red from the lack of sleep.",
-        "answer": "bloodshot red"
-      },
-      {
-        "prompt": "James was snoring loudly after a few minutes.",
-        "answer": "snoring loudly"
-      },
-      {
-        "prompt": "Tom was curled up in bed after the long school day.",
-        "answer": "curled up in bed"
-      },
-      {
-        "prompt": "My brother was overcome with fatigue during the hike.",
-        "answer": "overcome with fatigue"
-      },
-      {
-        "prompt": "Minutes ticked by and soon his eyes began to droop sleepily.",
-        "answer": "eyes began to droop sleepily"
-      },
-      {
-        "prompt": "Upon finishing the marathon, he was drained of energy.",
-        "answer": "drained of energy"
-      }
-    ],
-    "dictation": "Stumbling with exhaustion, Mel bent and unlaced her running shoes. She was still panting heavily as she completed the last lap. She felt as if she had used up every ounce of her energy."
-  },
-  {
-    "id": 1,
-    "title": "Term 3 · List 1",
-    "theme": "Annoyance",
-    "book": "Book 3",
-    "items": [
-      {
-        "prompt": "He furrowed his eyebrows in annoyance.",
-        "answer": "furrowed"
-      },
-      {
-        "prompt": "He shook his head disapprovingly but kept silent.",
-        "answer": "disapprovingly"
-      },
-      {
-        "prompt": "He sat glumly, with his arms crossed.",
-        "answer": "sat glumly"
-      },
-      {
-        "prompt": "Disapproval was written all over their faces.",
-        "answer": "Disapproval was written"
-      },
-      {
-        "prompt": "She folded her arms and rolled her eyes.",
-        "answer": "folded her arms"
-      },
-      {
-        "prompt": "\"I don't know!\" she answered in a gruff voice.",
-        "answer": "gruff voice"
-      },
-      {
-        "prompt": "\"Stop that!\" she said in the firmest of voices.",
-        "answer": "firmest of voices"
-      },
-      {
-        "prompt": "She was visibly agitated.",
-        "answer": "visibly agitated"
-      },
-      {
-        "prompt": "Vexed, she tossed the books and notes onto the bed.",
-        "answer": "Vexed"
-      },
-      {
-        "prompt": "\"Silence! Silence! Boys!\" she shouted, her temper rising.",
-        "answer": "temper rising"
-      }
-    ],
-    "dictation": "Tom's father bellowed, \"Switch off your computer now!\" Tom had been playing computer games for the past two hours. However, once he heard his father's voice, he knew that he had to stop as it was dinner time."
-  },
-  {
-    "id": 2,
-    "title": "Term 3 · List 2",
-    "theme": "Unit 6: Dinosaurs Exist!",
-    "book": "Book 3",
-    "items": [
-      {
-        "prompt": "Dinosaurs had vanished from the planet millions of years ago.",
-        "answer": "vanished"
-      },
-      {
-        "prompt": "The team was ready for their first dangerous expedition.",
-        "answer": "dangerous expedition"
-      },
-      {
-        "prompt": "Hannah brought along an insect repellent for the hike.",
-        "answer": "insect repellent"
-      },
-      {
-        "prompt": "Once they were pleased with their plan, they set off on the journey.",
-        "answer": "pleased with their plan"
-      },
-      {
-        "prompt": "With vivid imaginations, the young toddler told his mother about his dream.",
-        "answer": "vivid imaginations"
-      },
-      {
-        "prompt": "My little brother loves to invent amazing fantasies and share them with me.",
-        "answer": "invent amazing fantasies"
-      },
-      {
-        "prompt": "Reluctantly, James switched off the computer and went to bed.",
-        "answer": "Reluctantly"
-      },
-      {
-        "prompt": "I looked away from my teacher's raging face.",
-        "answer": "raging face"
-      },
-      {
-        "prompt": "The children were prepared for the blood-curdling terrors that were awaiting them at the haunted house.",
-        "answer": "blood-curdling terrors"
-      },
-      {
-        "prompt": "Kit struggled to comprehend the Math word problem.",
-        "answer": "struggled to comprehend"
-      }
-    ],
-    "dictation": "Peering around its neck, Vicky noticed a smaller dinosaur. Its body seemed to be ripped open. Inside, there were stairs with a climbing frame. Vicky grinned to herself upon realising that her brother had found a new playground full of dinosaur models."
-  },
-  {
-    "id": 3,
-    "title": "Term 3 · List 3",
-    "theme": "Embarrassment",
-    "book": "Book 3",
-    "items": [
-      {
-        "prompt": "She was visibly embarrassed after falling down the stairs.",
-        "answer": "visibly embarrassed"
-      },
-      {
-        "prompt": "As my mother continued berating me, I lowered my eyes, fighting back the tears.",
-        "answer": "lowered my eyes"
-      },
-      {
-        "prompt": "She blushed so furiously that even the tips of her ears were red.",
-        "answer": "blushed so furiously"
-      },
-      {
-        "prompt": "I entered the new classroom with my eyes downcast.",
-        "answer": "my eyes downcast"
-      },
-      {
-        "prompt": "I scratched my head sheepishly.",
-        "answer": "sheepishly"
-      },
-      {
-        "prompt": "She turned away and avoided the stares of curious passers-by.",
-        "answer": "avoided the stares"
-      },
-      {
-        "prompt": "I stole a furtive look around when I spilled my glass of water.",
-        "answer": "stole a furtive look"
-      },
-      {
-        "prompt": "I pretended as if nothing had happened though my face was as red as a beetroot.",
-        "answer": "as red as a beetroot"
-      },
-      {
-        "prompt": "I apologised and smiled nervously.",
-        "answer": "smiled nervously"
-      },
-      {
-        "prompt": "Peter was burning with humiliation when he was reprimanded.",
-        "answer": "humiliation"
-      }
-    ],
-    "dictation": "Kai wanted to give his mother an ice cream cone for a birthday surprise. He held it behind his back and walked towards her. \"Happy Birthday!\" shouted Kai. As he was about to pass it to her, he unknowingly turned it upside down and the ice cream dropped off from the cone."
-  },
-  {
-    "id": 4,
-    "title": "Term 3 · List 4",
-    "theme": "Bad Weather",
-    "book": "Book 3",
-    "items": [
-      {
-        "prompt": "The sky above was full of dark, ragged clouds.",
-        "answer": "dark, ragged clouds"
-      },
-      {
-        "prompt": "Gusts of wind slammed against the gaping windows.",
-        "answer": "Gusts of wind"
-      },
-      {
-        "prompt": "The bitterly cold wind stung my face.",
-        "answer": "bitterly cold wind"
-      },
-      {
-        "prompt": "Thunder roared and lightning flashed across the sky.",
-        "answer": "lightning flashed"
-      },
-      {
-        "prompt": "The howling of the wind frightened us all.",
-        "answer": "howling of the wind"
-      },
-      {
-        "prompt": "Rain pelted down from the skies.",
-        "answer": "pelted down"
-      },
-      {
-        "prompt": "There was a deep rumble in the distance.",
-        "answer": "a deep rumble"
-      },
-      {
-        "prompt": "Rain blurred the distant images of the buildings that I had to strain my eyes to see what lay ahead.",
-        "answer": "blurred the distant images"
-      },
-      {
-        "prompt": "Puddles, big and small, gathered all over the place.",
-        "answer": "Puddles"
-      },
-      {
-        "prompt": "The cars made swish-swish sounds as they sped past.",
-        "answer": "swish-swish sounds"
-      }
-    ],
-    "dictation": "Ali was awakened by the sound that he had thought was from his alarm clock. Suddenly, he heard a deafening crack. The noise filled his ears while a blinding light filled his room. He looked out of his window and saw heavy rain pelting down from the sky."
-  },
-  {
-    "id": 5,
-    "title": "Term 3 · List 5",
-    "theme": "Unit 7: Heartbeats in the Dark",
-    "book": "Book 3",
-    "items": [
-      {
-        "prompt": "Though my grandmother is forgetful and wrinkly, she is loving towards us.",
-        "answer": "forgetful and wrinkly"
-      },
-      {
-        "prompt": "The robber's eyes glint with evil as he demands money from the cashier.",
-        "answer": "eyes glint with evil"
-      },
-      {
-        "prompt": "My heart bangs in my chest each time I hear the loud thunder.",
-        "answer": "heart bangs in my chest"
-      },
-      {
-        "prompt": "Jane's smile slid around her face when she spotted her brother's hiding place.",
-        "answer": "smile slid around her face"
-      },
-      {
-        "prompt": "I tried to calm myself down by drumming my fingers on my desk.",
-        "answer": "drumming my fingers"
-      },
-      {
-        "prompt": "The room is so dark that it feels like it is suffocating me.",
-        "answer": "suffocating"
-      },
-      {
-        "prompt": "He yanked the curtains open once he woke up.",
-        "answer": "yanked the curtains"
-      },
-      {
-        "prompt": "Sucking in a ball of air, John walked into the abandoned house.",
-        "answer": "Sucking in a ball of air"
-      },
-      {
-        "prompt": "His throat felt tight and he failed to deliver the speech.",
-        "answer": "throat felt tight"
-      },
-      {
-        "prompt": "Father swallowed his saliva upon breaking the bad news.",
-        "answer": "swallowed his saliva"
-      }
-    ],
-    "dictation": "I tried to open my eyes but I could not do that. I sit up but I could not breathe. I stare at where I know the curtains are. I tell myself that the sun is blazing on the other side of those curtains."
-  },
-  {
-    "id": 6,
-    "title": "Term 3 · List 6",
-    "theme": "Discomfort",
-    "book": "Book 3",
-    "items": [
-      {
-        "prompt": "My stomach was growling.",
-        "answer": "growling"
-      },
-      {
-        "prompt": "He grimaced in pain as he hobbled along.",
-        "answer": "grimaced in pain"
-      },
-      {
-        "prompt": "She was aching all over.",
-        "answer": "aching all over"
-      },
-      {
-        "prompt": "A nauseating feeling overcame her.",
-        "answer": "nauseating feeling"
-      },
-      {
-        "prompt": "\"No, thanks. I have no appetite,\" she said with a faint smile.",
-        "answer": "no appetite"
-      },
-      {
-        "prompt": "Her vision grew blurred and the things around her started to spin.",
-        "answer": "vision grew blurred"
-      },
-      {
-        "prompt": "He retched violently throwing up all that he had eaten.",
-        "answer": "retched violently"
-      },
-      {
-        "prompt": "The pain in his stomach was so excruciating that he groaned out loudly.",
-        "answer": "excruciating"
-      },
-      {
-        "prompt": "She felt so cold that she was literally shivering uncontrollably.",
-        "answer": "shivering uncontrollably"
-      },
-      {
-        "prompt": "She tossed and turned in pain on the bed the whole night.",
-        "answer": "tossed and turned"
-      }
-    ],
-    "dictation": "As the second half of the game started, Kelly's palms felt clammy and her heart pounded vigorously. Her head was throbbing in pain. However, she wanted to win the game badly. Gritting her teeth, Kelly played on despite the discomfort."
-  },
-  {
-    "id": 1,
-    "title": "Term 4 · List 1",
-    "theme": "Sadness",
-    "book": "Book 4",
-    "items": [
-      {
-        "prompt": "A dark mood came over Jane.",
-        "answer": "dark mood"
-      },
-      {
-        "prompt": "She was on the verge of tears.",
-        "answer": "verge of tears"
-      },
-      {
-        "prompt": "No words could express his agony.",
-        "answer": "agony"
-      },
-      {
-        "prompt": "Tears welled up in her eyes.",
-        "answer": "Tears welled up"
-      },
-      {
-        "prompt": "The poor child sobbed sorrowfully.",
-        "answer": "sobbed sorrowfully"
-      },
-      {
-        "prompt": "My heart sank when I heard the sad news.",
-        "answer": "heart sank"
-      },
-      {
-        "prompt": "Her eyes were puffy and red after crying.",
-        "answer": "puffy and red"
-      },
-      {
-        "prompt": "She cried her eyes out on hearing the tragic news.",
-        "answer": "tragic"
-      },
-      {
-        "prompt": "Tears brimmed in her reddened eyes.",
-        "answer": "Tears brimmed"
-      },
-      {
-        "prompt": "Her sobs escalated into wails when she found that her mother was not beside her.",
-        "answer": "escalated into wails"
-      }
-    ],
-    "dictation": "The group of soccer boys sat on the grass. They were waiting for their coach to call out the names of the sixteen selected ones who will be representing the school. When the sixteenth name was read out, he sobbed uncontrollably and was inconsolable."
-  },
-  {
-    "id": 2,
-    "title": "Term 4 · List 2",
-    "theme": "Unit 8: All the Buzz about Honey",
-    "book": "Book 4",
-    "items": [
-      {
-        "prompt": "Honey can be used for medicinal purposes.",
-        "answer": "medicinal purposes"
-      },
-      {
-        "prompt": "Honeybees feed on nectar to survive.",
-        "answer": "survive"
-      },
-      {
-        "prompt": "The beehive is a structure in which bees live and raise their young.",
-        "answer": "structure"
-      },
-      {
-        "prompt": "Beeswax has antibacterial properties.",
-        "answer": "antibacterial properties"
-      },
-      {
-        "prompt": "The natural aroma of the beeswax helps to soothe the pain.",
-        "answer": "natural aroma"
-      },
-      {
-        "prompt": "We should not smack the bees as they may turn aggressive.",
-        "answer": "aggressive"
-      },
-      {
-        "prompt": "Some students memorise facts only to regurgitate them during the exam.",
-        "answer": "regurgitate"
-      },
-      {
-        "prompt": "My mother left the bread under the sun to evaporate its moisture.",
-        "answer": "evaporate its moisture"
-      },
-      {
-        "prompt": "We need to wash our hands before preparing food to prevent contamination.",
-        "answer": "prevent contamination"
-      },
-      {
-        "prompt": "To ensure that the cake is baked well, my mother controls the temperature of the oven.",
-        "answer": "controls the temperature"
-      }
-    ],
-    "dictation": "Beekeepers extract honey from hives for it to be processed for our use. The beekeepers work quickly to pick out the honeycomb, remove the beeswax and pour out the honey. The empty honeycomb is then returned to the hive."
-  },
-  {
-    "id": 3,
-    "title": "Term 4 · List 3",
-    "theme": "Fear",
-    "book": "Book 4",
-    "items": [
-      {
-        "prompt": "Terror seized us all when we watched the horror movie.",
-        "answer": "Terror seized"
-      },
-      {
-        "prompt": "Panic engulfed him the moment he saw his house on fire.",
-        "answer": "Panic engulfed"
-      },
-      {
-        "prompt": "He froze momentarily upon seeing a shadow lurking behind him.",
-        "answer": "froze momentarily"
-      },
-      {
-        "prompt": "I rose shakily to my feet to receive my test results.",
-        "answer": "rose shakily"
-      },
-      {
-        "prompt": "A rude shock awaited them as they reached the destination.",
-        "answer": "rude shock"
-      },
-      {
-        "prompt": "As she walked onto the stage, a chill went down her spine.",
-        "answer": "chill went down her spine"
-      },
-      {
-        "prompt": "She screamed her head off when she saw the rat.",
-        "answer": "screamed her head off"
-      },
-      {
-        "prompt": "Upon hearing the loud explosion, everyone stood rooted to the ground.",
-        "answer": "stood rooted to the ground"
-      },
-      {
-        "prompt": "When Ken saw his friend falling down the slope, the shock robbed him of speech.",
-        "answer": "shock robbed him of speech"
-      },
-      {
-        "prompt": "I was too afraid to utter a word when I saw my mother's piercing stare.",
-        "answer": "afraid to utter a word"
-      }
-    ],
-    "dictation": "It was Tom's first night sleeping alone in the tent. Suddenly, he saw a shadow gliding past outside of his tent. He opened his mouth to scream but found himself completely incapable of making a sound."
-  },
-  {
-    "id": 4,
-    "title": "Term 4 · List 4",
-    "theme": "Unit 9: What Happens When You Laugh",
-    "book": "Book 4",
-    "items": [
-      {
-        "prompt": "Laughter is the body's way of releasing tension.",
-        "answer": "releasing tension"
-      },
-      {
-        "prompt": "Laughing and crying act as safety valves for the body.",
-        "answer": "safety valves"
-      },
-      {
-        "prompt": "When you laugh, blood is pumped faster around your body and this gives you an energy boost.",
-        "answer": "energy boost"
-      },
-      {
-        "prompt": "Engaging in physical activities is good for our health.",
-        "answer": "physical activities"
-      },
-      {
-        "prompt": "Exercising regularly keeps you fit.",
-        "answer": "Exercising regularly"
-      },
-      {
-        "prompt": "You need to eat healthy food to help your body fight diseases.",
-        "answer": "fight diseases"
-      },
-      {
-        "prompt": "Your muscles relax as you take a slow, deep breath.",
-        "answer": "muscles relax"
-      },
-      {
-        "prompt": "Dancing and singing helps to reduce my sister's stress levels.",
-        "answer": "stress levels"
-      },
-      {
-        "prompt": "Sarah trains her vocal cords for the upcoming singing competition.",
-        "answer": "vocal cords"
-      },
-      {
-        "prompt": "His phone vibrated continuously while he was sleeping.",
-        "answer": "vibrated continuously"
-      }
-    ],
-    "dictation": "When we laugh, our bodies get some internal jogging and our brains get more happy chemicals. The effect of laughing on our body is like having a good workout. One expert says that laughing a hundred times a day is equal to about ten minutes of rowing."
+
+// ══════════════════════════════════════════════
+//  MAIN TRACKER — class portal submission
+// ══════════════════════════════════════════════
+const MAIN_TRACKER_URL = 'https://script.google.com/macros/s/AKfycbwlkHB8VBBHjfk3tOU4DgqU22yGx0YRdLKy_aeZC45EKI4dnOoDFZdthORQzqzFrt6cGg/exec';
+let trackerStudent = null;
+
+function initIdentity() {
+  const bar    = document.getElementById('identityBar');
+  const stored = localStorage.getItem('p4_student');
+  if (stored) {
+    try {
+      trackerStudent = JSON.parse(stored);
+      const cls = trackerStudent.cls === 'Family' ? '🏠 Family' : trackerStudent.cls;
+      bar.innerHTML = `
+        <div class="id-badge">✓ Logged in</div>
+        <div>
+          <div class="id-name">${trackerStudent.name}</div>
+          <div class="id-cls">${cls}</div>
+        </div>
+        <div style="margin-left:auto;font-size:10px;color:var(--muted);letter-spacing:.5px">Scores auto-save on completion</div>`;
+    } catch(e) {
+      trackerStudent = null;
+      showIdWarn(bar);
+    }
+  } else {
+    showIdWarn(bar);
   }
+}
+function showIdWarn(bar) {
+  bar.innerHTML = `<div class="id-warn">⚠️ Not logged in — scores won't be saved to the class tracker.
+    <a href="https://sites.google.com/view/cps-alan-sensei" target="_parent">Log in →</a></div>`;
+}
+
+async function submitToMainTracker(correct, total) {
+  if (!trackerStudent || !trackerStudent.name) return;
+  const payload = {
+    action:    'submitScore',
+    name:      trackerStudent.name,
+    cls:       trackerStudent.cls || 'Family',
+    component: 'Sp',
+    score:     correct,
+    total:     total,
+    mins:      0
+  };
+  try {
+    await fetch(MAIN_TRACKER_URL, {
+      method:  'POST',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify(payload)
+    });
+  } catch(e) {}
+  const pct = total ? Math.round((correct/total)*100) : 0;
+  document.getElementById('toastTitle').textContent = `Spelling saved — ${correct}/${total} (${pct}%)`;
+  document.getElementById('toastSub').textContent   = `${trackerStudent.name} · ${trackerStudent.cls}`;
+  const toast = document.getElementById('submitToast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ══════════════════════════════════════════════
+//  WORD LISTS DATA
+// ══════════════════════════════════════════════
+const LISTS = [
+  {"id":101,"title":"Term 1 · List 1","theme":"Excitement","book":"Book 1","items":[{"prompt":"Henry's skin tingled with excitement as he watched the race.","answer":"tingled with excitement"},{"prompt":"He heard his children's shouts from the garden, shrill with excitement.","answer":"shrill with excitement"},{"prompt":"Tom was quivering all over with excitement.","answer":"quivering"},{"prompt":"The crowd let out a stupendous cheer as the team scored a home goal.","answer":"stupendous cheer"},{"prompt":"Their pulses raced as they neared their final goal.","answer":"pulses raced"},{"prompt":"They stared at him in blank amazement.","answer":"blank amazement"},{"prompt":"My mind was whirling with excitement.","answer":"whirling with excitement"},{"prompt":"He tossed his bag and ran out to join the crowd of onlookers.","answer":"ran out to join"},{"prompt":"Her face lit up as her eyes widened.","answer":"face lit up"},{"prompt":"The children clambered down from the roller-coaster, exhilarated.","answer":"exhilarated"}],"dictation":"The moment had finally arrived. Excitement rolled over all the students in waves as they sat on the benches arranged around the highlight of the event. John held his breath as the rest did the countdown. Finally, his principal lit the tinder. Everyone was in high spirits for the P4 campfire."},
+  {"id":102,"title":"Term 1 · List 2","theme":"Unit 1: Making Ice Cream","book":"Book 1","items":[{"prompt":"The class monitor took the PE equipment from the storeroom.","answer":"equipment"},{"prompt":"Mother measured the ingredients needed to bake my birthday cake.","answer":"measured the ingredients"},{"prompt":"Jane added some sugar into her coffee and waited for it to dissolve.","answer":"dissolve"},{"prompt":"The chef sprinkled some salt over his dish.","answer":"sprinkled"},{"prompt":"The ice clinked against the glass jars and made some noise.","answer":"clinked against"},{"prompt":"It is important to keep the temperature low to allow the cream to solidify.","answer":"temperature"},{"prompt":"The children witnessed an accident while on their way to school.","answer":"witnessed an accident"},{"prompt":"The little girl held her mother's hand as they walked towards the traffic light junction.","answer":"traffic light junction"},{"prompt":"The onlookers heard the screeching of brakes before the loud bang.","answer":"screeching of brakes"},{"prompt":"The paramedics lifted the victim onto the stretcher.","answer":"paramedics lifted the victim"}],"dictation":"We kept our eyes on the clock. We wanted to open the jars and check the ice cream, but our teacher said we had to be patient. When we eventually opened them, the ice cream had turned smooth and creamy. All the hard work was worthwhile!"},
+  {"id":103,"title":"Term 1 · List 3","theme":"Relief","book":"Book 1","items":[{"prompt":"The lady gave an audible sigh of relief when she had found her handbag.","answer":"audible sigh of relief"},{"prompt":"Gary heaved a sigh of relief when he learnt that he had passed his exams.","answer":"heaved a sigh of relief"},{"prompt":"Mr Lim could breathe more easily when he heard that his wife is out of danger.","answer":"breathe more easily"},{"prompt":"To Peter's great relief, no one asked him about his absence from school.","answer":"great relief"},{"prompt":"Jonathan could relax after completing his assignment.","answer":"relax"},{"prompt":"The passenger on the delayed flight were filled with relief when their plane took off.","answer":"filled with relief"},{"prompt":"\"Finally!\" she thought in relief.","answer":"Finally!"},{"prompt":"To the mother's vast relief, the baby stopped crying and fell asleep.","answer":"vast relief"},{"prompt":"He felt as though a huge weight had been lifted off his shoulder.","answer":"lifted off his shoulder"},{"prompt":"So great was her relief at the news that she hugged her friend.","answer":"So great was her relief"}],"dictation":"Ann took a deep breath. She was first off the starting blocks the moment she heard the starting pistol. While nearing the finish line, she saw her rivals catching up. Ann, with all her might, sprinted towards the finish line to come in first. She gave an audible sigh of relief when she saw her name in first place."},
+  {"id":104,"title":"Term 1 · List 4","theme":"Unit 2: Life of a Vet","book":"Book 1","items":[{"prompt":"A veterinarian specialises in the treatment of animals.","answer":"veterinarian"},{"prompt":"Rabbits are known to be delicate and sensitive creatures.","answer":"delicate and sensitive creatures"},{"prompt":"The nurse assured the patient that he will feel better soon.","answer":"assured"},{"prompt":"You need to consider if you can handle the responsibilities before owning a pet.","answer":"handle the responsibilities"},{"prompt":"My brother volunteers to help out at an animal shelter every weekend.","answer":"volunteers"},{"prompt":"The doctor prescribed me some medicine upon close examination.","answer":"close examination"},{"prompt":"I suffered minor injuries when I fell off the bicycle.","answer":"suffered minor injuries"},{"prompt":"Accidents are preventable if we take safety procedures.","answer":"Accidents are preventable"},{"prompt":"My dog became partially paralysed after the unfortunate incident.","answer":"partially paralysed"},{"prompt":"There are many pets available for adoption.","answer":"adoption"}],"dictation":"Cutie is a mischievous and busybody cat who is interested in everything around her. She likes to sit by the door of the clinic and greet every client that steps in. Sometimes, she jumps onto the reception counter to have a good view of everything that is happening. Everyone loves to pat on Cutie's head."},
+  {"id":105,"title":"Term 1 · List 5","theme":"Curiosity","book":"Book 1","items":[{"prompt":"He raised an eyebrow and looked at me questioningly.","answer":"questioningly"},{"prompt":"She shot a quizzical look as she opened the door. \"Yes?\" she said.","answer":"quizzical look"},{"prompt":"A small crowd gathered around her, whispering among themselves in hushed tones.","answer":"hushed tones"},{"prompt":"As I pretended to read my papers, I stole a glance at him from the corner of my eye.","answer":"stole a glance"},{"prompt":"I craned my neck and strained my eyes to see what lay ahead.","answer":"strained my eyes"},{"prompt":"I pressed my ear against the door trying to make out what my parents were arguing about in their room.","answer":"trying to make out"},{"prompt":"I listened intently hoping to catch what they were discussing.","answer":"listened intently"},{"prompt":"The inquisitive children asked a lot of questions.","answer":"inquisitive"},{"prompt":"My aunt has a keen nose for gossip.","answer":"keen nose"},{"prompt":"The unsolved mystery kept her awake at night.","answer":"unsolved"}],"dictation":"Kumar has an unerring nose for gossip and his sharp, inquisitive eyes miss nothing. One day, he realised that his neighbour's house lights were on. He felt it strange as he knew his neighbour was away on holiday. Kumar decided to take a closer look and saw an intruder inside."},
+  {"id":106,"title":"Term 1 · List 6","theme":"Unit 3: The Paralympic Games","book":"Book 1","items":[{"prompt":"The paralympic games attract the best athletes from all around the world.","answer":"athletes"},{"prompt":"Having physical disabilities does not hinder them from excelling in sports.","answer":"physical disabilities"},{"prompt":"The wheelchairs used in the paralympic games are specially designed to move fast.","answer":"specially designed"},{"prompt":"Many sports games require strategy and accuracy.","answer":"strategy and accuracy"},{"prompt":"The referee blows his whistle to stop the game.","answer":"referee"},{"prompt":"The children won medals and trophies during their sports day.","answer":"medals and trophies"},{"prompt":"The team fought hard against their opponents.","answer":"opponents"},{"prompt":"Spectators roared loudly when the football player scored a goal.","answer":"Spectators roared loudly"},{"prompt":"The school boy helped the visually impaired elderly to cross the road.","answer":"visually impaired"},{"prompt":"Despite the challenges, my brother did well in his PSLE examinations.","answer":"challenges"}],"dictation":"The Paralympic Games have become some of the largest sporting events in the world. They celebrate ability beyond disability. Not only do the games showcase the talent of the athletes, but they also train them to be resilient. Watching the paralympic athletes provide a source of inspiration for us to always try our best and not give up."},
+  {"id":1,"title":"Term 2 · List 1","theme":"Disappointment","book":"Book 2","items":[{"prompt":"I buried my face in my hands and sighed.","answer":"sighed"},{"prompt":"To my utter dismay, I had left my lunch money on the table.","answer":"utter dismay"},{"prompt":"She shook her head and left without saying a single syllable.","answer":"shook her head"},{"prompt":"Her face fell when she saw the single two-dollar note in the red packet.","answer":"face fell"},{"prompt":"I moaned in despair throwing my hands up in the air.","answer":"despair"},{"prompt":"She shrugged nonchalantly and snorted, 'Who cares?' but her eyes reddened.","answer":"eyes reddened"},{"prompt":"She had pinned all her hopes on him but he had shattered all her dreams.","answer":"shattered"},{"prompt":"Nodding grudgingly she turned and left, head hung low and shoulders stooped.","answer":"shoulders stooped"},{"prompt":"Her voice faltered as it trailed off.","answer":"faltered"},{"prompt":"She was forlorn when she found out the trip was cancelled.","answer":"forlorn"}],"dictation":"Patrick had been saving up diligently to buy the stalk of flower for his mother for Mother's Day. However, when he went to the bookshop during his recess, the flowers were sold out. Disappointment was written all over his face."},
+  {"id":2,"title":"Term 2 · List 2","theme":"Unit 4: The World Beyond Us","book":"Book 2","items":[{"prompt":"Outer space is an infinitely huge place with trillions of stars.","answer":"infinitely"},{"prompt":"Many people gathered to watch the solar eclipse.","answer":"solar eclipse"},{"prompt":"Some species of the tigers are facing extinction.","answer":"extinction"},{"prompt":"We should observe and appreciate the natural phenomena happening around us.","answer":"natural phenomena"},{"prompt":"Scientists use technology to predict disasters.","answer":"predict"},{"prompt":"A system refers to a group of things that interact.","answer":"interact"},{"prompt":"Some plants have unique features to survive under harsh weather.","answer":"unique features"},{"prompt":"My father regularly travels for his work.","answer":"regularly travels"},{"prompt":"Jenny reflected on her actions and decided to apologise.","answer":"reflected"},{"prompt":"My aunt went through many challenges during the early phases of her career.","answer":"phases"}],"dictation":"People from all over came together to witness the amazing solar eclipse. As the surface of the Sun was covered completely, the sky became as dark as night. This only lasted a few minutes before the sky turned bright again."},
+  {"id":3,"title":"Term 2 · List 3","theme":"Anxiety","book":"Book 2","items":[{"prompt":"Axel paced up and down the corridor.","answer":"paced up and down"},{"prompt":"Charlie watched the snarling dog apprehensively.","answer":"apprehensively"},{"prompt":"Suresh fidgeted nervously before the competition started.","answer":"fidgeted nervously"},{"prompt":"Joyce was restless as she waited to hear the score.","answer":"restless"},{"prompt":"Harvinder cast anxious looks at his father who was coughing badly.","answer":"cast anxious looks"},{"prompt":"Alex glanced frantically around the room as he looked for his wallet.","answer":"glanced frantically"},{"prompt":"Susie looked through her bag in a frenzy of panic for her mobile phone.","answer":"frenzy of panic"},{"prompt":"Anson's heart almost skipped a beat.","answer":"skipped a beat"},{"prompt":"Passers-by gave the lost child, who was crying hysterically, concerned looks.","answer":"crying hysterically"},{"prompt":"The patient was worried sick after hearing the bad news.","answer":"worried sick"}],"dictation":"Joseph fidgeted anxiously with his pen. He was such a bundle of nerves that he could not sit still. He trembled like a leaf as he walked down the corridor towards the principal's office."},
+  {"id":4,"title":"Term 2 · List 4","theme":"Unit 5: Ruby's Sunflower","book":"Book 2","items":[{"prompt":"Ruby's cheeks gave off a rosy glow.","answer":"rosy glow"},{"prompt":"Her hair was adorned with a pink clip.","answer":"adorned with"},{"prompt":"Saul was clad in a checkered shirt.","answer":"clad"},{"prompt":"Mr Buckley flashed a toothless grin.","answer":"toothless grin"},{"prompt":"The school organised a gardening contest.","answer":"contest"},{"prompt":"The chief judge decided to disqualify the team.","answer":"chief judge"},{"prompt":"The form teacher announced the winners of the competition.","answer":"announced"},{"prompt":"John was in the lead during the race.","answer":"in the lead"},{"prompt":"Mother washed the shoes and they were as good as new.","answer":"as good as new"},{"prompt":"Her fingers were tightly crossed as she waited for the results.","answer":"fingers were tightly crossed"}],"dictation":"Ken punched the air with delight when he heard that he was in the top position. He collected his prize in front of the whole school. Everyone gave him a loud round of applause. Ken smiled from ear to ear with pride."},
+  {"id":5,"title":"Term 2 · List 5","theme":"Tiredness","book":"Book 2","items":[{"prompt":"I felt exhausted after a hard day's work.","answer":"exhausted"},{"prompt":"My mother felt drowsy and weary during her night shift.","answer":"felt drowsy and weary"},{"prompt":"He was fast asleep the moment his head touched the pillow.","answer":"fast asleep"},{"prompt":"She was extremely tired and kept yawning endlessly.","answer":"yawning endlessly"},{"prompt":"His eyes were bloodshot red from the lack of sleep.","answer":"bloodshot red"},{"prompt":"James was snoring loudly after a few minutes.","answer":"snoring loudly"},{"prompt":"Tom was curled up in bed after the long school day.","answer":"curled up in bed"},{"prompt":"My brother was overcome with fatigue during the hike.","answer":"overcome with fatigue"},{"prompt":"Minutes ticked by and soon his eyes began to droop sleepily.","answer":"eyes began to droop sleepily"},{"prompt":"Upon finishing the marathon, he was drained of energy.","answer":"drained of energy"}],"dictation":"Stumbling with exhaustion, Mel bent and unlaced her running shoes. She was still panting heavily as she completed the last lap. She felt as if she had used up every ounce of her energy."},
+  {"id":1,"title":"Term 3 · List 1","theme":"Annoyance","book":"Book 3","items":[{"prompt":"He furrowed his eyebrows in annoyance.","answer":"furrowed"},{"prompt":"He shook his head disapprovingly but kept silent.","answer":"disapprovingly"},{"prompt":"He sat glumly, with his arms crossed.","answer":"sat glumly"},{"prompt":"Disapproval was written all over their faces.","answer":"Disapproval was written"},{"prompt":"She folded her arms and rolled her eyes.","answer":"folded her arms"},{"prompt":"\"I don't know!\" she answered in a gruff voice.","answer":"gruff voice"},{"prompt":"\"Stop that!\" she said in the firmest of voices.","answer":"firmest of voices"},{"prompt":"She was visibly agitated.","answer":"visibly agitated"},{"prompt":"Vexed, she tossed the books and notes onto the bed.","answer":"Vexed"},{"prompt":"\"Silence! Silence! Boys!\" she shouted, her temper rising.","answer":"temper rising"}],"dictation":"Tom's father bellowed, \"Switch off your computer now!\" Tom had been playing computer games for the past two hours. However, once he heard his father's voice, he knew that he had to stop as it was dinner time."},
+  {"id":2,"title":"Term 3 · List 2","theme":"Unit 6: Dinosaurs Exist!","book":"Book 3","items":[{"prompt":"Dinosaurs had vanished from the planet millions of years ago.","answer":"vanished"},{"prompt":"The team was ready for their first dangerous expedition.","answer":"dangerous expedition"},{"prompt":"Hannah brought along an insect repellent for the hike.","answer":"insect repellent"},{"prompt":"Once they were pleased with their plan, they set off on the journey.","answer":"pleased with their plan"},{"prompt":"With vivid imaginations, the young toddler told his mother about his dream.","answer":"vivid imaginations"},{"prompt":"My little brother loves to invent amazing fantasies and share them with me.","answer":"invent amazing fantasies"},{"prompt":"Reluctantly, James switched off the computer and went to bed.","answer":"Reluctantly"},{"prompt":"I looked away from my teacher's raging face.","answer":"raging face"},{"prompt":"The children were prepared for the blood-curdling terrors that were awaiting them at the haunted house.","answer":"blood-curdling terrors"},{"prompt":"Kit struggled to comprehend the Math word problem.","answer":"struggled to comprehend"}],"dictation":"Peering around its neck, Vicky noticed a smaller dinosaur. Its body seemed to be ripped open. Inside, there were stairs with a climbing frame. Vicky grinned to herself upon realising that her brother had found a new playground full of dinosaur models."},
+  {"id":3,"title":"Term 3 · List 3","theme":"Embarrassment","book":"Book 3","items":[{"prompt":"She was visibly embarrassed after falling down the stairs.","answer":"visibly embarrassed"},{"prompt":"As my mother continued berating me, I lowered my eyes, fighting back the tears.","answer":"lowered my eyes"},{"prompt":"She blushed so furiously that even the tips of her ears were red.","answer":"blushed so furiously"},{"prompt":"I entered the new classroom with my eyes downcast.","answer":"my eyes downcast"},{"prompt":"I scratched my head sheepishly.","answer":"sheepishly"},{"prompt":"She turned away and avoided the stares of curious passers-by.","answer":"avoided the stares"},{"prompt":"I stole a furtive look around when I spilled my glass of water.","answer":"stole a furtive look"},{"prompt":"I pretended as if nothing had happened though my face was as red as a beetroot.","answer":"as red as a beetroot"},{"prompt":"I apologised and smiled nervously.","answer":"smiled nervously"},{"prompt":"Peter was burning with humiliation when he was reprimanded.","answer":"humiliation"}],"dictation":"Kai wanted to give his mother an ice cream cone for a birthday surprise. He held it behind his back and walked towards her. \"Happy Birthday!\" shouted Kai. As he was about to pass it to her, he unknowingly turned it upside down and the ice cream dropped off from the cone."},
+  {"id":4,"title":"Term 3 · List 4","theme":"Bad Weather","book":"Book 3","items":[{"prompt":"The sky above was full of dark, ragged clouds.","answer":"dark, ragged clouds"},{"prompt":"Gusts of wind slammed against the gaping windows.","answer":"Gusts of wind"},{"prompt":"The bitterly cold wind stung my face.","answer":"bitterly cold wind"},{"prompt":"Thunder roared and lightning flashed across the sky.","answer":"lightning flashed"},{"prompt":"The howling of the wind frightened us all.","answer":"howling of the wind"},{"prompt":"Rain pelted down from the skies.","answer":"pelted down"},{"prompt":"There was a deep rumble in the distance.","answer":"a deep rumble"},{"prompt":"Rain blurred the distant images of the buildings that I had to strain my eyes to see what lay ahead.","answer":"blurred the distant images"},{"prompt":"Puddles, big and small, gathered all over the place.","answer":"Puddles"},{"prompt":"The cars made swish-swish sounds as they sped past.","answer":"swish-swish sounds"}],"dictation":"Ali was awakened by the sound that he had thought was from his alarm clock. Suddenly, he heard a deafening crack. The noise filled his ears while a blinding light filled his room. He looked out of his window and saw heavy rain pelting down from the sky."},
+  {"id":5,"title":"Term 3 · List 5","theme":"Unit 7: Heartbeats in the Dark","book":"Book 3","items":[{"prompt":"Though my grandmother is forgetful and wrinkly, she is loving towards us.","answer":"forgetful and wrinkly"},{"prompt":"The robber's eyes glint with evil as he demands money from the cashier.","answer":"eyes glint with evil"},{"prompt":"My heart bangs in my chest each time I hear the loud thunder.","answer":"heart bangs in my chest"},{"prompt":"Jane's smile slid around her face when she spotted her brother's hiding place.","answer":"smile slid around her face"},{"prompt":"I tried to calm myself down by drumming my fingers on my desk.","answer":"drumming my fingers"},{"prompt":"The room is so dark that it feels like it is suffocating me.","answer":"suffocating"},{"prompt":"He yanked the curtains open once he woke up.","answer":"yanked the curtains"},{"prompt":"Sucking in a ball of air, John walked into the abandoned house.","answer":"Sucking in a ball of air"},{"prompt":"His throat felt tight and he failed to deliver the speech.","answer":"throat felt tight"},{"prompt":"Father swallowed his saliva upon breaking the bad news.","answer":"swallowed his saliva"}],"dictation":"I tried to open my eyes but I could not do that. I sit up but I could not breathe. I stare at where I know the curtains are. I tell myself that the sun is blazing on the other side of those curtains."},
+  {"id":6,"title":"Term 3 · List 6","theme":"Discomfort","book":"Book 3","items":[{"prompt":"My stomach was growling.","answer":"growling"},{"prompt":"He grimaced in pain as he hobbled along.","answer":"grimaced in pain"},{"prompt":"She was aching all over.","answer":"aching all over"},{"prompt":"A nauseating feeling overcame her.","answer":"nauseating feeling"},{"prompt":"\"No, thanks. I have no appetite,\" she said with a faint smile.","answer":"no appetite"},{"prompt":"Her vision grew blurred and the things around her started to spin.","answer":"vision grew blurred"},{"prompt":"He retched violently throwing up all that he had eaten.","answer":"retched violently"},{"prompt":"The pain in his stomach was so excruciating that he groaned out loudly.","answer":"excruciating"},{"prompt":"She felt so cold that she was literally shivering uncontrollably.","answer":"shivering uncontrollably"},{"prompt":"She tossed and turned in pain on the bed the whole night.","answer":"tossed and turned"}],"dictation":"As the second half of the game started, Kelly's palms felt clammy and her heart pounded vigorously. Her head was throbbing in pain. However, she wanted to win the game badly. Gritting her teeth, Kelly played on despite the discomfort."},
+  {"id":1,"title":"Term 4 · List 1","theme":"Sadness","book":"Book 4","items":[{"prompt":"A dark mood came over Jane.","answer":"dark mood"},{"prompt":"She was on the verge of tears.","answer":"verge of tears"},{"prompt":"No words could express his agony.","answer":"agony"},{"prompt":"Tears welled up in her eyes.","answer":"Tears welled up"},{"prompt":"The poor child sobbed sorrowfully.","answer":"sobbed sorrowfully"},{"prompt":"My heart sank when I heard the sad news.","answer":"heart sank"},{"prompt":"Her eyes were puffy and red after crying.","answer":"puffy and red"},{"prompt":"She cried her eyes out on hearing the tragic news.","answer":"tragic"},{"prompt":"Tears brimmed in her reddened eyes.","answer":"Tears brimmed"},{"prompt":"Her sobs escalated into wails when she found that her mother was not beside her.","answer":"escalated into wails"}],"dictation":"The group of soccer boys sat on the grass. They were waiting for their coach to call out the names of the sixteen selected ones who will be representing the school. When the sixteenth name was read out, he sobbed uncontrollably and was inconsolable."},
+  {"id":2,"title":"Term 4 · List 2","theme":"Unit 8: All the Buzz about Honey","book":"Book 4","items":[{"prompt":"Honey can be used for medicinal purposes.","answer":"medicinal purposes"},{"prompt":"Honeybees feed on nectar to survive.","answer":"survive"},{"prompt":"The beehive is a structure in which bees live and raise their young.","answer":"structure"},{"prompt":"Beeswax has antibacterial properties.","answer":"antibacterial properties"},{"prompt":"The natural aroma of the beeswax helps to soothe the pain.","answer":"natural aroma"},{"prompt":"We should not smack the bees as they may turn aggressive.","answer":"aggressive"},{"prompt":"Some students memorise facts only to regurgitate them during the exam.","answer":"regurgitate"},{"prompt":"My mother left the bread under the sun to evaporate its moisture.","answer":"evaporate its moisture"},{"prompt":"We need to wash our hands before preparing food to prevent contamination.","answer":"prevent contamination"},{"prompt":"To ensure that the cake is baked well, my mother controls the temperature of the oven.","answer":"controls the temperature"}],"dictation":"Beekeepers extract honey from hives for it to be processed for our use. The beekeepers work quickly to pick out the honeycomb, remove the beeswax and pour out the honey. The empty honeycomb is then returned to the hive."},
+  {"id":3,"title":"Term 4 · List 3","theme":"Fear","book":"Book 4","items":[{"prompt":"Terror seized us all when we watched the horror movie.","answer":"Terror seized"},{"prompt":"Panic engulfed him the moment he saw his house on fire.","answer":"Panic engulfed"},{"prompt":"He froze momentarily upon seeing a shadow lurking behind him.","answer":"froze momentarily"},{"prompt":"I rose shakily to my feet to receive my test results.","answer":"rose shakily"},{"prompt":"A rude shock awaited them as they reached the destination.","answer":"rude shock"},{"prompt":"As she walked onto the stage, a chill went down her spine.","answer":"chill went down her spine"},{"prompt":"She screamed her head off when she saw the rat.","answer":"screamed her head off"},{"prompt":"Upon hearing the loud explosion, everyone stood rooted to the ground.","answer":"stood rooted to the ground"},{"prompt":"When Ken saw his friend falling down the slope, the shock robbed him of speech.","answer":"shock robbed him of speech"},{"prompt":"I was too afraid to utter a word when I saw my mother's piercing stare.","answer":"afraid to utter a word"}],"dictation":"It was Tom's first night sleeping alone in the tent. Suddenly, he saw a shadow gliding past outside of his tent. He opened his mouth to scream but found himself completely incapable of making a sound."},
+  {"id":4,"title":"Term 4 · List 4","theme":"Unit 9: What Happens When You Laugh","book":"Book 4","items":[{"prompt":"Laughter is the body's way of releasing tension.","answer":"releasing tension"},{"prompt":"Laughing and crying act as safety valves for the body.","answer":"safety valves"},{"prompt":"When you laugh, blood is pumped faster around your body and this gives you an energy boost.","answer":"energy boost"},{"prompt":"Engaging in physical activities is good for our health.","answer":"physical activities"},{"prompt":"Exercising regularly keeps you fit.","answer":"Exercising regularly"},{"prompt":"You need to eat healthy food to help your body fight diseases.","answer":"fight diseases"},{"prompt":"Your muscles relax as you take a slow, deep breath.","answer":"muscles relax"},{"prompt":"Dancing and singing helps to reduce my sister's stress levels.","answer":"stress levels"},{"prompt":"Sarah trains her vocal cords for the upcoming singing competition.","answer":"vocal cords"},{"prompt":"His phone vibrated continuously while he was sleeping.","answer":"vibrated continuously"}],"dictation":"When we laugh, our bodies get some internal jogging and our brains get more happy chemicals. The effect of laughing on our body is like having a good workout. One expert says that laughing a hundred times a day is equal to about ten minutes of rowing."}
 ];
 
 // ══ STATE ══
@@ -1730,6 +829,7 @@ function showRedemptionPrompt(){
 }
 function startRedemption(){isRedemptionMode=true;G.redemptionItems=[...wrongQueue];wrongQueue=[];G.currentQ=0;showQ(G.redemptionItems[0]);}
 
+// ── Spelling-specific leaderboard (separate GAS endpoint) ──
 const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbzhZls_bxxdB6p2DI5aPl_lsRzIm-toFdMDyHG28wg5Q2om3m-Pnggyc4__sjnXSCyyeg/exec';
 async function saveScore(name,cls,score,total,mode,listTitle){
   if(!name)return false;
@@ -1772,22 +872,31 @@ async function showResults(){
   document.getElementById('resTbody').innerHTML=rows;
   const list=getList();
   if(G.studentName&&total>0){const saved=await saveScore(G.studentName,G.studentClass,correct,total,G.mode,list?.title||'Unknown');if(saved){const badge=document.getElementById('saveBadge');if(badge)badge.classList.remove('hidden');}}
+  // ✅ Also submit to main class portal tracker
+  if(total>0) await submitToMainTracker(correct, total);
   renderLeaderboard(G.studentClass||null);
 }
 
 function startGame(){
   const errEl=document.getElementById('setupError');if(!G.listId){errEl.textContent='⚠️ Please choose a word list first!';errEl.style.display='block';return;}errEl.style.display='none';
   const list=getList();if(!list)return;
-  G.studentName=document.getElementById('studentSelect')?.value||'';G.studentClass=document.getElementById('classSelect')?.value||'';
+  // ✅ Read identity from trackerStudent (localStorage), not dropdowns
+  G.studentName  = trackerStudent?.name  || '';
+  G.studentClass = trackerStudent?.cls   || '';
   G.currentQ=0;G.answers=[];G.hearts=3;wrongQueue=[];isRedemptionMode=false;
   document.getElementById('setupScreen').classList.add('hidden');document.getElementById('gameScreen').classList.remove('hidden');
   if(G.mode==='dictation')renderDictation(list);else showQ(list.items[0]);
 }
 
 function init(){
-  const classSelect=document.getElementById('classSelect');classSelect.innerHTML='<option value="">— Select Class —</option>';
+  // ✅ Read identity from localStorage first
+  initIdentity();
+
+  // Populate hidden selects for leaderboard compatibility
+  const classSelect=document.getElementById('classSelect');
+  classSelect.innerHTML='<option value="">—</option>';
   Object.keys(CLASS_STUDENTS).sort().forEach(cls=>{const o=document.createElement('option');o.value=o.textContent=cls;classSelect.appendChild(o);});
-  classSelect.addEventListener('change',function(){const stuSel=document.getElementById('studentSelect');stuSel.innerHTML='<option value="">— Select Name —</option>';(CLASS_STUDENTS[this.value]||[]).forEach(s=>{const o=document.createElement('option');o.value=o.textContent=s;stuSel.appendChild(o);});});
+
   if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();setTimeout(loadVoices,500);setTimeout(loadVoices,1500);}
   const books=[...new Set(LISTS.map(l=>l.book))];const tabDiv=document.getElementById('bookTabs');
   books.forEach((b,i)=>{const btn=document.createElement('button');btn.className='book-tab'+(i===0?' active':'');btn.textContent=b;btn.onclick=()=>{tabDiv.querySelectorAll('.book-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderListCards(b);};tabDiv.appendChild(btn);});
