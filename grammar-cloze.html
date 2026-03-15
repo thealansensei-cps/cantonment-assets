@@ -165,7 +165,21 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwihbBr7sA6LvqLTAUD6wK-xoUgslCkyqWenIWYxnRPidn85ihhqcbwKW8I_dcFF_uzOw/exec';
+
+function fbKey(s){ return (s||'').replace(/[.#$\[\]\/]/g,'_'); }
+
+async function fbSaveScore(name,cls,zone,topic,score,total,stars){
+  if(!name||!window._fbDb) return;
+  try{
+    await window._fbDb.ref('scores/'+fbKey(name)).update({
+      name, cls,
+      ['zone_'+zone]:{score,total,stars,pts:score*10,topic,ts:Date.now()}
+    });
+  }catch(e){console.warn('Firebase save error:',e);}
+}
+
+</script>
+<script>
 const urlP=new URLSearchParams(location.search);
 const _stored=(function(){try{return JSON.parse(sessionStorage.getItem('student')||'{}');}catch(e){return {};}})();
 const hero={name:urlP.get('hero')||_stored.name||'',cls:urlP.get('cls')||_stored.cls||'',returnTo:urlP.get('returnTo')||'student-portal.html'};
@@ -323,15 +337,7 @@ async function doSubmit(){
   const pct=Math.round(score/total*100);
   const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
 
-  // POST to Google Sheets
-  try{
-    await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-      action:'saveScore',name:hero.name,cls:hero.cls,
-      zone:'gc',topic:currentPassage.title,
-      score,total,stars,coins:finalPts,
-      ts:new Date().toISOString()
-    })});
-  }catch(e){console.warn('Sheet error:',e)}
+  await fbSaveScore(hero.name,hero.cls,'gc',currentPassage.title,score,total,stars);
 
   // Return to portal with score params
   const ret=hero.returnTo
@@ -351,6 +357,17 @@ function showToast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2000);
 }
+</script>
+<script>
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script>
+(function(){
+  var c={apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",authDomain:"english-island-cps.firebaseapp.com",projectId:"english-island-cps",storageBucket:"english-island-cps.firebasestorage.app",messagingSenderId:"892743482834",appId:"1:892743482834:web:6705bc3e3bc832cf749c0b",databaseURL:"https://english-island-cps-default-rtdb.firebaseio.com"};
+  if(!firebase.apps.length)firebase.initializeApp(c);
+  window._fbDb=firebase.database();
+})();
 </script>
 </body>
 </html>
