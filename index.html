@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P4 Spelling – Audio Only</title>
+
+<style>
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#0b0f19;color:#e5e7eb}
+  .wrap{max-width:980px;margin:auto;padding:20px}
+  .card{background:#121a2a;border-radius:14px;padding:18px}
+  h1{margin:0 0 6px;font-size:20px}
+  h2{margin:0 0 6px;font-size:16px}
+  .small{font-size:13px;color:#94a3b8}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  .btn{background:#1f2a44;border:0;color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer}
+  .btn:focus{outline:2px solid #3b82f6}
+  .btn.ghost{background:transparent;border:1px solid #24324d;color:#e5e7eb}
+  .item{border:1px solid #24324d;border-radius:12px;padding:14px;margin-top:12px}
+  input,select,textarea{
+    width:100%;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid #24324d;
+    background:#0b0f19;
+    color:#fff;
+    font-size:15px;
+    box-sizing:border-box;
+  }
+  textarea{min-height:120px;resize:vertical}
+  .control{flex:1;min-width:220px}
+  .label{font-size:12px;color:#94a3b8;margin-bottom:6px}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border:1px solid #24324d;padding:10px;text-align:left;vertical-align:top}
+  th{font-size:12px;color:#94a3b8;font-weight:600}
+  td{font-size:14px}
+  .ok{color:#22c55e}
+  .no{color:#ef4444}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+  .pill{border:1px solid #24324d;border-radius:999px;padding:6px 10px;font-size:12px;color:#94a3b8}
+  .link{color:#93c5fd;cursor:pointer;text-decoration:underline}
+  .topbar{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+  .bigScore{font-size:42px;line-height:1;margin:10px 0 6px}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="topbar">
+      <div>
+        <h1>P4 Term 1 Spelling</h1>
+        <div class="small">Audio only · Type phrase · Press Enter · Submit at the end to grade</div>
+      </div>
+      <div class="row" style="margin-top:0">
+        <span class="pill" id="whoPill">Class: none · Student: none</span>
+        <button class="btn ghost" id="teacherBtn" type="button">Teacher</button>
+      </div>
+    </div>
+
+    <div class="row" id="controls">
+      <div class="control">
+        <div class="label">Class</div>
+        <select id="classSelect"></select>
+      </div>
+
+      <div class="control">
+        <div class="label">Student name</div>
+        <select id="studentSelect"></select>
+      </div>
+
+      <div class="control">
+        <div class="label">Voice (US, UK, SG only)</div>
+        <select id="voiceSelect">
+          <option value="">Loading voices…</option>
+        </select>
+      </div>
+
+      <div class="control" style="min-width:160px">
+        <div class="label">Speed</div>
+        <select id="speedSelect">
+          <option value="0.75">0.75</option>
+          <option value="0.85">0.85</option>
+          <option value="1" selected>1.0</option>
+          <option value="1.15">1.15</option>
+          <option value="1.3">1.3</option>
+        </select>
+      </div>
+
+      <div class="control" style="min-width:160px">
+        <div class="label">Repeat phrase</div>
+        <select id="repeatSelect">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn" id="startBtn" type="button">Start</button>
+      <button class="btn ghost" id="resetSessionBtn" type="button">Reset session</button>
+      <span class="small" id="statusText"></span>
+    </div>
+
+    <div id="quiz" style="display:none"></div>
+    <div id="review" style="display:none;margin-top:20px"></div>
+    <div id="result" style="display:none;margin-top:20px"></div>
+    <div id="teacher" style="display:none;margin-top:20px"></div>
+  </div>
+</div>
+
+<script>
+/* =====================
+   CLASS LISTS
+===================== */
+
+const CLASS_STUDENTS = {
+  "4 Care": [
+    "AARON JAMES MC HUGH","AXTON SHANG FUSHENG","AYDEN BIN AZAHAR","AYSHA ALIYA AZRYN","CANDICE HO ZIHAN",
+    "CHUA SHAN TING, CELESTE","CLARA LILLIAN PEREIRA","DAI JIATAI","DAO TUAN HUY HARVEY","DAPHNE ALEXANDRA YI TING LO",
+    "ELIZABETH SUBANEKNAN","FARAZ ARSHAD RAMADHAN ARDIWINATA","GOSWAMI AMAY","HO DING KANG, EDWARD","JAYDEN GOPU LEE JIE EN",
+    "MARCUS LIGTENBERG","MASONN KOH SHAO YU","MAXENCE GARNIER","MUHAMMAD UMAR BIN AZIZ AHMAD","NG ZI HAO JAMESON",
+    "RANASINGHE SIENNA TARYN","SAHANA SAFRIN BINTE MOHAMED ARIFF","SARIKA SANMAN SHETTY","SIM EN XUAN, JERINA","SKYLER TAN GUAN MIN",
+    "SUNG SEBASTIAN","SYURAHBIL BIN SHAHRILL","THUT LYAN MOE","VIKRANT KHAITAN","WONG YUU MINN JULIAN","YIU CHUN HEI KADEN"
+  ],
+  "4 Graciousness": [
+    "AENI AQISYA BINTE MUHAMMAD AEWANDA","AGARWAL NISHANT","ARIDASU AASHINYA SRI","AVALYN ONG HUI QI","CHEONG YONG JUN WESLEY",
+    "DOMINIC FONG YU BIN","ERIC HEIN HTET KYAW","GAZI AVERO","GLENDA LEE EN LE","GOH KHUN LEE","GU EVEREST","HANNAH LOH YU EN",
+    "HU YUYANG","JAKE ARJUN THYAGARAJAN","KOJIMA SHINTARO","LIAO YUQUAN, LANCE","LUCAS CUI ZHENGPING",
+    "MOHAMED NIZAMUDEEN ZAAFIRA","MUHAMMAD ADRYAN BIN MOHAMED IRWAN","NAKANOSONO TAIGA","NGO BAO NAM","OLIVER JOSEPH LOWE",
+    "PASTRANA MARC GABRIEL HIDALGO","PATEL VIHAAN KIRAN","SCHLAGER LEON ALEXANDER","SHAZRIL BIN MUHAMMAD NIZAM",
+    "SOPHIE LOUISE HEMMINGS","TAN JING EN REX","TAN JUN WEI","WANG MANTING","WILSON PETER HAN-WEN","HAYLEY KAYLEIGH LONGDEN"
+  ],
+  "4 Resilience": [
+    "AGRAWAL AMAY","AHMAD HANIF BIN RASHID","ALESSA HANA WINATA","ASHWIN PARTHI","BHONE THUTA PAING",
+    "CAYVIER KOH ZHENG JIE","CHAN YEN LING ISABELLE","DASHIELL ONG YU HAN","DAYA KAUR D/O SARBJIT SINGH","EE JUN QI, TRISTAN",
+    "ELIYA'NURSHEZA BINTE MUHAMMAD HAZMAN","GAGANPREET KAUR D/O HARPRIT SINGH SIDHU","HE CHUNQI","ISAAC LIN QIXIANG","JADEN FOO YAN KAI",
+    "JAYDEN TEE TZU LE","LIM SERIN","LUCAS LOW","MUHAMMAD ELIAS AASYAHFI BIN MUHAMMAD FARHAN","MURALIKRISHNAN HARISHWARAMOORTHY",
+    "NAFIHA JEHAAN","NGUYEN VI","PANCHAPAGESAN SUDHARSHAN","RIHAAN SARKAR","SHEN ZHIYUAN","SIDDHARTH PANTA",
+    "SIM GEK BOON THEOPHANIE","THONGLUE CHANAPAT","XIAO YA NING JOANNE","XU XIAOCHEN","ZOEY LI","ZAIM AKILI IYLIA"
+  ],
+  "4 Respect": [
+    "AGARWAL RAMANSH HARSH","ARUL LOURDURAJ STEEVEJOE","BENJAMIN WONG GUANLIN","DU ZHENGHENG","HAMZAH BIN BACHTIAR",
+    "JADE LOUISE BOISSEAU","JAKE ANG JIA LE","JIA ZEKAI","JULIA THANT SIN","KADEN CHUA DE RONG","LAURYN GRACE OVERY","LEE HAJUN","LEE SEUNG WOO",
+    "LIN MU-CHEN","LIN XUAN YING KARISA","MALHOTRA AVA","MATHILDA TAY","MUHAMMAD DAMIER SKY BIN MUHAMMAD SHAHRUL AMEEN",
+    "NAGUULAN RAVISHANKAR","NUR UFAIRAH PUTRI PUTRA ALFIAN","ONG WEI TING CHLOE","PHAM MINH KHANH CHI","SHAYEIN ARUSHA CUACA",
+    "SHIVANSH JAIN","TAY ZHI YUAN, ERIC","THADANI AHAAN ROHIT","TIO WEN LE","TOH JING XUAN JOSLYN","WANG HAIGE","WARREN CHEN BOYUAN","WISUTTI JOAQUIN"
+  ],
+  "4 Integrity": [
+    "ALEEYA ARTABIA PRASETYOWIBOWO","CHUNG YUE EN, GUINEVERE","COLLIN ALICE DOROTHY MARIE","DANIEL CAI JIEHAN","DAVE LIM DOW FENG",
+    "GUNERATNE BRYN TULLIUS CHAN SHUN","JEONG ICHAN","JOSHUA CHONG KWOK ERN","KOH KAY XUAN IRIS","LEE EN HUI","LIM DURIN","LIM HUI YU",
+    "MAK GUAN XUAN","MARTIN NEDVED","MUHAMMAD UBAY HYDE BIN MUHAMMAD ALIFFIZWAN","NAFISAH RANIAH BINTE SHAHRIR",
+    "NAVEEN SINGH DHILLON S/O JASMINDER SINGH DHILLON","NIKOLA STOJANAC","NOAH LAKRA","NUR NAURA AALIYAH BINTE MUHAMMAD AFIQ",
+    "OMKAR VAIDHYA RAMASWAMI","ONG YAN ZHE, JERRIC","PUTRI NUR IMELDA BINTE MUHAMMAD IKHMAL","SADIKOT RIYAAZ MUBIN",
+    "SEOW YI XUN, MATTHEW","SHANNAN LIM","SI RUISHEN","SIM EN WEI, JAVION","SOFIA MAIRA BINTE MOHAMAD SHAFIEE",
+    "SONG SHOUFU","SOPHIE ANNE COPLAND","SYED AHMED HARRIS MOHAMED AFFAN KABEER","XU ZIMO","YUKI ITO"
+  ]
+};
+
+/* =====================
+   BASE ITEMS
+===================== */
+
+const BASE_ITEMS = [
+  { prompt:"Henry's skin tingled with excitement as he watched the race.", answer:"skin tingled" },
+  { prompt:"He heard his children's shouts from the garden, high-pitched and full of energy.", answer:"high-pitched and full of energy" },
+  { prompt:"Tom was quivering all over, unable to keep still.", answer:"quivering" },
+  { prompt:"The crowd let out a stupendous cheer as the team scored a home goal.", answer:"stupendous cheer" },
+  { prompt:"Their pulses raced as they neared their final goal.", answer:"pulses raced" },
+  { prompt:"They stared at him in blank amazement.", answer:"blank amazement" },
+  { prompt:"My thoughts spun rapidly in my head.", answer:"spun rapidly" },
+  { prompt:"He tossed his bag and ran out to join the crowd of onlookers.", answer:"ran out to join" },
+  { prompt:"Her face lit up as her eyes widened.", answer:"face lit up" },
+  { prompt:"The children clambered down from the roller-coaster, exhilarated.", answer:"exhilarated" }
+];
+
+/* =====================
+   STORAGE KEYS
+===================== */
+
+const SETTINGS_KEY = "spell_app_settings_v6";
+const SESSION_KEY  = "spell_app_session_v6";
+const RECORDS_KEY  = "spell_app_records_v6";
+const CUSTOM_ITEMS_KEY = "spell_app_custom_items_v1";
+
+/* =====================
+   NORMALISATION
+===================== */
+
+function norm(s){
+  return (s ?? "").toString().toLowerCase().replace(/[^a-z0-9]/g,"");
+}
+
+/* =====================
+   ELEMENTS
+===================== */
+
+const classSelect   = document.getElementById("classSelect");
+const studentSelect = document.getElementById("studentSelect");
+const voiceSelect   = document.getElementById("voiceSelect");
+const speedSelect   = document.getElementById("speedSelect");
+const repeatSelect  = document.getElementById("repeatSelect");
+const whoPill       = document.getElementById("whoPill");
+const statusText    = document.getElementById("statusText");
+
+const quizBox    = document.getElementById("quiz");
+const reviewBox  = document.getElementById("review");
+const resultBox  = document.getElementById("result");
+const teacherBox = document.getElementById("teacher");
+
+/* =====================
+   SETTINGS / SESSION / RECORDS / ITEMS
+===================== */
+
+let voices = [];
+let settings = loadSettings();
+let session  = loadSession();
+let records  = loadRecords();
+
+let customItems = loadCustomItems();
+let SPELLING_ITEMS = buildItems();
+
+function buildItems(){
+  const all = BASE_ITEMS.concat(customItems);
+  return all.map((x, i)=>({
+    id: i+1,
+    prompt: x.prompt,
+    answer: x.answer,
+    highlight: x.answer
+  }));
+}
+
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if(!raw) return { className:"", student:"", voiceURI:"", rate:1.0, repeat:2 };
+    const s = JSON.parse(raw);
+    return {
+      className: typeof s.className === "string" ? s.className : "",
+      student: typeof s.student === "string" ? s.student : "",
+      voiceURI: typeof s.voiceURI === "string" ? s.voiceURI : "",
+      rate: Number(s.rate) || 1.0,
+      repeat: Math.max(1, Math.min(3, Number(s.repeat) || 2))
+    };
+  }catch{
+    return { className:"", student:"", voiceURI:"", rate:1.0, repeat:2 };
+  }
+}
+
+function saveSettings(){
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function loadSession(){
+  try{
+    const raw = localStorage.getItem(SESSION_KEY);
+    if(!raw) return { active:false, index:0, typed:[] };
+    const s = JSON.parse(raw);
+    return {
+      active: !!s.active,
+      index: Number(s.index) || 0,
+      typed: Array.isArray(s.typed) ? s.typed : []
+    };
+  }catch{
+    return { active:false, index:0, typed:[] };
+  }
+}
+
+function saveSession(){
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+
+function loadRecords(){
+  try{
+    const raw = localStorage.getItem(RECORDS_KEY);
+    if(!raw) return [];
+    const r = JSON.parse(raw);
+    return Array.isArray(r) ? r : [];
+  }catch{
+    return [];
+  }
+}
+
+function saveRecords(){
+  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+}
+
+function loadCustomItems(){
+  try{
+    const raw = localStorage.getItem(CUSTOM_ITEMS_KEY);
+    if(!raw) return [];
+    const arr = JSON.parse(raw);
+    if(!Array.isArray(arr)) return [];
+    return arr
+      .filter(x => x && typeof x.prompt === "string" && typeof x.answer === "string")
+      .map(x => ({ prompt: x.prompt.trim(), answer: x.answer.trim() }))
+      .filter(x => x.prompt && x.answer);
+  }catch{
+    return [];
+  }
+}
+
+function saveCustomItems(){
+  localStorage.setItem(CUSTOM_ITEMS_KEY, JSON.stringify(customItems));
+}
+
+/* =====================
+   DROPDOWNS
+===================== */
+
+function initClassDropdown(){
+  const classes = Object.keys(CLASS_STUDENTS).sort((a,b)=>a.localeCompare(b));
+  classSelect.innerHTML = [`<option value="">Select class</option>`]
+    .concat(classes.map(c=>`<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`))
+    .join("");
+  classSelect.value = settings.className || "";
+}
+
+function initStudentDropdown(){
+  const cls = classSelect.value || "";
+  const list = cls && CLASS_STUDENTS[cls] ? CLASS_STUDENTS[cls] : [];
+
+  studentSelect.innerHTML = [`<option value="">Select student</option>`]
+    .concat(list.map(n=>`<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`))
+    .join("");
+
+  if(settings.student && list.includes(settings.student)){
+    studentSelect.value = settings.student;
+  }else{
+    studentSelect.value = "";
+    settings.student = "";
+    saveSettings();
+  }
+}
+
+function updatePill(){
+  whoPill.textContent = "Class: " + (settings.className||"none") + " · Student: " + (settings.student||"none");
+}
+
+classSelect.addEventListener("change", ()=>{
+  settings.className = classSelect.value || "";
+  settings.student = "";
+  saveSettings();
+  initStudentDropdown();
+  updatePill();
+});
+
+studentSelect.addEventListener("change", ()=>{
+  settings.student = studentSelect.value || "";
+  saveSettings();
+  updatePill();
+});
+
+/* =====================
+   VOICES
+===================== */
+
+function populateVoices(){
+  if(!("speechSynthesis" in window)) return;
+  const all = speechSynthesis.getVoices() || [];
+  voices = all.filter(v => /^en-(US|GB|SG)$/i.test(v.lang));
+
+  voiceSelect.innerHTML = [`<option value="">Default voice</option>`]
+    .concat(voices.map(v=>`<option value="${escapeAttr(v.voiceURI)}">${escapeHtml(v.name)} (${escapeHtml(v.lang)})</option>`))
+    .join("");
+
+  if(settings.voiceURI){
+    const ok = voices.some(v => v.voiceURI === settings.voiceURI);
+    voiceSelect.value = ok ? settings.voiceURI : "";
+    if(!ok){
+      settings.voiceURI = "";
+      saveSettings();
+    }
+  }else{
+    voiceSelect.value = "";
+  }
+}
+
+voiceSelect.addEventListener("change", ()=>{
+  settings.voiceURI = voiceSelect.value || "";
+  saveSettings();
+});
+
+speedSelect.addEventListener("change", ()=>{
+  settings.rate = Number(speedSelect.value) || 1.0;
+  saveSettings();
+});
+
+repeatSelect.addEventListener("change", ()=>{
+  settings.repeat = Number(repeatSelect.value) || 2;
+  saveSettings();
+});
+
+function applyControlsFromSettings(){
+  speedSelect.value = String(settings.rate);
+  repeatSelect.value = String(settings.repeat);
+}
+
+/* =====================
+   TTS
+===================== */
+
+function getChosenVoice(){
+  if(!settings.voiceURI) return null;
+  return voices.find(v => v.voiceURI === settings.voiceURI) || null;
+}
+
+function speakSentenceThenHighlight(sentence, highlight){
+  if(!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+
+  speechSynthesis.cancel();
+
+  const rate = Number(settings.rate) || 1.0;
+  const rep  = Number(settings.repeat) || 1;
+  const v    = getChosenVoice();
+
+  const u1 = new SpeechSynthesisUtterance(sentence);
+  u1.rate = rate;
+  if(v) u1.voice = v;
+
+  u1.onend = () => {
+    let count = 0;
+    const say = () => {
+      if(count >= rep) return;
+      const u2 = new SpeechSynthesisUtterance(highlight);
+      u2.rate = rate;
+      if(v) u2.voice = v;
+      u2.onend = () => { count += 1; say(); };
+      speechSynthesis.speak(u2);
+    };
+    say();
+  };
+
+  speechSynthesis.speak(u1);
+}
+
+/* =====================
+   FLOW
+===================== */
+
+function hideAll(){
+  quizBox.style.display = "none";
+  reviewBox.style.display = "none";
+  resultBox.style.display = "none";
+  teacherBox.style.display = "none";
+}
+
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  if(!settings.className){
+    statusText.textContent = "Select class first.";
+    return;
+  }
+  if(!settings.student){
+    statusText.textContent = "Select student first.";
+    return;
+  }
+  statusText.textContent = "";
+  startQuiz();
+});
+
+document.getElementById("resetSessionBtn").addEventListener("click", ()=>{
+  session = { active:false, index:0, typed:[] };
+  saveSession();
+  hideAll();
+  statusText.textContent = "Session reset.";
+});
+
+document.getElementById("teacherBtn").addEventListener("click", ()=>{
+  renderTeacher();
+});
+
+function startQuiz(){
+  customItems = loadCustomItems();
+  SPELLING_ITEMS = buildItems();
+
+  hideAll();
+
+  session.active = true;
+  session.index = 0;
+  session.typed = new Array(SPELLING_ITEMS.length).fill("");
+  saveSession();
+
+  renderQuiz();
+}
+
+function renderQuiz(){
+  hideAll();
+  quizBox.style.display = "block";
+
+  if(session.index >= SPELLING_ITEMS.length){
+    renderReview();
+    return;
+  }
+
+  const qNum = session.index + 1;
+
+  quizBox.innerHTML = `
+    <div class="item">
+      <div class="small">Question ${qNum} of ${SPELLING_ITEMS.length}</div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="playBtn" type="button">Play</button>
+        <button class="btn ghost" id="reviewBtn" type="button">Review</button>
+      </div>
+      <div style="margin-top:10px">
+        <input id="ans" autocomplete="off" spellcheck="false" autocapitalize="none"
+          placeholder="Type answer and press Enter">
+      </div>
+      <div class="small" style="margin-top:10px">Enter saves and moves on. No grading yet.</div>
+    </div>
+  `;
+
+  const input = document.getElementById("ans");
+  const playBtn = document.getElementById("playBtn");
+  const reviewBtn = document.getElementById("reviewBtn");
+
+  input.value = session.typed[session.index] || "";
+  input.focus();
+
+  playBtn.addEventListener("click", playCurrent);
+  reviewBtn.addEventListener("click", renderReview);
+
+  input.addEventListener("keydown", e=>{
+    if(e.key !== "Enter") return;
+    e.preventDefault();
+
+    session.typed[session.index] = input.value || "";
+    session.index += 1;
+    saveSession();
+    renderQuiz();
+  });
+
+  playCurrent();
+}
+
+function playCurrent(){
+  const item = SPELLING_ITEMS[session.index];
+  speakSentenceThenHighlight(item.prompt, item.highlight);
+}
+
+/* =====================
+   REVIEW + SUBMIT (GRADING HAPPENS HERE)
+===================== */
+
+function renderReview(){
+  hideAll();
+  reviewBox.style.display = "block";
+
+  const rows = SPELLING_ITEMS.map((it, i)=>{
+    const val = session.typed[i] || "";
+    return `
+      <tr>
+        <td class="mono">${i+1}</td>
+        <td>
+          <input data-q="${i}" value="${escapeAttr(val)}" placeholder="Edit your answer">
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  reviewBox.innerHTML = `
+    <h2>Review</h2>
+    <div class="small">Edit your answers. Click Submit to grade.</div>
+
+    <div class="item">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:60px">Q</th>
+            <th>Your answer</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="small" style="margin-top:10px">Marking ignores spaces, capital letters, hyphens, and punctuation.</div>
+    </div>
+
+    <div class="row">
+      <button class="btn ghost" id="backToQuizBtn" type="button">Back</button>
+      <button class="btn" id="submitBtn" type="button">Submit</button>
+    </div>
+  `;
+
+  // Keep session typed updated live
+  reviewBox.querySelectorAll('input[data-q]').forEach(inp=>{
+    inp.addEventListener("input", ()=>{
+      const i = Number(inp.getAttribute("data-q"));
+      session.typed[i] = inp.value || "";
+      saveSession();
+    });
+  });
+
+  document.getElementById("backToQuizBtn").addEventListener("click", ()=>{
+    // go to first unanswered if any, else last question
+    const firstBlank = session.typed.findIndex(x => !String(x||"").trim());
+    session.index = firstBlank >= 0 ? firstBlank : Math.max(0, SPELLING_ITEMS.length - 1);
+    saveSession();
+    renderQuiz();
+  });
+
+  document.getElementById("submitBtn").addEventListener("click", submitAndGrade);
+}
+
+function submitAndGrade(){
+  // Build graded answers
+  const graded = SPELLING_ITEMS.map((it, i)=>{
+    const typed = session.typed[i] || "";
+    const ok = norm(typed) === norm(it.answer);
+    return {
+      q: i+1,
+      typed: typed,
+      expected: it.answer,
+      ok: ok
+    };
+  });
+
+  const score = graded.filter(a=>a.ok).length;
+  const ts = new Date().toISOString();
+
+  // Save record
+  records.push({
+    className: settings.className,
+    student: settings.student,
+    ts: ts,
+    score: score,
+    total: SPELLING_ITEMS.length,
+    rate: settings.rate,
+    repeat: settings.repeat,
+    voiceURI: settings.voiceURI,
+    answers: graded
+  });
+  saveRecords();
+
+  // End session
+  session.active = false;
+  session.index = SPELLING_ITEMS.length;
+  saveSession();
+
+  showResults(graded, score);
+}
+
+function showResults(ans, score){
+  hideAll();
+  resultBox.style.display = "block";
+
+  resultBox.innerHTML = `
+    <h2>Results</h2>
+    <div class="small">Class: ${escapeHtml(settings.className)}</div>
+    <div class="small">Student: ${escapeHtml(settings.student)}</div>
+
+    <div class="bigScore">${score} / ${SPELLING_ITEMS.length}</div>
+    <div class="small">Score</div>
+
+    <div class="item">
+      <div class="small">Your answer and correct answer</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:60px">Q</th>
+            <th>Your answer</th>
+            <th>Correct answer</th>
+            <th style="width:80px">Mark</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ans.map(a => `
+            <tr>
+              <td class="mono">${a.q}</td>
+              <td>${escapeHtml(a.typed || "")}</td>
+              <td>${escapeHtml(a.expected)}</td>
+              <td class="${a.ok ? "ok" : "no"}">${a.ok ? "✔" : "✘"}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+      <div class="small" style="margin-top:10px">
+        Marking ignores spaces, capital letters, hyphens, and punctuation.
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <button class="btn" id="restartBtn" type="button">Restart</button>
+      <button class="btn ghost" id="backBtn" type="button">Back</button>
+    </div>
+  `;
+
+  document.getElementById("restartBtn").addEventListener("click", startQuiz);
+  document.getElementById("backBtn").addEventListener("click", ()=>{
+    hideAll();
+    statusText.textContent = "";
+  });
+}
+
+/* =====================
+   TEACHER VIEW
+   Add phrases (no coding)
+   Format: sentence | phrase
+===================== */
+
+function renderTeacher(){
+  hideAll();
+  teacherBox.style.display = "block";
+
+  const rows = records.slice().reverse();
+  const baseCount = BASE_ITEMS.length;
+  const extraCount = loadCustomItems().length;
+  const totalCount = baseCount + extraCount;
+
+  teacherBox.innerHTML = `
+    <h2>Teacher</h2>
+    <div class="small">Items: ${baseCount} base + ${extraCount} added = ${totalCount} total</div>
+    <div class="small">Records save on this device.</div>
+
+    <div class="item">
+      <div class="small">Add phrases</div>
+      <div class="small">One line each: sentence | phrase</div>
+      <textarea id="addBox" placeholder="Paste lines here"></textarea>
+      <div class="row">
+        <button class="btn" id="addBtn" type="button">Add</button>
+        <button class="btn ghost" id="clearPhrasesBtn" type="button">Clear added phrases</button>
+      </div>
+      <div class="small" id="addStatus"></div>
+    </div>
+
+    <div class="row">
+      <button class="btn" id="exportBtn" type="button">Export CSV</button>
+      <button class="btn ghost" id="clearRecordsBtn" type="button">Clear records</button>
+      <button class="btn ghost" id="closeBtn" type="button">Back</button>
+    </div>
+
+    <div class="item">
+      <div class="small">Attempts</div>
+      ${rows.length ? `
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Student</th>
+              <th style="width:210px">Time</th>
+              <th style="width:120px">Score</th>
+              <th style="width:120px">Items</th>
+              <th style="width:120px">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r, idx) => `
+              <tr>
+                <td>${escapeHtml(r.className)}</td>
+                <td>${escapeHtml(r.student)}</td>
+                <td class="mono">${escapeHtml(r.ts)}</td>
+                <td class="mono">${r.score}/${r.total}</td>
+                <td class="mono">${r.total}</td>
+                <td><span class="link" data-detail="${idx}">View</span></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      ` : `<div class="small" style="margin-top:10px">No record saved.</div>`}
+    </div>
+
+    <div id="detailBox"></div>
+  `;
+
+  document.getElementById("closeBtn").addEventListener("click", ()=>{
+    hideAll();
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", exportCSV);
+
+  document.getElementById("clearRecordsBtn").addEventListener("click", ()=>{
+    const ok = confirm("Clear all records on this device?");
+    if(!ok) return;
+    records = [];
+    saveRecords();
+    renderTeacher();
+  });
+
+  teacherBox.querySelectorAll("[data-detail]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const idx = Number(el.getAttribute("data-detail"));
+      const rec = rows[idx];
+      showTeacherDetail(rec);
+    });
+  });
+
+  document.getElementById("addBtn").addEventListener("click", ()=>{
+    const raw = document.getElementById("addBox").value || "";
+    const parsed = parseTeacherLines(raw);
+    const addStatus = document.getElementById("addStatus");
+
+    if(!parsed.items.length){
+      addStatus.textContent = "No valid lines found.";
+      return;
+    }
+
+    customItems = loadCustomItems().concat(parsed.items);
+    customItems = dedupeCustomItems(customItems);
+    saveCustomItems();
+
+    addStatus.textContent = "Added: " + parsed.items.length + " line(s). Skipped: " + parsed.skipped + ".";
+    document.getElementById("addBox").value = "";
+    renderTeacher();
+  });
+
+  document.getElementById("clearPhrasesBtn").addEventListener("click", ()=>{
+    const ok = confirm("Clear added phrases on this device?");
+    if(!ok) return;
+    customItems = [];
+    saveCustomItems();
+    renderTeacher();
+  });
+}
+
+function parseTeacherLines(raw){
+  const lines = raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const items = [];
+  let skipped = 0;
+
+  for(const line of lines){
+    const parts = line.split("|").map(x=>x.trim());
+    if(parts.length < 2){ skipped++; continue; }
+    const prompt = parts[0];
+    const answer = parts.slice(1).join(" | ").trim();
+    if(!prompt || !answer){ skipped++; continue; }
+    items.push({ prompt, answer });
+  }
+  return { items, skipped };
+}
+
+function dedupeCustomItems(arr){
+  const seen = new Set();
+  const out = [];
+  for(const it of arr){
+    const k = norm(it.prompt) + "::" + norm(it.answer);
+    if(seen.has(k)) continue;
+    seen.add(k);
+    out.push(it);
+  }
+  return out;
+}
+
+function showTeacherDetail(rec){
+  const box = document.getElementById("detailBox");
+  if(!box) return;
+
+  box.innerHTML = `
+    <div class="item">
+      <div class="small">Detail</div>
+      <div class="small">Class: ${escapeHtml(rec.className)}</div>
+      <div class="small">Student: ${escapeHtml(rec.student)}</div>
+      <div class="small">Time: <span class="mono">${escapeHtml(rec.ts)}</span></div>
+      <div class="small">Score: <span class="mono">${rec.score}/${rec.total}</span></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:60px">Q</th>
+            <th>Your answer</th>
+            <th>Correct answer</th>
+            <th style="width:80px">Mark</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rec.answers.map(a => `
+            <tr>
+              <td class="mono">${a.q}</td>
+              <td>${escapeHtml(a.typed || "")}</td>
+              <td>${escapeHtml(a.expected)}</td>
+              <td class="${a.ok ? "ok" : "no"}">${a.ok ? "✔" : "✘"}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function exportCSV(){
+  const maxQ = maxAnswersCount(records);
+  const header = ["class","student","timestamp","score","total","rate","repeat"];
+  for(let i=1;i<=maxQ;i++){
+    header.push(`q${i}_typed`,`q${i}_expected`,`q${i}_ok`);
+  }
+
+  const lines = [];
+  lines.push(header.map(csvEscape).join(","));
+
+  for(const r of records){
+    const base = [r.className, r.student, r.ts, String(r.score), String(r.total), String(r.rate), String(r.repeat)];
+    const qa = [];
+    for(let i=0;i<maxQ;i++){
+      const a = r.answers[i] || { typed:"", expected:"", ok:false };
+      qa.push(a.typed || "");
+      qa.push(a.expected || "");
+      qa.push(a.ok ? "1" : "0");
+    }
+    lines.push(base.concat(qa).map(csvEscape).join(","));
+  }
+
+  downloadText("spelling_records.csv", lines.join("\n"));
+}
+
+function maxAnswersCount(recs){
+  let m = 0;
+  for(const r of recs){
+    if(r && Array.isArray(r.answers)) m = Math.max(m, r.answers.length);
+  }
+  return Math.max(m, buildItems().length);
+}
+
+/* =====================
+   UTIL
+===================== */
+
+function csvEscape(s){
+  const v = (s ?? "").toString();
+  if(/[",\n]/.test(v)) return `"${v.replace(/"/g,'""')}"`;
+  return v;
+}
+
+function downloadText(filename, text){
+  const blob = new Blob([text], { type:"text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(s){
+  return (s ?? "").toString()
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+function escapeAttr(s){
+  return (s ?? "").toString()
+    .replace(/&/g,"&amp;")
+    .replace(/"/g,"&quot;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+/* =====================
+   BOOT
+===================== */
+
+initClassDropdown();
+initStudentDropdown();
+applyControlsFromSettings();
+updatePill();
+
+if(!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)){
+  voiceSelect.innerHTML = `<option value="">TTS not supported</option>`;
+  voiceSelect.disabled = true;
+  speedSelect.disabled = true;
+  repeatSelect.disabled = true;
+  statusText.textContent = "TTS not supported on this device.";
+}else{
+  populateVoices();
+  speechSynthesis.onvoiceschanged = populateVoices;
+}
+
+if(session.active){
+  statusText.textContent = "Session found. Continue from where you stopped.";
+}
+</script>
+</body>
+</html>
