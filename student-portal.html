@@ -205,7 +205,7 @@ select:disabled{opacity:.4;cursor:not-allowed}
   <div class="cb">
     <div class="field">
       <div class="step-row"><span class="sn">1</span><span class="st">Choose Your Class</span></div>
-      <div class="sw"><select id="sel-class" onchange="onClassChange()"><option value="">— Select your class —</option><option>4 Care</option><option>4 Graciousness</option><option>4 Resilience</option><option>4 Respect</option><option>4 Integrity</option></select></div>
+      <div class="sw"><select id="sel-class" onchange="onClassChange()"><option value="">— Select your class —</option><option>4 Care</option><option>4 Graciousness</option><option>4 Resilience</option><option>4 Respect</option><option>4 Integrity</option><option>Family</option></select></div>
     </div>
     <div class="field">
       <div class="step-row"><span class="sn">2</span><span class="st">Choose Your Name</span></div>
@@ -384,6 +384,11 @@ const ROSTER = {
     "Toh Jing Xuan Joslyn":"4028","Wang Haige":"4029","Warren Chen Boyuan":"4030",
     "Wisutti Joaquin":"4031"
   },
+  "Family": {
+    "Rathi":  "6001",
+    "Hanvvi": "6002",
+    "Krishan":"6003"
+  },
   "4 Integrity": {
     "Aleeya Artabia Prasetyowibowo":"5001","Chung Yue En, Guinevere":"5002",
     "Collin Alice Dorothy Marie":"5003","Daniel Cai Jiehan":"5004","Dave Lim Dow Feng":"5005",
@@ -412,7 +417,7 @@ const GAMES = {
 };
 
 const COMP_LIST = ['grammar','reported','vtc','synthesis','spelling'];
-const CLASSES   = ['4 Care','4 Graciousness','4 Resilience','4 Respect','4 Integrity'];
+const CLASSES   = ['4 Care','4 Graciousness','4 Resilience','4 Respect','4 Integrity','Family'];
 
 // ══════════════════════════════════════════
 // STATE
