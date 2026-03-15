@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P4 English · Student Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sky1:#0f2957;--teal:#00d4be;--teal2:#00b4a2;--coral:#ff6b6b;
+  --gold:#ffcc00;--white:#ffffff;--card-bg:rgba(255,255,255,0.96);
+  --text:#0f1f40;--muted:#5a6a8a;--radius:22px;
+}
+html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--sky1);color:var(--text);overflow-x:hidden}
+.sky{position:fixed;inset:0;z-index:0;background:linear-gradient(175deg,#060e24 0%,#0d2050 35%,#1a4a8a 70%,#2e7dd4 100%);overflow:hidden}
+.sky-glow{position:absolute;border-radius:50%;filter:blur(80px)}
+.glow1{width:600px;height:600px;background:rgba(46,125,212,.25);top:-150px;left:-100px}
+.glow2{width:500px;height:500px;background:rgba(0,212,190,.15);bottom:-100px;right:-80px}
+.star-field{position:fixed;inset:0;z-index:0;pointer-events:none}
+.twinkle{position:absolute;border-radius:50%;background:#fff;animation:twinkle ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.shoot{position:absolute;width:120px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff);border-radius:2px;animation:shoot linear infinite;opacity:0}
+@keyframes shoot{0%{opacity:0;transform:translateX(0) translateY(0)}5%{opacity:1}80%{opacity:.6}100%{opacity:0;transform:translateX(300px) translateY(80px)}}
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 16px}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:22px;animation:fadeDown .6s ease both}
+.logo-icon{font-size:44px;filter:drop-shadow(0 4px 16px rgba(255,204,0,.5))}
+.logo-text{font-family:'Fredoka One',cursive;font-size:24px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.4);line-height:1.1}
+.logo-sub{font-size:11px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:1.2px;text-transform:uppercase}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.card{width:100%;max-width:460px;background:var(--card-bg);border-radius:var(--radius);box-shadow:0 24px 80px rgba(6,14,36,.55),0 0 0 1px rgba(255,255,255,.08);overflow:hidden;animation:riseCard .65s cubic-bezier(.22,.68,0,1.15) both}
+@keyframes riseCard{from{opacity:0;transform:translateY(40px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.login-header{background:linear-gradient(135deg,#1055a0 0%,#2e7dd4 50%,#00b4a2 100%);padding:28px 32px 22px;text-align:center;position:relative;overflow:hidden}
+.login-header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 60% 20%,rgba(255,255,255,.15) 0%,transparent 65%)}
+.lh-icon{font-size:44px;display:block;margin-bottom:6px;position:relative;z-index:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+.lh-title{font-family:'Fredoka One',cursive;font-size:28px;color:#fff;text-shadow:0 3px 12px rgba(0,0,0,.25);position:relative;z-index:1}
+.lh-sub{font-size:12px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:1.2px;text-transform:uppercase;margin-top:3px;position:relative;z-index:1}
+.scallop{display:block;width:100%;height:22px;margin-top:-1px}
+.card-body{padding:24px 32px 32px}
+.step-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.step-num{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#2e7dd4,#00b4a2);color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-txt{font-size:12px;font-weight:800;color:#2e7dd4;text-transform:uppercase;letter-spacing:1px}
+.field{margin-bottom:20px}
+.sel-wrap{position:relative}
+.sel-wrap::after{content:'▾';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#2e7dd4;font-size:14px;pointer-events:none}
+select{width:100%;padding:13px 16px;border:2px solid #dae8fa;border-radius:12px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;color:var(--text);background:#f4f8ff;appearance:none;-webkit-appearance:none;outline:none;transition:border-color .2s,box-shadow .2s,background .2s}
+select:focus{border-color:#2e7dd4;box-shadow:0 0 0 4px rgba(46,125,212,.12);background:#fff}
+select:disabled{opacity:.45;cursor:not-allowed}
+.pin-row{display:flex;gap:10px}
+.pin-box{flex:1;text-align:center;padding:14px 0;border:2px solid #dae8fa;border-radius:12px;font-family:'Fredoka One',cursive;font-size:24px;color:var(--text);background:#f4f8ff;outline:none;transition:border-color .2s,box-shadow .2s,background .2s,transform .1s}
+.pin-box:focus{border-color:#2e7dd4;box-shadow:0 0 0 4px rgba(46,125,212,.12);background:#fff}
+.pin-box.has-val{border-color:#00b4a2;background:#e8faf8}
+.pin-box.shake{animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.divider{height:1px;background:#e8f0fa;margin:20px 0}
+.btn-login{width:100%;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,#1a73c8,#2e9ed8);color:#fff;font-family:'Fredoka One',cursive;font-size:20px;cursor:pointer;letter-spacing:.5px;box-shadow:0 6px 24px rgba(26,115,200,.4);transition:transform .15s,box-shadow .15s,filter .15s;position:relative;overflow:hidden}
+.btn-login:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(26,115,200,.45);filter:brightness(1.07)}
+.btn-login:active:not(:disabled){transform:translateY(0)}
+.btn-login:disabled{opacity:.5;cursor:not-allowed}
+.btn-shine{position:absolute;inset:0;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.25) 50%,transparent 62%);transform:translateX(-100%);transition:transform .55s}
+.btn-login:hover .btn-shine{transform:translateX(100%)}
+.err-msg{display:none;align-items:center;gap:8px;margin-top:14px;padding:11px 14px;background:#fff2f2;border:1.5px solid #f5c6c6;border-radius:10px;color:#c0392b;font-size:13px;font-weight:700}
+.err-msg.show{display:flex}
+/* ── PIN REFERENCE NOTE ── */
+.pin-note{margin-top:14px;padding:10px 14px;background:#f0f8ff;border:1.5px solid #cce3ff;border-radius:10px;font-size:12px;color:#1a5fb4;font-weight:700;text-align:center}
+/* ── GAME SCREEN ── */
+#game-screen{display:none}
+#game-screen.show{display:block}
+.game-header{background:linear-gradient(135deg,#0d2050 0%,#1a4a8a 50%,#2e7dd4 100%);padding:26px 28px 20px;position:relative;overflow:hidden}
+.game-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 10%,rgba(255,204,0,.12) 0%,transparent 60%)}
+.gh-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.gh-greeting{font-family:'Fredoka One',cursive;font-size:22px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.3)}
+.gh-name{color:var(--gold)}
+.gh-class-badge{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:800;color:rgba(255,255,255,.9);letter-spacing:.5px}
+.gh-tagline{font-size:13px;font-weight:700;color:rgba(255,255,255,.65);margin-top:6px;position:relative;z-index:1}
+.scallop2{display:block;width:100%;height:22px;margin-top:-1px}
+.games-body{padding:22px 24px 28px}
+.games-title{font-size:11px;font-weight:800;color:#2e7dd4;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.games-title::after{content:'';flex:1;height:1px;background:#dae8fa}
+.games-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.game-card{border-radius:16px;padding:16px 14px;border:2px solid transparent;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s;position:relative;overflow:hidden;text-decoration:none}
+.game-card:hover{transform:translateY(-4px)}
+.gc-emoji{font-size:32px;display:block;margin-bottom:8px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15))}
+.gc-name{font-family:'Fredoka One',cursive;font-size:15px;line-height:1.2;display:block}
+.gc-desc{font-size:11px;font-weight:700;opacity:.75;margin-top:3px;display:block}
+.gc-arrow{position:absolute;bottom:10px;right:12px;font-size:16px;opacity:.5;transition:opacity .18s,transform .18s}
+.game-card:hover .gc-arrow{opacity:1;transform:translateX(3px)}
+.gc-grammar{background:linear-gradient(135deg,#e8f4ff,#cce3ff);border-color:#b3d4fa}
+.gc-grammar .gc-name{color:#1a5fb4}
+.gc-grammar:hover{border-color:#2e7dd4;box-shadow:0 8px 24px rgba(46,125,212,.2)}
+.gc-reported{background:linear-gradient(135deg,#fff4e8,#ffe3c0);border-color:#ffd090}
+.gc-reported .gc-name{color:#b35e00}
+.gc-reported:hover{border-color:#ff9500;box-shadow:0 8px 24px rgba(255,149,0,.2)}
+.gc-vtc{background:linear-gradient(135deg,#e8fff5,#c0f5e0);border-color:#90e8c8}
+.gc-vtc .gc-name{color:#0a7a50}
+.gc-vtc:hover{border-color:#00c88a;box-shadow:0 8px 24px rgba(0,200,138,.2)}
+.gc-synthesis{background:linear-gradient(135deg,#f5e8ff,#e8ccff);border-color:#d4a0fa}
+.gc-synthesis .gc-name{color:#6b2fa0}
+.gc-synthesis:hover{border-color:#a855f7;box-shadow:0 8px 24px rgba(168,85,247,.2)}
+.gc-spelling{grid-column:1/-1;display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#fff0f4,#ffd6e0);border-color:#ffb3c6;padding:16px 20px}
+.gc-spelling .gc-emoji{margin-bottom:0;font-size:36px}
+.gc-spelling .gc-name{color:#a0002a}
+.gc-spelling .gc-text{flex:1}
+.gc-spelling:hover{border-color:#ff4d79;box-shadow:0 8px 24px rgba(255,77,121,.2)}
+.btn-logout{width:100%;margin-top:4px;padding:11px;border:2px solid #dae8fa;border-radius:12px;background:#fff;color:var(--muted);font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.3px;transition:all .15s}
+.btn-logout:hover{border-color:#ff6b6b;color:#c0392b;background:#fff5f5}
+.footer{margin-top:16px;font-size:11px;color:rgba(255,255,255,.35);font-weight:700;letter-spacing:.4px;text-align:center;animation:fadeDown .8s .3s ease both}
+@media(max-width:400px){.card-body{padding:20px 18px 26px}.games-body{padding:18px 16px 24px}.games-grid{grid-template-columns:1fr}.gc-spelling{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+<div class="sky">
+  <div class="sky-glow glow1"></div>
+  <div class="sky-glow glow2"></div>
+</div>
+<div class="star-field" id="starField"></div>
+
+<div class="page">
+  <div class="logo-row">
+    <span class="logo-icon">🏝️</span>
+    <div>
+      <div class="logo-text">English Island</div>
+      <div class="logo-sub">Cantonment Primary · P4 2026</div>
+    </div>
+  </div>
+
+  <!-- LOGIN CARD -->
+  <div class="card" id="login-card">
+    <div class="login-header">
+      <span class="lh-icon">🔐</span>
+      <div class="lh-title">Student Login</div>
+      <div class="lh-sub">Select your class &amp; name, then enter your PIN</div>
+    </div>
+    <svg class="scallop" viewBox="0 0 460 22" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 22 Q23 0 46 22 Q69 0 92 22 Q115 0 138 22 Q161 0 184 22 Q207 0 230 22 Q253 0 276 22 Q299 0 322 22 Q345 0 368 22 Q391 0 414 22 Q437 0 460 22 Z" fill="url(#sg)"/>
+      <defs><linearGradient id="sg" x1="0" y1="0" x2="460" y2="0"><stop offset="0%" stop-color="#1055a0"/><stop offset="55%" stop-color="#2e7dd4"/><stop offset="100%" stop-color="#00b4a2"/></linearGradient></defs>
+    </svg>
+    <div class="card-body">
+      <div class="field">
+        <div class="step-row"><span class="step-num">1</span><span class="step-txt">Choose Your Class</span></div>
+        <div class="sel-wrap">
+          <select id="sel-class" onchange="onClassChange()">
+            <option value="">— Select your class —</option>
+            <option>4 Care</option>
+            <option>4 Graciousness</option>
+            <option>4 Resilience</option>
+            <option>4 Respect</option>
+            <option>4 Integrity</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="step-row"><span class="step-num">2</span><span class="step-txt">Choose Your Name</span></div>
+        <div class="sel-wrap">
+          <select id="sel-name" disabled onchange="checkReady()">
+            <option value="">— Select your name —</option>
+          </select>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="field">
+        <div class="step-row"><span class="step-num">3</span><span class="step-txt">Enter Your 4-Digit PIN</span></div>
+        <div class="pin-row">
+          <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p0" autocomplete="off" oninput="onPin(0)" onkeydown="onPinKey(event,0)">
+          <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p1" autocomplete="off" oninput="onPin(1)" onkeydown="onPinKey(event,1)">
+          <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p2" autocomplete="off" oninput="onPin(2)" onkeydown="onPinKey(event,2)">
+          <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p3" autocomplete="off" oninput="onPin(3)" onkeydown="onPinKey(event,3)">
+        </div>
+        <div class="pin-note">💡 Your PIN is your class number + student number<br>e.g. 4 Care student #5 → <strong>1005</strong></div>
+      </div>
+      <button class="btn-login" id="btn-login" onclick="doLogin()" disabled>
+        <span class="btn-shine"></span>🚀 &nbsp;Let's Go!
+      </button>
+      <div class="err-msg" id="err-msg"><span>⚠️</span><span id="err-txt">Incorrect PIN.</span></div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="card" id="game-screen">
+    <div class="game-header">
+      <div class="gh-top">
+        <div>
+          <div class="gh-greeting">Hello, <span class="gh-name" id="g-name">—</span>! 👋</div>
+          <div class="gh-tagline">Choose a game to start practising</div>
+        </div>
+        <div class="gh-class-badge" id="g-class">—</div>
+      </div>
+    </div>
+    <svg class="scallop2" viewBox="0 0 460 22" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 22 Q23 0 46 22 Q69 0 92 22 Q115 0 138 22 Q161 0 184 22 Q207 0 230 22 Q253 0 276 22 Q299 0 322 22 Q345 0 368 22 Q391 0 414 22 Q437 0 460 22 Z" fill="url(#sg2)"/>
+      <defs><linearGradient id="sg2" x1="0" y1="0" x2="460" y2="0"><stop offset="0%" stop-color="#0d2050"/><stop offset="55%" stop-color="#1a4a8a"/><stop offset="100%" stop-color="#2e7dd4"/></linearGradient></defs>
+    </svg>
+    <div class="games-body">
+      <div class="games-title">📚 Today's Games</div>
+      <div class="games-grid">
+        <a class="game-card gc-grammar" id="lnk-grammar" href="grammar-cloze.html" target="_top">
+          <span class="gc-emoji">✏️</span><span class="gc-name">Grammar<br>Cloze</span><span class="gc-desc">Fill in the blanks</span><span class="gc-arrow">→</span>
+        </a>
+        <a class="game-card gc-reported" id="lnk-reported" href="reported-speech.html" target="_top">
+          <span class="gc-emoji">💬</span><span class="gc-name">Reported<br>Speech</span><span class="gc-desc">Direct &amp; indirect</span><span class="gc-arrow">→</span>
+        </a>
+        <a class="game-card gc-vtc" id="lnk-vtc" href="visual-text.html" target="_top">
+          <span class="gc-emoji">🖼️</span><span class="gc-name">Visual Text<br>Comprehension</span><span class="gc-desc">Read images &amp; answer</span><span class="gc-arrow">→</span>
+        </a>
+        <a class="game-card gc-synthesis" id="lnk-synthesis" href="synthesis.html" target="_top">
+          <span class="gc-emoji">🔀</span><span class="gc-name">Synthesis &amp;<br>Transformation</span><span class="gc-desc">Rewrite sentences</span><span class="gc-arrow">→</span>
+        </a>
+        <a class="game-card gc-spelling" id="lnk-spelling" href="spelling-quest-corrected.html" target="_top">
+          <span class="gc-emoji">🔤</span>
+          <div class="gc-text"><span class="gc-name">Spelling</span><span class="gc-desc">Listen &amp; spell correctly</span></div>
+          <span class="gc-arrow">→</span>
+        </a>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">← Log out</button>
+    </div>
+  </div>
+
+  <div class="footer">🏫 Cantonment Primary School &nbsp;·&nbsp; P4 English 2026</div>
+</div>
+
+<script>
+const ROSTER = {
+  "4 Care": {
+    "Aaron James Mc Hugh": "1001",
+    "Axton Shang Fusheng": "1002",
+    "Ayden Bin Azahar": "1003",
+    "Aysha Aliya Azryn": "1004",
+    "Candice Ho Zihan": "1005",
+    "Chua Shan Ting, Celeste": "1006",
+    "Clara Lillian Pereira": "1007",
+    "Dai Jiatai": "1008",
+    "Dao Tuan Huy Harvey": "1009",
+    "Daphne Alexandra Yi Ting Lo": "1010",
+    "Elizabeth Subaneknan": "1011",
+    "Faraz Arshad Ramadhan Ardiwinata": "1012",
+    "Goswami Amay": "1013",
+    "Ho Ding Kang, Edward": "1014",
+    "Jayden Gopu Lee Jie En": "1015",
+    "Marcus Ligtenberg": "1016",
+    "Masonn Koh Shao Yu": "1017",
+    "Maxence Garnier": "1018",
+    "Muhammad Umar Bin Aziz Ahmad": "1019",
+    "Ng Zi Hao Jameson": "1020",
+    "Ranasinghe Sienna Taryn": "1021",
+    "Sahana Safrin Binte Mohamed Ariff": "1022",
+    "Sarika Sanman Shetty": "1023",
+    "Sim En Xuan, Jerina": "1024",
+    "Skyler Tan Guan Min": "1025",
+    "Sung Sebastian": "1026",
+    "Syurahbil Bin Shahrill": "1027",
+    "Thut Lyan Moe": "1028",
+    "Vikrant Khaitan": "1029",
+    "Wong Yuu Minn Julian": "1030",
+    "Yiu Chun Hei Kaden": "1031"
+  },
+  "4 Graciousness": {
+    "Aeni Aqisya Binte Muhammad Aewanda": "2001",
+    "Agarwal Nishant": "2002",
+    "Aridasu Aashinya Sri": "2003",
+    "Avalyn Ong Hui Qi": "2004",
+    "Cheong Yong Jun Wesley": "2005",
+    "Dominic Fong Yu Bin": "2006",
+    "Eric Hein Htet Kyaw": "2007",
+    "Gazi Avero": "2008",
+    "Glenda Lee En Le": "2009",
+    "Goh Khun Lee": "2010",
+    "Gu Everest": "2011",
+    "Hannah Loh Yu En": "2012",
+    "Hayley Kayleigh Longden": "2013",
+    "Hu Yuyang": "2014",
+    "Jake Arjun Thyagarajan": "2015",
+    "Kojima Shintaro": "2016",
+    "Liao Yuquan, Lance": "2017",
+    "Lucas Cui Zhengping": "2018",
+    "Mohamed Nizamudeen Zaafira": "2019",
+    "Muhammad Adryan Bin Mohamed Irwan": "2020",
+    "Nakanosono Taiga": "2021",
+    "Ngo Bao Nam": "2022",
+    "Oliver Joseph Lowe": "2023",
+    "Pastrana Marc Gabriel Hidalgo": "2024",
+    "Patel Vihaan Kiran": "2025",
+    "Schlager Leon Alexander": "2026",
+    "Shazril Bin Muhammad Nizam": "2027",
+    "Sophie Louise Hemmings": "2028",
+    "Tan Jing En Rex": "2029",
+    "Tan Jun Wei": "2030",
+    "Wang Manting": "2031",
+    "Wilson Peter Han-wen": "2032"
+  },
+  "4 Resilience": {
+    "Agrawal Amay": "3001",
+    "Ahmad Hanif Bin Rashid": "3002",
+    "Alessa Hana Winata": "3003",
+    "Ashwin Parthi": "3004",
+    "Bhone Thuta Paing": "3005",
+    "Cayvier Koh Zheng Jie": "3006",
+    "Chan Yen Ling Isabelle": "3007",
+    "Dashiell Ong Yu Han": "3008",
+    "Daya Kaur D/O Sarbjit Singh": "3009",
+    "Ee Jun Qi, Tristan": "3010",
+    "Eliya'nursheza Binte Muhammad Hazman": "3011",
+    "Gaganpreet Kaur D/O Harprit Singh Sidhu": "3012",
+    "He Chunqi": "3013",
+    "Isaac Lin Qixiang": "3014",
+    "Jaden Foo Yan Kai": "3015",
+    "Jayden Tee Tzu Le": "3016",
+    "Lim Serin": "3017",
+    "Lucas Low": "3018",
+    "Muhammad Elias Aasyahfi Bin Muhammad Farhan": "3019",
+    "Muralikrishnan Harishwaramoorthy": "3020",
+    "Nafiha Jehaan": "3021",
+    "Nguyen Vi": "3022",
+    "Panchapagesan Sudharshan": "3023",
+    "Rihaan Sarkar": "3024",
+    "Shen Zhiyuan": "3025",
+    "Siddharth Panta": "3026",
+    "Sim Gek Boon Theophanie": "3027",
+    "Thonglue Chanapat": "3028",
+    "Xiao Ya Ning Joanne": "3029",
+    "Xu Xiaochen": "3030",
+    "Zaim Akili Iylia": "3031",
+    "Zoey Li": "3032"
+  },
+  "4 Respect": {
+    "Agarwal Ramansh Harsh": "4001",
+    "Arul Lourduraj Steevejoe": "4002",
+    "Benjamin Wong Guanlin": "4003",
+    "Du Zhengheng": "4004",
+    "Hamzah Bin Bachtiar": "4005",
+    "Jade Louise Boisseau": "4006",
+    "Jake Ang Jia Le": "4007",
+    "Jia Zekai": "4008",
+    "Julia Thant Sin": "4009",
+    "Kaden Chua De Rong": "4010",
+    "Lauryn Grace Overy": "4011",
+    "Lee Hajun": "4012",
+    "Lee Seung Woo": "4013",
+    "Lin Mu-chen": "4014",
+    "Lin Xuan Ying Karisa": "4015",
+    "Malhotra Ava": "4016",
+    "Mathilda Tay": "4017",
+    "Muhammad Damier Sky Bin Muhammad Shahrul Ameen": "4018",
+    "Naguulan Ravishankar": "4019",
+    "Nur Ufairah Putri Putra Alfian": "4020",
+    "Ong Wei Ting Chloe": "4021",
+    "Pham Minh Khanh Chi": "4022",
+    "Shayein Arusha Cuaca": "4023",
+    "Shivansh Jain": "4024",
+    "Tay Zhi Yuan, Eric": "4025",
+    "Thadani Ahaan Rohit": "4026",
+    "Tio Wen Le": "4027",
+    "Toh Jing Xuan Joslyn": "4028",
+    "Wang Haige": "4029",
+    "Warren Chen Boyuan": "4030",
+    "Wisutti Joaquin": "4031"
+  },
+  "4 Integrity": {
+    "Aleeya Artabia Prasetyowibowo": "5001",
+    "Chung Yue En, Guinevere": "5002",
+    "Collin Alice Dorothy Marie": "5003",
+    "Daniel Cai Jiehan": "5004",
+    "Dave Lim Dow Feng": "5005",
+    "Guneratne Bryn Tullius Chan Shun": "5006",
+    "Jeong Ichan": "5007",
+    "Joshua Chong Kwok Ern": "5008",
+    "Koh Kay Xuan Iris": "5009",
+    "Lee En Hui": "5010",
+    "Lim Durin": "5011",
+    "Lim Hui Yu": "5012",
+    "Mak Guan Xuan": "5013",
+    "Martin Nedved": "5014",
+    "Muhammad Ubay Hyde Bin Muhammad Aliffizwan": "5015",
+    "Nafisah Raniah Binte Shahrir": "5016",
+    "Naveen Singh Dhillon S/O Jasminder Singh Dhillon": "5017",
+    "Nikola Stojanac": "5018",
+    "Noah Lakra": "5019",
+    "Nur Naura Aaliyah Binte Muhammad Afiq": "5020",
+    "Omkar Vaidhya Ramaswami": "5021",
+    "Ong Yan Zhe, Jerric": "5022",
+    "Putri Nur Imelda Binte Muhammad Ikhmal": "5023",
+    "Sadikot Riyaaz Mubin": "5024",
+    "Seow Yi Xun, Matthew": "5025",
+    "Shannan Lim": "5026",
+    "Si Ruishen": "5027",
+    "Sim En Wei, Javion": "5028",
+    "Sofia Maira Binte Mohamad Shafiee": "5029",
+    "Song Shoufu": "5030",
+    "Sophie Anne Copland": "5031",
+    "Syed Ahmed Harris Mohamed Affan Kabeer": "5032",
+    "Xu Zimo": "5033",
+    "Yuki Ito": "5034"
+  }
+};
+
+// ── Helpers ─────────────────────────────
+const $=id=>document.getElementById(id);
+const pinIds=['p0','p1','p2','p3'];
+const getPin=()=>pinIds.map(id=>$(id).value).join('');
+
+function checkReady(){
+  $('btn-login').disabled=!($('sel-class').value&&$('sel-name').value&&getPin().length===4);
+}
+function clearPin(){pinIds.forEach(id=>{$(id).value='';$(id).classList.remove('has-val')});}
+function shakePin(){pinIds.forEach(id=>{$(id).classList.add('shake');setTimeout(()=>$(id).classList.remove('shake'),400)});}
+function showErr(msg){$('err-txt').textContent=msg;$('err-msg').classList.add('show')}
+function hideErr(){$('err-msg').classList.remove('show')}
+
+function onClassChange(){
+  const cls=$('sel-class').value;
+  const sel=$('sel-name');
+  sel.innerHTML='<option value="">— Select your name —</option>';
+  if(cls&&ROSTER[cls]){
+    Object.keys(ROSTER[cls]).sort().forEach(n=>{
+      const o=document.createElement('option');
+      o.value=o.textContent=n;sel.appendChild(o);
+    });
+    sel.disabled=false;
+  } else {sel.disabled=true;}
+  clearPin();hideErr();checkReady();
+}
+
+function onPin(i){
+  const el=$(pinIds[i]);
+  el.value=el.value.replace(/\D/g,'').slice(-1);
+  el.classList.toggle('has-val',el.value!=='');
+  if(el.value&&i<3)$(pinIds[i+1]).focus();
+  hideErr();checkReady();
+}
+function onPinKey(e,i){
+  if(e.key==='Backspace'&&!$(pinIds[i]).value&&i>0)$(pinIds[i-1]).focus();
+  if(e.key==='Enter')doLogin();
+}
+
+function updateGameLinks(name,cls){
+  const params='?hero='+encodeURIComponent(name)+'&cls='+encodeURIComponent(cls)+'&returnTo=student-portal.html';
+  ['grammar','reported','vtc','synthesis','spelling'].forEach(id=>{
+    const el=$('lnk-'+id);
+    if(el){
+      const base=el.getAttribute('href').split('?')[0];
+      el.setAttribute('href',base+params);
+    }
+  });
+}
+
+function doLogin(){
+  const cls=$('sel-class').value;
+  const name=$('sel-name').value;
+  const pin=getPin();
+  if(!cls||!name){showErr('Please select your class and name.');return;}
+  if(pin.length<4){showErr('Please enter all 4 digits of your PIN.');return;}
+  const correct=ROSTER[cls]?.[name];
+  if(!correct){showErr('Student not found. Please check your selection.');return;}
+  if(pin!==correct){showErr('Wrong PIN. Check the note below for your PIN!');shakePin();clearPin();$(pinIds[0]).focus();return;}
+  $('login-card').style.display='none';
+  const gs=$('game-screen');gs.classList.add('show');
+  $('g-name').textContent=name.split(' ')[0];
+  $('g-class').textContent='Class '+cls;
+  updateGameLinks(name,cls);
+  try{sessionStorage.setItem('student',JSON.stringify({name,cls}));}catch(e){}
+}
+
+function doLogout(){
+  try{sessionStorage.removeItem('student');}catch(e){}
+  $('game-screen').classList.remove('show');
+  $('login-card').style.display='';
+  $('sel-class').value='';
+  const sel=$('sel-name');sel.innerHTML='<option value="">— Select your name —</option>';sel.disabled=true;
+  clearPin();hideErr();$('btn-login').disabled=true;
+}
+
+// Stars
+(function(){
+  const c=$('starField');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');s.className='twinkle';
+    const sz=1+Math.random()*2.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${-Math.random()*5}s;`;
+    c.appendChild(s);
+  }
+  for(let i=0;i<4;i++){
+    const sh=document.createElement('div');sh.className='shoot';
+    sh.style.cssText=`top:${5+Math.random()*40}%;left:${Math.random()*60}%;animation-duration:${7+Math.random()*10}s;animation-delay:${-Math.random()*12}s;transform:rotate(${18+Math.random()*15}deg);`;
+    c.appendChild(sh);
+  }
+})();
+</script>
+</body>
+</html>
