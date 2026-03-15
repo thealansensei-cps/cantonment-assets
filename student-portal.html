@@ -672,11 +672,13 @@ function getClassLeaderboard(cls) {
 // RENDER UI
 // ══════════════════════════════════════════
 function renderTopBar() {
-  document.getElementById('it-total-score').textContent = getTotalScore();
+  const el = document.getElementById('it-total-score');
+  if(el) el.textContent = getTotalScore();
 }
 
 function renderCompScores() {
   const el = document.getElementById('comp-scores-list');
+  if(!el) return;
   el.innerHTML = COMP_LIST.map(g => {
     const pts   = getCompScore(g);
     const thisW = getWeekScore(g, 0);
@@ -705,7 +707,8 @@ function renderCompScores() {
   }).join('');
 
   // week legend
-  document.getElementById('week-compare').innerHTML = `
+  const wcEl = document.getElementById('week-compare');
+  if(wcEl) wcEl.innerHTML = `
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:4px"><div class="wl-dot" style="background:#2e7dd4"></div><div class="wl-txt">This week</div></div>
       <div style="display:flex;align-items:center;gap:4px"><div class="wl-dot" style="background:rgba(255,255,255,.2)"></div><div class="wl-txt">Last week</div></div>
@@ -716,9 +719,10 @@ function renderCompScores() {
 }
 
 function renderLeaderboard(cls) {
-  lbActiveClass = cls;
-  // tabs
   const tabsEl = document.getElementById('lb-tabs');
+  const contentEl = document.getElementById('lb-content');
+  if(!tabsEl || !contentEl) return;
+  lbActiveClass = cls;
   tabsEl.innerHTML = CLASSES.map(c => {
     const short = c.replace('4 ','');
     return `<button class="lb-tab ${c===cls?'active':''}" onclick="renderLeaderboard('${c}')">${short}</button>`;
@@ -767,7 +771,7 @@ function renderLeaderboard(cls) {
     });
   }
 
-  document.getElementById('lb-content').innerHTML = html;
+  contentEl.innerHTML = html;
 }
 
 function renderPins() {
@@ -854,6 +858,8 @@ function checkReturnFromGame() {
 }
 
 function showReward(game, pts, isAlreadyDone=false, stars=0, score=0, total=0) {
+  const overlay = document.getElementById('rewardOverlay');
+  if(!overlay) return;
   const starEmoji = ['💪','⭐','🌟','🏆'][stars] || '⭐';
   const titles    = ['Keep Practising!','Good Try!','Great Work!','Perfect Score!'];
   document.getElementById('reward-stars').textContent   = isAlreadyDone ? '🔒' : starEmoji;
@@ -1162,7 +1168,7 @@ function formatDashTime(ts){
 // Login timestamp is now tracked inside doLogin() above
 
 // On page load — auto-restore if returning from a game via URL params
-(function(){
+document.addEventListener('DOMContentLoaded', function() {
   const p = new URLSearchParams(location.search);
   const heroN   = p.get('hero');
   const heroCls = p.get('cls');
@@ -1172,13 +1178,15 @@ function formatDashTime(ts){
     try { sessionStorage.setItem('student', JSON.stringify(student)); } catch(e) {}
     $('login-card').style.display = 'none';
     $('island-screen').classList.add('show');
-    $('it-name').textContent  = heroN.split(',')[0].split(' ')[0];
-    $('it-class').textContent = 'Class ' + heroCls;
+    const nameEl = $('it-name');
+    const clsEl  = $('it-class');
+    if(nameEl) nameEl.textContent  = heroN.split(',')[0].split(' ')[0];
+    if(clsEl)  clsEl.textContent   = 'Class ' + heroCls;
     renderAll();
     if(zone) checkReturnFromGame();
     else history.replaceState({}, '', 'student-portal.html');
   }
-})();
+});
 </script>
 </body>
 </html>
