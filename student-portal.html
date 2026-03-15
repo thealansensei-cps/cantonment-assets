@@ -813,21 +813,43 @@ function goToGame(game) {
 // Called when returning from a game with score
 // ══════════════════════════════════════════
 function checkReturnFromGame() {
-  const params = new URLSearchParams(location.search);
-  const zone   = params.get('zone');
-  const score  = parseInt(params.get('score') || '0');
-  const total  = parseInt(params.get('total') || '1');
-  if(!zone || !score) return;
-  // find which game this zone belongs to
+  const p     = new URLSearchParams(location.search);
+  const zone  = p.get('zone');
+  const score = parseInt(p.get('score') || '0');
+  const total = parseInt(p.get('total') || '1');
+  const stars = parseInt(p.get('stars') || '0');
+  const heroN = p.get('hero');
+  const heroCls = p.get('cls');
+
+  // Restore student from URL if session lost
+  if(heroN && heroCls && !student.name) {
+    student = { name: heroN, cls: heroCls };
+    try { sessionStorage.setItem('student', JSON.stringify(student)); } catch(e) {}
+    document.getElementById('login-card').style.display = 'none';
+    document.getElementById('island-screen').classList.add('show');
+    document.getElementById('it-name').textContent = heroN.split(',')[0].split(' ')[0];
+    document.getElementById('it-class').textContent = 'Class ' + heroCls;
+  }
+
+  if(!zone) return;
+
   const game = COMP_LIST.find(g => GAMES[g].zone === zone);
   if(!game) return;
-  const pct  = Math.round(score/total*100);
-  const pts  = score * 10;
-  const stars = pct>=90?3:pct>=70?2:pct>=50?1:0;
-  markDone(game, pts);
-  renderAll();
-  showReward(game, pts, false, stars, score, total);
-  // clean URL
+
+  const pts = score * 10;
+
+  // Only mark done + award pts if not already done (or if spelling which is unlimited)
+  if(!isDone(game)) {
+    markDone(game, pts);
+    renderAll();
+    showReward(game, pts, false, stars, score, total);
+  } else {
+    // Already done — just show locked message
+    renderAll();
+    showReward(game, getCompScore(game), true);
+  }
+
+  // Clean URL immediately
   history.replaceState({}, '', 'student-portal.html');
 }
 
@@ -1138,6 +1160,25 @@ function formatDashTime(ts){
 }
 
 // Login timestamp is now tracked inside doLogin() above
+
+// On page load — auto-restore if returning from a game via URL params
+(function(){
+  const p = new URLSearchParams(location.search);
+  const heroN   = p.get('hero');
+  const heroCls = p.get('cls');
+  const zone    = p.get('zone');
+  if(heroN && heroCls) {
+    student = { name: heroN, cls: heroCls };
+    try { sessionStorage.setItem('student', JSON.stringify(student)); } catch(e) {}
+    $('login-card').style.display = 'none';
+    $('island-screen').classList.add('show');
+    $('it-name').textContent  = heroN.split(',')[0].split(' ')[0];
+    $('it-class').textContent = 'Class ' + heroCls;
+    renderAll();
+    if(zone) checkReturnFromGame();
+    else history.replaceState({}, '', 'student-portal.html');
+  }
+})();
 </script>
 </body>
 </html>
