@@ -518,6 +518,7 @@ select:disabled{opacity:.4;cursor:not-allowed}
 // ══════════════════════════════════════════
 const ROSTER = {
   "4 Care": {
+    "Test Teacher":"9999",
     "Aaron James Mc Hugh":"1001","Axton Shang Fusheng":"1002","Ayden Bin Azahar":"1003",
     "Aysha Aliya Azryn":"1004","Candice Ho Zihan":"1005","Chua Shan Ting, Celeste":"1006",
     "Clara Lillian Pereira":"1007","Dai Jiatai":"1008","Dao Tuan Huy Harvey":"1009",
@@ -532,6 +533,7 @@ const ROSTER = {
     "Wong Yuu Minn Julian":"1030","Yiu Chun Hei Kaden":"1031"
   },
   "4 Graciousness": {
+    "Test Teacher":"9999",
     "Aeni Aqisya Binte Muhammad Aewanda":"2001","Agarwal Nishant":"2002",
     "Aridasu Aashinya Sri":"2003","Avalyn Ong Hui Qi":"2004","Cheong Yong Jun Wesley":"2005",
     "Dominic Fong Yu Bin":"2006","Eric Hein Htet Kyaw":"2007","Gazi Avero":"2008",
@@ -546,6 +548,7 @@ const ROSTER = {
     "Wang Manting":"2031","Wilson Peter Han-wen":"2032"
   },
   "4 Resilience": {
+    "Test Teacher":"9999",
     "Agrawal Amay":"3001","Ahmad Hanif Bin Rashid":"3002","Alessa Hana Winata":"3003",
     "Ashwin Parthi":"3004","Bhone Thuta Paing":"3005","Cayvier Koh Zheng Jie":"3006",
     "Chan Yen Ling Isabelle":"3007","Dashiell Ong Yu Han":"3008",
@@ -561,6 +564,7 @@ const ROSTER = {
     "Xiao Ya Ning Joanne":"3029","Xu Xiaochen":"3030","Zaim Akili Iylia":"3031","Zoey Li":"3032"
   },
   "4 Respect": {
+    "Test Teacher":"9999",
     "Agarwal Ramansh Harsh":"4001","Arul Lourduraj Steevejoe":"4002",
     "Benjamin Wong Guanlin":"4003","Du Zhengheng":"4004","Hamzah Bin Bachtiar":"4005",
     "Jade Louise Boisseau":"4006","Jake Ang Jia Le":"4007","Jia Zekai":"4008",
@@ -575,11 +579,13 @@ const ROSTER = {
     "Wisutti Joaquin":"4031"
   },
   "Family": {
+    "Test Teacher":"9999",
     "Rathi":  "6001",
     "Hanvvi": "6002",
     "Krishan":"6003"
   },
   "4 Integrity": {
+    "Test Teacher":"9999",
     "Aleeya Artabia Prasetyowibowo":"5001","Chung Yue En, Guinevere":"5002",
     "Collin Alice Dorothy Marie":"5003","Daniel Cai Jiehan":"5004","Dave Lim Dow Feng":"5005",
     "Guneratne Bryn Tullius Chan Shun":"5006","Jeong Ichan":"5007",
@@ -608,6 +614,10 @@ const GAMES = {
 
 const COMP_LIST = ['grammar','reported','vtc','synthesis','spelling'];
 const CLASSES   = ['4 Care','4 Graciousness','4 Resilience','4 Respect','4 Integrity','Family'];
+
+// Demo accounts — excluded from leaderboards, rewards and dashboards
+const DEMO_NAME = 'Test Teacher';
+const isDemoAccount = (name) => name === DEMO_NAME;
 
 // ══════════════════════════════════════════
 // STATE
@@ -655,7 +665,7 @@ function markDone(game, pts) {
 // (in production, pull from Google Sheets)
 // ══════════════════════════════════════════
 function getClassLeaderboard(cls) {
-  const students = Object.keys(ROSTER[cls] || {});
+  const students = Object.keys(ROSTER[cls] || {}).filter(n => !isDemoAccount(n));
   // pull scores for each student
   const rows = students.map(name => {
     const key = 'stu_' + name.replace(/\s/g,'_') + '_' + cls.replace(/\s/g,'_');
@@ -837,6 +847,12 @@ function checkReturnFromGame() {
 
   if(!zone) return;
 
+  // Demo accounts get no rewards, no score tracking
+  if(isDemoAccount(student.name)) {
+    history.replaceState({}, '', 'student-portal.html');
+    return;
+  }
+
   const game = COMP_LIST.find(g => GAMES[g].zone === zone);
   if(!game) return;
 
@@ -929,17 +945,25 @@ function doLogin(){
   if(pin!==correct){showErr('Wrong PIN — check the hint!');shakePin();clearPin();$(pinIds[0]).focus();return}
   student={name,cls};
   try{sessionStorage.setItem('student',JSON.stringify({name,cls}))}catch(e){}
-  // Record login timestamp
-  try{
-    const key='stu_'+name.replace(/\s/g,'_')+'_'+cls.replace(/\s/g,'_');
-    let d={}; try{d=JSON.parse(localStorage.getItem(key))||{}}catch(e){}
-    d.lastLogin=Date.now();
-    localStorage.setItem(key,JSON.stringify(d));
-  }catch(e){}
+  // Record login timestamp (skip for demo accounts)
+  if(!isDemoAccount(name)){
+    try{
+      const key='stu_'+name.replace(/\s/g,'_')+'_'+cls.replace(/\s/g,'_');
+      let d={}; try{d=JSON.parse(localStorage.getItem(key))||{}}catch(e){}
+      d.lastLogin=Date.now();
+      localStorage.setItem(key,JSON.stringify(d));
+    }catch(e){}
+  }
   $('login-card').style.display='none';
   $('island-screen').classList.add('show');
   $('it-name').textContent=name.split(',')[0].split(' ')[0];
   $('it-class').textContent='Class '+cls;
+  // Show demo badge if demo account
+  const scorePill = document.getElementById('it-score-pill');
+  if(isDemoAccount(name) && scorePill){
+    scorePill.style.background='linear-gradient(135deg,#6b7280,#9ca3af)';
+    scorePill.innerHTML='🧪 Demo Mode';
+  }
   renderAll();
   checkReturnFromGame();
 }
@@ -1030,7 +1054,7 @@ function getAllStudentData(cls){
   const rows = [];
   const classList = cls==='All' ? CLASSES : [cls];
   classList.forEach(c => {
-    const students = Object.keys(ROSTER[c]||{});
+    const students = Object.keys(ROSTER[c]||{}).filter(n => !isDemoAccount(n));
     students.forEach(name => {
       const key = 'stu_'+name.replace(/\s/g,'_')+'_'+c.replace(/\s/g,'_');
       let d = {}; try{d=JSON.parse(localStorage.getItem(key))||{}}catch(e){}
