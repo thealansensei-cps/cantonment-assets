@@ -519,6 +519,16 @@ select:disabled{opacity:.4;cursor:not-allowed}
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script>
+(function(){
+  var c={apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",authDomain:"english-island-cps.firebaseapp.com",projectId:"english-island-cps",storageBucket:"english-island-cps.firebasestorage.app",messagingSenderId:"892743482834",appId:"1:892743482834:web:6705bc3e3bc832cf749c0b",databaseURL:"https://english-island-cps-default-rtdb.firebaseio.com"};
+  if(!firebase.apps.length)firebase.initializeApp(c);
+  window._fbDb=firebase.database();
+})();
+</script>
+
 <script>
 // ══════════════════════════════════════════
 // ROSTER (160 students)
@@ -634,54 +644,76 @@ const isDemoAccount = (name) => name === DEMO_NAME;
 let student = { name:'', cls:'' };
 let lbActiveClass = '';
 
-// ── Student data helpers (localStorage) ──
-function sKey()      { return 'stu_' + student.name.replace(/\s/g,'_') + '_' + student.cls.replace(/\s/g,'_'); }
-function weekKey(offset=0) {
-  const d = new Date(); d.setDate(d.getDate() - offset*7);
-  const jan1 = new Date(d.getFullYear(),0,1);
-  return d.getFullYear() + '_w' + Math.ceil(((d-jan1)/86400000 + jan1.getDay()+1)/7);
+// ── In-memory score cache (populated from Firebase) ──
+// Structure: { [fbKey]: { name, cls, zone_gc:{score,total,stars,pts,ts}, zone_rs:{...}, ... } }
+let _fbScoreCache = {};
+
+function fbKey(s){ return (s||'').replace(/[.#$\[\]\/]/g,'_'); }
+
+// Subscribe to all scores from Firebase once on load
+function initFirebaseScores() {
+  if(!window._fbDb) return;
+  window._fbDb.ref('scores').on('value', snap => {
+    _fbScoreCache = {};
+    snap.forEach(child => {
+      _fbScoreCache[child.key] = child.val();
+    });
+    // Re-render if student is already logged in
+    if(student.name) renderAll();
+  });
 }
 
-function loadData() {
-  try { return JSON.parse(localStorage.getItem(sKey())) || {}; } catch(e) { return {}; }
+// Get score data for a specific student from cache
+function getStudentData(name) {
+  return _fbScoreCache[fbKey(name)] || {};
 }
-function saveData(d) { localStorage.setItem(sKey(), JSON.stringify(d)); }
 
 function getTotalScore() {
-  const d = loadData();
-  return COMP_LIST.reduce((t,g) => t + (d['score_'+GAMES[g].zone] || 0), 0);
+  const d = getStudentData(student.name);
+  return COMP_LIST.reduce((t,g) => {
+    const z = d['zone_'+GAMES[g].zone];
+    return t + (z ? z.pts || 0 : 0);
+  }, 0);
 }
 function getCompScore(game) {
-  return loadData()['score_'+GAMES[game].zone] || 0;
+  const d = getStudentData(student.name);
+  const z = d['zone_'+GAMES[game].zone];
+  return z ? z.pts || 0 : 0;
 }
-function getWeekScore(game, offset=0) {
-  return loadData()['week_'+GAMES[game].zone+'_'+weekKey(offset)] || 0;
+function getCompStars(game) {
+  const d = getStudentData(student.name);
+  const z = d['zone_'+GAMES[game].zone];
+  return z ? z.stars || 0 : 0;
 }
 function isDone(game) {
-  return GAMES[game].lockable && !!loadData()['done_'+GAMES[game].zone];
+  if(!GAMES[game].lockable) return false;
+  const d = getStudentData(student.name);
+  return !!d['zone_'+GAMES[game].zone];
 }
 function markDone(game, pts) {
-  const d = loadData();
-  d['done_'+GAMES[game].zone] = true;
-  d['score_'+GAMES[game].zone] = (d['score_'+GAMES[game].zone] || 0) + pts;
-  const wk = weekKey(0);
-  d['week_'+GAMES[game].zone+'_'+wk] = (d['week_'+GAMES[game].zone+'_'+wk] || 0) + pts;
-  saveData(d);
+  // Scores now come from Firebase — this is only called locally
+  // to immediately reflect the just-submitted score before Firebase syncs
+  const key = fbKey(student.name);
+  if(!_fbScoreCache[key]) _fbScoreCache[key] = { name:student.name, cls:student.cls };
+  // Will be overwritten by Firebase listener shortly
 }
 
 // ══════════════════════════════════════════
-// LEADERBOARD — simulated from localStorage
-// (in production, pull from Google Sheets)
+// LEADERBOARD — live from Firebase
 // ══════════════════════════════════════════
 function getClassLeaderboard(cls) {
-  const students = Object.keys(ROSTER[cls] || {}).filter(n => !isDemoAccount(n));
-  // pull scores for each student
+  const students = Object.keys(ROSTER[cls] || {});
   const rows = students.map(name => {
-    const key = 'stu_' + name.replace(/\s/g,'_') + '_' + cls.replace(/\s/g,'_');
-    let d = {}; try { d = JSON.parse(localStorage.getItem(key)) || {}; } catch(e){}
-    const total = COMP_LIST.reduce((t,g) => t + (d['score_'+GAMES[g].zone] || 0), 0);
+    const d = getStudentData(name);
+    const total = COMP_LIST.reduce((t,g) => {
+      const z = d['zone_'+GAMES[g].zone];
+      return t + (z ? z.pts || 0 : 0);
+    }, 0);
     const comps = {};
-    COMP_LIST.forEach(g => { comps[GAMES[g].zone] = d['score_'+GAMES[g].zone] || 0; });
+    COMP_LIST.forEach(g => {
+      const z = d['zone_'+GAMES[g].zone];
+      comps[GAMES[g].zone] = z ? z.pts || 0 : 0;
+    });
     return { name, total, comps };
   });
   return rows.sort((a,b) => b.total - a.total);
@@ -700,41 +732,23 @@ function renderCompScores() {
   if(!el) return;
   el.innerHTML = COMP_LIST.map(g => {
     const pts   = getCompScore(g);
-    const thisW = getWeekScore(g, 0);
-    const lastW = getWeekScore(g, 1);
-    const delta = thisW - lastW;
-    const deltaCls = delta > 0 ? 'delta-up' : delta < 0 ? 'delta-down' : 'delta-same';
-    const deltaStr = delta > 0 ? '+'+delta : delta === 0 ? '—' : ''+delta;
-    const maxW = Math.max(thisW, lastW, 1);
-    const thisPct = Math.round(thisW/maxW*100);
+    const stars = getCompStars(g);
+    const done  = isDone(g);
+    const starStr = done ? ['','⭐','🌟','🏆'][stars] || '⭐' : '';
     return `<div class="comp-row">
       <div class="comp-icon">${GAMES[g].icon}</div>
       <div class="comp-info">
         <div class="comp-name">${GAMES[g].name}</div>
-        <div class="week-bar-wrap">
-          <div class="week-bars">
-            <div class="bar-this" style="width:${thisPct}%"></div>
-            <div class="bar-last"></div>
-          </div>
+        <div style="font-size:10px;color:${done?'#34D399':'rgba(255,255,255,.3)'};font-weight:700;margin-top:3px">
+          ${done ? starStr+' Completed' : 'Not attempted yet'}
         </div>
       </div>
       <div>
         <div class="comp-pts">${pts}</div>
-        <div class="comp-delta ${deltaCls}">${deltaStr}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:600">pts</div>
       </div>
     </div>`;
   }).join('');
-
-  // week legend
-  const wcEl = document.getElementById('week-compare');
-  if(wcEl) wcEl.innerHTML = `
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:4px"><div class="wl-dot" style="background:#2e7dd4"></div><div class="wl-txt">This week</div></div>
-      <div style="display:flex;align-items:center;gap:4px"><div class="wl-dot" style="background:rgba(255,255,255,.2)"></div><div class="wl-txt">Last week</div></div>
-    </div>
-    <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700">
-      Coloured bar = this week's progress vs last week
-    </div>`;
 }
 
 function renderLeaderboard(cls) {
@@ -857,27 +871,23 @@ function checkReturnFromGame() {
 
   if(!zone) return;
 
-  // Demo accounts get no rewards, no score tracking
-  if(isDemoAccount(student.name)) {
-    history.replaceState({}, '', 'student-portal.html');
-    return;
-  }
-
   const game = COMP_LIST.find(g => GAMES[g].zone === zone);
   if(!game) return;
 
   const pts = score * 10;
 
-  // Only mark done + award pts if not already done (or if spelling which is unlimited)
-  if(!isDone(game)) {
-    markDone(game, pts);
-    renderAll();
-    showReward(game, pts, false, stars, score, total);
-  } else {
-    // Already done — just show locked message
-    renderAll();
-    showReward(game, getCompScore(game), true);
-  }
+  // Score is already saved to Firebase by the game file.
+  // Optimistically update local cache so UI reflects immediately
+  // (Firebase listener will confirm within seconds)
+  const key = fbKey(student.name);
+  if(!_fbScoreCache[key]) _fbScoreCache[key] = { name: student.name, cls: student.cls };
+  _fbScoreCache[key]['zone_' + zone] = { score, total, stars, pts, ts: Date.now() };
+
+  renderAll();
+
+  // Show reward if first time completing, or show locked if already done before this session
+  const alreadyHadScore = false; // We show reward every time they submit
+  showReward(game, pts, alreadyHadScore, stars, score, total);
 
   // Clean URL immediately
   history.replaceState({}, '', 'student-portal.html');
@@ -955,14 +965,11 @@ function doLogin(){
   if(pin!==correct){showErr('Wrong PIN — check the hint!');shakePin();clearPin();$(pinIds[0]).focus();return}
   student={name,cls};
   try{sessionStorage.setItem('student',JSON.stringify({name,cls}))}catch(e){}
-  // Record login timestamp (skip for demo accounts)
-  if(!isDemoAccount(name)){
-    try{
-      const key='stu_'+name.replace(/\s/g,'_')+'_'+cls.replace(/\s/g,'_');
-      let d={}; try{d=JSON.parse(localStorage.getItem(key))||{}}catch(e){}
-      d.lastLogin=Date.now();
-      localStorage.setItem(key,JSON.stringify(d));
-    }catch(e){}
+  // Record login timestamp to Firebase
+  if(!isDemoAccount(name) && window._fbDb){
+    window._fbDb.ref('scores/'+fbKey(name)).update({
+      name, cls, lastLogin: Date.now()
+    }).catch(()=>{});
   }
   $('login-card').style.display='none';
   $('island-screen').classList.add('show');
@@ -1059,28 +1066,25 @@ function switchDashClass(cls){
   renderDash(cls);
 }
 
-// Get all student data for a class (or all classes)
+// Get all student data for a class (or all classes) — from Firebase cache
 function getAllStudentData(cls){
   const rows = [];
   const classList = cls==='All' ? CLASSES : [cls];
   classList.forEach(c => {
-    const students = Object.keys(ROSTER[c]||{}).filter(n => !isDemoAccount(n));
+    const students = Object.keys(ROSTER[c]||{});
     students.forEach(name => {
-      const key = 'stu_'+name.replace(/\s/g,'_')+'_'+c.replace(/\s/g,'_');
-      let d = {}; try{d=JSON.parse(localStorage.getItem(key))||{}}catch(e){}
+      const d = getStudentData(name);
       const scores = {};
       let total = 0;
       COMP_LIST.forEach(g => {
-        const s = d['score_'+GAMES[g].zone]||0;
-        scores[GAMES[g].zone] = s;
-        total += s;
+        const z = d['zone_'+GAMES[g].zone];
+        const pts = z ? (z.pts||0) : 0;
+        scores[GAMES[g].zone] = pts;
+        total += pts;
       });
-      const doneCount = COMP_LIST.filter(g => GAMES[g].lockable && d['done_'+GAMES[g].zone]).length;
+      const doneCount = COMP_LIST.filter(g => GAMES[g].lockable && d['zone_'+GAMES[g].zone]).length;
       const lastLogin  = d['lastLogin'] || null;
-      const thisWeekPts = COMP_LIST.reduce((t,g)=>{
-        return t + (d['week_'+GAMES[g].zone+'_'+weekKey(0)]||0);
-      },0);
-      rows.push({ name, cls:c, scores, total, doneCount, lastLogin, thisWeekPts });
+      rows.push({ name, cls:c, scores, total, doneCount, lastLogin });
     });
   });
   return rows.sort((a,b)=>b.total-a.total);
@@ -1203,6 +1207,9 @@ function formatDashTime(ts){
 
 // On page load — auto-restore if returning from a game via URL params
 document.addEventListener('DOMContentLoaded', function() {
+  // Start listening to Firebase scores immediately
+  initFirebaseScores();
+
   const p = new URLSearchParams(location.search);
   const heroN   = p.get('hero');
   const heroCls = p.get('cls');
