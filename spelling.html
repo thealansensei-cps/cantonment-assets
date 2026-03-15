@@ -312,15 +312,28 @@ body.kbd-open{padding-bottom:280px}
 </div>
 
 <script>
+
+function fbKey(s){ return (s||'').replace(/[.#$\[\]\/]/g,'_'); }
+
+async function fbSaveScore(name,cls,zone,topic,score,total,stars){
+  if(!name||!window._fbDb) return;
+  try{
+    await window._fbDb.ref('scores/'+fbKey(name)).update({
+      name, cls,
+      ['zone_'+zone]:{score,total,stars,pts:score*10,topic,ts:Date.now()}
+    });
+  }catch(e){console.warn('Firebase save error:',e);}
+}
+
+</script>
+<script>
 // ══════════════════════════════════════════════
 // SHARED SCRIPT URL — same as all other games
 // Scores feed into the same Google Sheet and
 // teacher dashboard as Grammar, Reported, VTC, Synthesis
 // ══════════════════════════════════════════════
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwihbBr7sA6LvqLTAUD6wK-xoUgslCkyqWenIWYxnRPidn85ihhqcbwKW8I_dcFF_uzOw/exec';
 
 // Spelling-specific leaderboard (in-game Top 10 only)
-const SPELLING_LB_URL = 'https://script.google.com/macros/s/AKfycbzhZls_bxxdB6p2DI5aPl_lsRzIm-toFdMDyHG28wg5Q2om3m-Pnggyc4__sjnXSCyyeg/exec';
 
 // ── Read student from URL params (passed from portal) ──
 // Falls back to sessionStorage if student navigated directly
@@ -366,26 +379,11 @@ function goBack(){
 // VTC and Synthesis all use — feeds the teacher
 // dashboard and the island leaderboard
 // ══════════════════════════════════════════════
-async function submitToPortal(correct, total) {
-  if(!hero.name || !total) return;
-  const pct   = Math.round(correct / total * 100);
-  const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
-  const list  = getList();
-  await fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'saveScore',
-      name:   hero.name,
-      cls:    hero.cls,
-      zone:   'sp',
-      topic:  (list?.title || 'Spelling'),
-      score:  correct,
-      total,
-      stars,
-      coins:  correct * 10,
-      ts:     new Date().toISOString()
-    })
-  }).catch(e => console.warn('Portal save failed:', e));
+async function submitToPortal(correct,total){
+  if(!hero.name||!total)return;
+  const pct=Math.round(correct/total*100);
+  const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
+  await fbSaveScore(hero.name,hero.cls,'sp',getList()?.title||'Spelling',correct,total,stars);
 }
 
 // ── Submit & return to island (shown on results screen) ──
@@ -771,6 +769,17 @@ function launchMini(){
 }
 
 document.addEventListener('DOMContentLoaded',init);
+</script>
+<script>
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script>
+(function(){
+  var c={apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",authDomain:"english-island-cps.firebaseapp.com",projectId:"english-island-cps",storageBucket:"english-island-cps.firebasestorage.app",messagingSenderId:"892743482834",appId:"1:892743482834:web:6705bc3e3bc832cf749c0b",databaseURL:"https://english-island-cps-default-rtdb.firebaseio.com"};
+  if(!firebase.apps.length)firebase.initializeApp(c);
+  window._fbDb=firebase.database();
+})();
 </script>
 </body>
 </html>
