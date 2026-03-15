@@ -901,10 +901,17 @@ function doLogin(){
   if(pin!==correct){showErr('Wrong PIN — check the hint!');shakePin();clearPin();$(pinIds[0]).focus();return}
   student={name,cls};
   try{sessionStorage.setItem('student',JSON.stringify({name,cls}))}catch(e){}
+  // Record login timestamp
+  try{
+    const key='stu_'+name.replace(/\s/g,'_')+'_'+cls.replace(/\s/g,'_');
+    let d={}; try{d=JSON.parse(localStorage.getItem(key))||{}}catch(e){}
+    d.lastLogin=Date.now();
+    localStorage.setItem(key,JSON.stringify(d));
+  }catch(e){}
   $('login-card').style.display='none';
   $('island-screen').classList.add('show');
-  $('it-name').textContent = name.split(',')[0].split(' ')[0];
-  $('it-class').textContent = 'Class '+cls;
+  $('it-name').textContent=name.split(',')[0].split(' ')[0];
+  $('it-class').textContent='Class '+cls;
   renderAll();
   checkReturnFromGame();
 }
@@ -1130,21 +1137,7 @@ function formatDashTime(ts){
   return d.toLocaleDateString('en-SG',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
 }
 
-// Track login timestamp whenever a student logs in
-const _origDoLogin = doLogin;
-function doLogin(){
-  _origDoLogin.call(this);
-  // After login, record timestamp
-  setTimeout(()=>{
-    if(student.name){
-      const key = 'stu_'+student.name.replace(/\s/g,'_')+'_'+student.cls.replace(/\s/g,'_');
-      let d={}; try{d=JSON.parse(localStorage.getItem(key))||{}}catch(e){}
-      d.lastLogin = Date.now();
-      localStorage.setItem(key, JSON.stringify(d));
-    }
-  },200);
-}
+// Login timestamp is now tracked inside doLogin() above
 </script>
 </body>
 </html>
-
