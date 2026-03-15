@@ -3,316 +3,774 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Library Tower — Grammar Cloze</title>
+<title>Cantonment P4 Spelling Quest</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0D0F1A;--surface:#13162A;--surface2:#1A1F36;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#E8EAF6;--muted:rgba(232,234,246,0.45);--accent:#4A90D9;--accent2:#7BB8F0;--teal:#34D399;--coral:#F87171;--gold:#FBBF24;--radius:18px;--radius-sm:10px}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(74,144,217,.15) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(52,211,153,.08) 0%,transparent 55%)}
-.wrap{max-width:680px;margin:0 auto;padding:20px 16px 56px;position:relative;z-index:1}
-.hdr{text-align:center;padding:28px 0 20px}
-.hdr-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(74,144,217,.12);border:1px solid rgba(74,144,217,.3);border-radius:99px;padding:5px 14px;margin-bottom:14px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent2)}
-.hdr-logo{width:70px;height:70px;background:linear-gradient(135deg,var(--accent),var(--teal));border-radius:24px;display:inline-flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:12px;box-shadow:0 8px 32px rgba(74,144,217,.35);animation:float 4s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(1deg)}}
-.hdr-title{font-family:'Instrument Serif',serif;font-size:clamp(26px,6vw,42px);font-weight:400;color:#fff;margin-bottom:8px}
-.hdr-title span{color:var(--accent2);font-style:italic}
-.hdr-sub{font-size:13px;color:var(--muted);font-weight:500}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)}
-.card-title{font-family:'Instrument Serif',serif;font-size:17px;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:9px}
-.card-icon{width:34px;height:34px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;background:rgba(74,144,217,.15);flex-shrink:0}
-.progress-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-.progress-bar{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--teal));border-radius:99px;transition:width .4s ease}
-.progress-txt{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
-.passage{font-size:15px;line-height:2.4;color:var(--text);background:var(--surface2);border-radius:var(--radius-sm);padding:18px;border:1px solid var(--border)}
-.blank-wrap{display:inline-flex;align-items:center;position:relative;margin:0 2px}
-.blank{display:inline-block;min-width:88px;height:30px;border-bottom:2px solid var(--accent);background:rgba(74,144,217,.08);border-radius:6px 6px 0 0;padding:0 8px;font-size:13px;font-weight:600;color:#fff;text-align:center;line-height:30px;cursor:pointer;transition:all .2s;position:relative}
-.blank:hover{background:rgba(74,144,217,.18)}
-.blank.answered{border-bottom-color:var(--teal);background:rgba(52,211,153,.12);color:var(--teal)}
-.blank.wrong{border-bottom-color:var(--coral);background:rgba(248,113,113,.12);color:var(--coral);animation:shake .3s ease}
-.blank-num{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:9px;font-weight:700;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.options-area{margin-top:18px}
-.options-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.options-grid{display:flex;flex-wrap:wrap;gap:7px}
-.opt-btn{background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;font-family:inherit}
-.opt-btn:hover{background:rgba(74,144,217,.15);border-color:var(--accent);color:#fff}
-.opt-btn.used{opacity:.3;pointer-events:none;text-decoration:line-through}
-.feedback{margin-top:14px;padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;display:none;align-items:center;gap:9px}
-.feedback.show{display:flex}
-.feedback.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--teal)}
-.feedback.bad{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--coral)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:11px;padding:12px 24px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#2563EB);color:#fff;box-shadow:0 4px 18px rgba(74,144,217,.35)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 26px rgba(74,144,217,.45)}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-success{background:linear-gradient(135deg,#10B981,#059669);color:#fff;box-shadow:0 4px 18px rgba(16,185,129,.4)}
-.btn-success:hover{transform:translateY(-2px);filter:brightness(1.08)}
-.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border2);color:var(--text)}
-.btn-ghost:hover{background:rgba(255,255,255,.1)}
-.btn-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
-.stat-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.stat{flex:1;min-width:75px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;text-align:center}
-.stat-val{font-family:'Instrument Serif',serif;font-size:26px;color:#fff}
-.stat-lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
-.result-screen{display:none;text-align:center;padding:32px 0}
-.result-screen.show{display:block}
-.result-emoji{font-size:60px;margin-bottom:14px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
-@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
-.result-title{font-family:'Instrument Serif',serif;font-size:34px;color:#fff;margin-bottom:6px}
-.result-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
-.submit-note{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:11px;padding:12px 16px;font-size:13px;color:var(--teal);font-weight:600;margin-bottom:16px;text-align:center}
-.set-tabs{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
-.set-tab{padding:5px 13px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .2s;font-family:inherit}
-.set-tab.active{background:rgba(74,144,217,.2);border-color:var(--accent);color:var(--accent2)}
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e2340;border:1px solid var(--border2);border-radius:11px;padding:11px 22px;font-size:13px;font-weight:600;color:var(--text);transition:transform .3s ease;z-index:999;pointer-events:none;white-space:nowrap}
-.toast.show{transform:translateX(-50%) translateY(0)}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#0D0F1A;--surface:#13162A;--surface2:#1A1F36;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#E8EAF6;--muted:rgba(232,234,246,0.45);
+  --accent:#7C6EFA;--accent2:#A78BFA;--teal:#34D399;--tealD:#10B981;
+  --coral:#F87171;--coralD:#EF4444;--gold:#FBBF24;--goldD:#D97706;
+  --radius:18px;--radius-sm:10px;--glow:0 0 40px rgba(124,110,250,0.18);
+}
 
-.game-topbar{
-  position:sticky;top:0;z-index:50;
-  background:rgba(13,15,26,.92);backdrop-filter:blur(16px);
-  border-bottom:1px solid rgba(255,255,255,.08);
-  padding:8px 16px;display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:0;
+/* ── HERO BAR (replaces old identityBar) ── */
+#heroBar{
+  background:var(--surface);border-bottom:1px solid rgba(124,110,250,0.3);
+  padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  position:relative;z-index:10;
 }
-.gtb-left{display:flex;align-items:center;gap:10px}
-.gtb-title{font-family:'Instrument Serif',serif;font-size:16px;color:#fff}
-.btn-island-return{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(0,212,190,.15);border:1px solid rgba(0,212,190,.35);
-  color:#00d4be;font-size:12px;font-weight:800;
-  border-radius:10px;padding:6px 14px;cursor:pointer;
-  font-family:'Nunito',sans-serif;transition:all .15s;text-decoration:none;
+.hero-badge{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);
+  border-radius:99px;padding:5px 14px;font-size:11px;font-weight:600;color:var(--teal)}
+.hero-name{font-size:13px;font-weight:700;color:var(--text)}
+.hero-cls{font-size:10px;color:var(--muted);font-weight:500;margin-top:1px}
+.btn-back-island{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.5);font-size:11px;font-weight:700;border-radius:8px;
+  padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-back-island:hover{background:rgba(255,255,255,.13);color:#fff}
+
+/* ── SUBMIT TOAST ── */
+#submitToast{
+  position:fixed;bottom:80px;right:24px;z-index:99999;
+  background:var(--surface);border:1px solid rgba(52,211,153,0.4);
+  border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);opacity:0;
+  transform:translateY(20px);transition:all .35s ease;pointer-events:none;
 }
-.btn-island-return:hover{background:rgba(0,212,190,.25);color:#fff}
+#submitToast.show{opacity:1;transform:translateY(0)}
+.toast-icon{font-size:20px;flex-shrink:0}
+.toast-title{font-size:12px;font-weight:700;color:var(--teal)}
+.toast-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(124,110,250,0.15) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 40% at 80% 100%,rgba(52,211,153,0.10) 0%,transparent 55%),
+  radial-gradient(ellipse 40% 40% at 50% 50%,rgba(124,110,250,0.05) 0%,transparent 70%)}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
+  background-size:48px 48px}
+.wrap{max-width:680px;margin:0 auto;padding:20px 16px 56px;position:relative;z-index:1}
+.hdr{text-align:center;padding:40px 0 32px}
+.hdr-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,110,250,0.12);border:1px solid rgba(124,110,250,0.3);border-radius:99px;padding:6px 16px;margin-bottom:20px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);animation:fadeDown .6s ease both}
+.hdr-logo{width:80px;height:80px;background:linear-gradient(135deg,var(--accent),var(--teal));border-radius:28px;display:inline-flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:16px;box-shadow:0 8px 32px rgba(124,110,250,0.35),0 0 0 1px rgba(255,255,255,0.1);animation:float 4s ease-in-out infinite,fadeUp .7s ease .1s both}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.hdr-title{font-family:'Instrument Serif',serif;font-size:clamp(32px,7vw,52px);font-weight:400;color:#fff;line-height:1.05;margin-bottom:10px;animation:fadeUp .7s ease .2s both;letter-spacing:-0.5px}
+.hdr-title span{color:var(--accent2);font-style:italic}
+.hdr-sub{font-size:13px;color:var(--muted);font-weight:500;letter-spacing:0.5px;animation:fadeUp .7s ease .3s both}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;position:relative;overflow:hidden;animation:fadeUp .5s ease both;transition:border-color .3s}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)}
+.card:hover{border-color:var(--border2)}
+.card-title{font-family:'Instrument Serif',serif;font-size:18px;font-weight:400;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.card-icon{width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;background:rgba(124,110,250,0.15);border:1px solid rgba(124,110,250,0.25)}
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+.field-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:6px;opacity:.8}
+select{width:100%;padding:11px 36px 11px 13px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:border-color .2s,box-shadow .2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(232,234,246,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,110,250,0.15)}
+.book-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.book-tab{padding:7px 18px;border-radius:99px;border:1px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s}
+.book-tab:hover{color:var(--text);border-color:var(--border2)}
+.book-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(124,110,250,0.4)}
+.list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:10px;margin-bottom:18px}
+.list-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;position:relative}
+.list-card:hover{border-color:rgba(124,110,250,0.4);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.list-card.sel{border-color:var(--accent);background:rgba(124,110,250,0.1);box-shadow:0 0 0 1px var(--accent),0 8px 24px rgba(124,110,250,0.2)}
+.list-card.sel::after{content:'✓';position:absolute;top:10px;right:12px;font-size:11px;font-weight:700;color:var(--accent2);width:18px;height:18px;background:rgba(124,110,250,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:18px;text-align:center}
+.lc-num{font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:1px;margin-bottom:4px;opacity:.8}
+.lc-theme{font-size:12px;font-weight:600;color:var(--text);line-height:1.35}
+.lc-count{font-size:10px;color:var(--muted);margin-top:6px;font-weight:500}
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:18px}
+.mode-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 8px;cursor:pointer;text-align:center;transition:all .2s}
+.mode-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.mode-card.sel{border-color:var(--accent);background:rgba(124,110,250,0.1);box-shadow:0 0 0 1px var(--accent)}
+.mode-icon{font-size:28px;margin-bottom:8px;display:block}
+.mode-name{font-size:12px;font-weight:700;color:var(--text)}
+.mode-desc{font-size:10px;color:var(--muted);margin-top:3px;font-weight:500}
+.btn-start{width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.3px;box-shadow:0 4px 24px rgba(124,110,250,0.45),0 1px 0 rgba(255,255,255,0.1) inset;transition:all .2s;position:relative;overflow:hidden}
+.btn-start::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,0.1),transparent)}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(124,110,250,0.55)}
+.btn-submit-island{width:100%;padding:14px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(16,185,129,.4);transition:all .2s;position:relative;overflow:hidden;margin-bottom:10px}
+.btn-submit-island:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn-submit-island:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.hidden{display:none !important}
+.prog-wrap{margin-bottom:16px}
+.prog-bar-bg{height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-bottom:10px}
+.prog-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--teal));border-radius:99px;transition:width .5s cubic-bezier(0.4,0,0.2,1)}
+.prog-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:var(--muted)}
+.hearts-row{text-align:center;font-size:22px;letter-spacing:6px;margin:12px 0 20px}
+.kbd-indicator{display:inline-flex;align-items:center;gap:6px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--teal);margin-bottom:14px}
+.kbd-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink .9s infinite}
+.sent-box{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:12px;padding:18px 20px;font-size:16px;line-height:1.85;color:var(--text);margin-bottom:16px}
+.blank-space{display:inline-block;border-bottom:2px solid var(--accent);min-width:80px;padding:0 6px;color:var(--accent2);font-weight:700;letter-spacing:3px}
+.audio-row{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:16px}
+.play-btn{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--teal));border:none;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 4px 20px rgba(124,110,250,0.4);transition:all .2s;display:flex;align-items:center;justify-content:center}
+.play-btn:hover{transform:scale(1.08);box-shadow:0 8px 28px rgba(124,110,250,0.5)}
+.play-btn.playing{animation:pulse 1s infinite}
+.pause-btn{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#FFAA33);border:none;color:#1a1a2e;font-size:18px;cursor:pointer;box-shadow:0 4px 20px rgba(251,191,36,0.35);transition:all .2s;display:flex;align-items:center;justify-content:center}
+.pause-btn:hover{transform:scale(1.08)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.ans-input{width:100%;max-width:460px;display:block;margin:0 auto 14px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:12px;padding:16px 18px;font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:var(--text);text-align:center;transition:border-color .2s,box-shadow .2s;caret-color:var(--accent2)}
+.ans-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(124,110,250,0.15)}
+.ans-input.correct{border-color:var(--teal);box-shadow:0 0 0 4px rgba(52,211,153,0.15)}
+.ans-input.wrong{border-color:var(--coral);animation:shake .35s;box-shadow:0 0 0 4px rgba(248,113,113,0.15)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.feedback{border-radius:12px;padding:14px 18px;font-size:14px;font-weight:600;margin-bottom:14px;animation:popIn .25s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.feedback.correct{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:var(--teal)}
+.feedback.wrong{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--coral)}
+.spelling-tip{margin-top:8px;font-size:12px;color:var(--muted);font-weight:500}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.check-btn{padding:13px 28px;background:linear-gradient(135deg,var(--teal),#00D4AA);color:#0D2B22;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(52,211,153,0.35);transition:all .15s}
+.check-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(52,211,153,0.45)}
+.skip-btn{padding:13px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.skip-btn:hover{color:var(--text);border-color:var(--border2)}
+.scramble-tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px}
+.s-tile{min-width:44px;height:52px;padding:0 14px;background:rgba(124,110,250,0.15);color:var(--accent2);border:1px solid rgba(124,110,250,0.35);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;cursor:pointer;user-select:none;transition:all .15s}
+.s-tile:hover{background:rgba(124,110,250,0.25);transform:translateY(-3px);box-shadow:0 6px 16px rgba(124,110,250,0.3)}
+.s-tile.used{opacity:.2;pointer-events:none}
+.speed-timer{font-family:'Instrument Serif',serif;font-size:64px;font-weight:400;text-align:center;line-height:1;transition:color .3s;margin-bottom:8px}
+.dict-controls{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+.dict-ctrl-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:12px;opacity:.8}
+.dict-ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dict-playbar{display:flex;align-items:center;gap:12px;justify-content:center;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px}
+.dict-playbar-label{font-size:12px;font-weight:600;color:var(--muted);flex:1}
+.dict-textarea{width:100%;min-height:140px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:12px;padding:16px 18px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:var(--text);resize:vertical;transition:border-color .2s,box-shadow .2s;margin-bottom:14px;caret-color:var(--accent2);line-height:1.7}
+.dict-textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(124,110,250,0.15)}
+.dict-status{text-align:center;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px;min-height:20px}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
+.status-dot.playing{background:var(--teal);animation:blink .8s infinite}
+.status-dot.paused{background:var(--gold)}
+.status-dot.stopped{background:var(--muted)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.redemption-banner{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:14px;padding:20px 24px;text-align:center;margin-bottom:14px}
+.redemption-banner h3{font-family:'Instrument Serif',serif;font-size:22px;color:var(--gold);margin-bottom:6px}
+.redemption-banner p{font-size:14px;color:var(--muted);font-weight:500}
+.results-score{text-align:center;padding:24px 0}
+.big-num{font-family:'Instrument Serif',serif;font-size:80px;font-weight:400;line-height:1;background:linear-gradient(135deg,var(--accent2),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.big-label{font-size:14px;font-weight:500;color:var(--muted);margin-top:6px}
+.stars-row{font-size:32px;margin:12px 0 18px;letter-spacing:6px}
+.res-table{width:100%;border-collapse:collapse;font-size:13px}
+.res-table th{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);opacity:.8}
+.res-table td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.04);font-weight:500;color:var(--muted)}
+.ok{color:var(--teal);font-size:16px}.no{color:var(--coral);font-size:16px}
+.lb-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.lb-tab{padding:6px 16px;border-radius:99px;border:1px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s}
+.lb-tab:hover{color:var(--text);border-color:var(--border2)}
+.lb-tab.active{background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.4);color:var(--gold)}
+.lb-list{list-style:none}
+.lb-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:10px;margin-bottom:6px;background:var(--surface2);border:1px solid var(--border);transition:all .2s}
+.lb-item:hover{border-color:var(--border2)}
+.lb-item.top1{background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.3)}
+.lb-item.top2{background:rgba(156,163,175,0.08);border-color:rgba(156,163,175,0.25)}
+.lb-item.top3{background:rgba(180,120,80,0.08);border-color:rgba(180,120,80,0.25)}
+.lb-rank{font-family:'Instrument Serif',serif;font-size:20px;font-weight:400;width:28px;text-align:center;flex-shrink:0}
+.lb-rank.top1{color:var(--gold)}.lb-rank.top2{color:#9CA3AF}.lb-rank.top3{color:#B47850}
+.lb-name{flex:1;font-size:13px;font-weight:700;color:var(--text)}
+.lb-class{font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+.lb-score{font-family:'Instrument Serif',serif;font-size:20px;color:var(--accent2)}
+.lb-pct{font-size:10px;color:var(--muted);font-weight:500}
+.lb-empty{text-align:center;padding:36px;color:var(--muted);font-weight:500;font-size:14px}
+.save-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:var(--teal);border-radius:99px;padding:7px 18px;font-size:12px;font-weight:600;margin-bottom:14px}
+.osk{position:fixed;bottom:0;left:0;right:0;background:rgba(19,22,42,0.97);backdrop-filter:blur(20px);border-top:1px solid var(--border2);padding:12px 12px 18px;z-index:9999;box-shadow:0 -20px 60px rgba(0,0,0,0.6);animation:slideUp .22s cubic-bezier(0.4,0,0.2,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.osk-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 4px}
+.osk-action-btns{display:flex;gap:8px}
+.osk-check{padding:8px 22px;background:linear-gradient(135deg,var(--teal),#00D4AA);color:#0D2B22;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.osk-skip{padding:8px 16px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.osk-close{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--muted);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.osk-close:hover{background:rgba(248,113,113,0.2);border-color:rgba(248,113,113,0.4);color:var(--coral)}
+.osk-keys{max-width:680px;margin:0 auto}
+.osk-row{display:flex;gap:5px;justify-content:center;margin-bottom:5px}
+.osk-key{min-width:38px;height:44px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;user-select:none;transition:all .1s;box-shadow:0 2px 0 rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center}
+.osk-key:hover{background:rgba(124,110,250,0.25);border-color:rgba(124,110,250,0.4);color:#fff;transform:translateY(-2px)}
+.osk-key:active{transform:translateY(1px);box-shadow:none;background:rgba(124,110,250,0.35)}
+.osk-key.special{min-width:56px;font-size:12px;background:rgba(124,110,250,0.12);border-color:rgba(124,110,250,0.2);color:var(--accent2)}
+.osk-key.space-key{min-width:220px;font-size:11px;letter-spacing:1px}
+.osk-key.back-key{background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.2);color:var(--coral)}
+.osk-key.shift-active{background:rgba(124,110,250,0.4);border-color:var(--accent);color:#fff}
+.osk-key.phys-active{background:rgba(124,110,250,0.45)!important;border-color:var(--accent)!important;color:#fff!important;transform:translateY(1px);box-shadow:none!important}
+.kbd-toggle{position:fixed;bottom:20px;right:20px;z-index:10000;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 20px rgba(124,110,250,0.5);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.kbd-toggle:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(124,110,250,0.65)}
+.phys-kbd-toggle{display:inline-flex;align-items:center;gap:8px;background:rgba(124,110,250,0.1);border:1px solid rgba(124,110,250,0.25);border-radius:99px;padding:7px 16px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:all .2s}
+.phys-kbd-toggle.active{background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.35);color:var(--teal)}
+.phys-kbd-toggle-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+body.kbd-open{padding-bottom:280px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:9000}
+@media(max-width:480px){.osk-key{min-width:30px;height:40px;font-size:13px}.osk-key.space-key{min-width:140px}.osk-key.special{min-width:44px;font-size:11px}}
 </style>
 </head>
 <body>
+<canvas id="confetti"></canvas>
 
-<div class="game-topbar">
-  <div class="gtb-left">
-    <span style="font-size:20px">🏝️</span>
-    <span class="gtb-title">English Island</span>
+<!-- ── HERO BAR — reads student from URL params, no old login dropdowns ── -->
+<div id="heroBar"></div>
+
+<!-- Submit toast -->
+<div id="submitToast">
+  <div class="toast-icon">📊</div>
+  <div>
+    <div class="toast-title" id="toastTitle">Score saved!</div>
+    <div class="toast-sub" id="toastSub">Your result has been recorded.</div>
   </div>
-  <button class="btn-island-return" onclick="goBack()">🏝️ Return to Island</button>
 </div>
+
 <div class="wrap">
-  <div class="hdr">
-    <div class="hdr-badge">📖 Library Tower</div>
-    <div class="hdr-logo">📖</div>
-    <h1 class="hdr-title">Grammar <span>Cloze</span></h1>
-    <p class="hdr-sub" id="heroLabel">Fill in the blanks with the correct words</p>
-  </div>
+<div class="hdr">
+  <div class="hdr-badge">✦ Cantonment Primary School</div>
+  <div class="hdr-logo">📚</div>
+  <div class="hdr-title">P4 Spelling <span>Quest</span></div>
+  <div class="hdr-sub">Listen · Spell · Conquer</div>
+</div>
 
-  <div class="card" style="animation-delay:.1s">
-    <div class="card-title"><div class="card-icon">📜</div>Choose a Passage</div>
-    <div class="set-tabs" id="setTabs"></div>
-  </div>
-
-  <div class="card" id="quizCard" style="display:none">
-    <div class="progress-row">
-      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-      <div class="progress-txt" id="progressTxt">0 / 0</div>
-    </div>
-    <div class="card-title"><div class="card-icon">✏️</div><span id="passageTitle">Passage</span></div>
-    <div class="passage" id="passageText"></div>
-    <div class="options-area">
-      <div class="options-label">Word Bank — tap a blank first, then pick a word</div>
-      <div class="options-grid" id="optionsGrid"></div>
-    </div>
-    <div class="feedback" id="feedback"></div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goBack()">← Back</button>
+<div id="setupScreen">
+  <div class="card">
+    <div class="card-title"><span class="card-icon">🔊</span>Playback Settings</div>
+    <div class="setup-grid">
+      <div><div class="field-label">Voice</div><select id="voiceSelect"><option value="">Default</option></select></div>
+      <div><div class="field-label">Speed</div>
+        <select id="speedSelect">
+          <option value="0.7">🐢 Slow</option>
+          <option value="0.9" selected>🚶 Normal</option>
+          <option value="1.05">🏃 Fast</option>
+        </select>
+      </div>
     </div>
   </div>
-
-  <div class="result-screen" id="resultScreen">
-    <div class="result-emoji" id="resultEmoji">🌟</div>
-    <div class="result-title" id="resultTitle">Well Done!</div>
-    <div class="result-sub" id="resultSub"></div>
-    <div class="stat-row" style="max-width:300px;margin:0 auto 16px">
-      <div class="stat"><div class="stat-val" id="rScore">0</div><div class="stat-lbl">Correct</div></div>
-      <div class="stat"><div class="stat-val" id="rStars">0</div><div class="stat-lbl">Stars</div></div>
-      <div class="stat"><div class="stat-val" id="rPts">0</div><div class="stat-lbl">Points</div></div>
+  <div class="card">
+    <div class="card-title"><span class="card-icon">📋</span>Pick Your Word List</div>
+    <div class="book-tabs" id="bookTabs"></div>
+    <div class="list-grid" id="listGrid"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="card-icon">🎮</span>Choose Your Mode</div>
+    <div class="mode-grid">
+      <div class="mode-card sel" data-mode="classic"><span class="mode-icon">🎧</span><div class="mode-name">Classic</div><div class="mode-desc">Listen &amp; spell</div></div>
+      <div class="mode-card" data-mode="scramble"><span class="mode-icon">🔀</span><div class="mode-name">Scramble</div><div class="mode-desc">Unscramble it</div></div>
+      <div class="mode-card" data-mode="missing"><span class="mode-icon">🔍</span><div class="mode-name">Missing</div><div class="mode-desc">Fill in gaps</div></div>
+      <div class="mode-card" data-mode="speed"><span class="mode-icon">⚡</span><div class="mode-name">Speed</div><div class="mode-desc">30 seconds!</div></div>
+      <div class="mode-card" data-mode="dictation"><span class="mode-icon">🎙️</span><div class="mode-name">Dictation</div><div class="mode-desc">Full passage</div></div>
     </div>
-    <div class="submit-note" id="submitNote">✅ Ready to submit! Click below to save your score.</div>
-    <div class="btn-row" style="justify-content:center;flex-direction:column;align-items:center;gap:10px">
-      <button class="btn btn-success" id="submitBtn" onclick="doSubmit()">📤 Submit Score & Return to Island</button>
-      <button class="btn btn-ghost" onclick="restart()">↩ Try Again</button>
-      <button class="btn btn-island-return" style="padding:12px 22px;font-size:14px" onclick="goBack()">🏝️ Back to Island</button>
-    </div>
+    <div id="setupError" style="color:var(--coral);font-size:13px;font-weight:700;margin-bottom:10px;display:none"></div>
+    <button class="btn-start" id="startBtn">🚀 Start Spelling Quest</button>
   </div>
 </div>
-<div class="toast" id="toast"></div>
+
+<div id="gameScreen" class="hidden">
+  <div class="card">
+    <div class="prog-wrap">
+      <div class="prog-bar-bg"><div class="prog-bar-fill" id="progFill" style="width:0%"></div></div>
+      <div class="prog-meta"><span id="qNum">Q 1</span><span id="qTotal"></span></div>
+    </div>
+    <div class="hearts-row" id="heartsRow">❤️❤️❤️</div>
+    <div id="gameContent"></div>
+  </div>
+</div>
+
+<div id="resultsScreen" class="hidden">
+  <div class="card results-score">
+    <div class="big-num" id="scoreNum">0/0</div>
+    <div class="stars-row" id="starsRow">⭐⭐⭐</div>
+    <div class="big-label" id="scoreMsg"></div>
+    <div id="saveBadge" class="save-badge hidden" style="margin-top:12px">✅ Score saved to leaderboard!</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="card-icon">📊</span>Your Results</div>
+    <table class="res-table">
+      <thead><tr><th>#</th><th>Your Answer</th><th>Correct</th><th></th></tr></thead>
+      <tbody id="resTbody"></tbody>
+    </table>
+    <div style="margin-top:16px">
+      <!-- Primary: submit to island tracker + return -->
+      <button class="btn-submit-island" id="submitIslandBtn" onclick="submitAndReturn()">📤 Submit Score &amp; Return to Island</button>
+      <!-- Secondary: just play again -->
+      <button class="btn-start" onclick="location.reload()" style="background:rgba(255,255,255,.08);box-shadow:none;border:1px solid var(--border2)">↩ Play Again</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="card-icon">🏆</span>Top 10 Spellers</div>
+    <div class="lb-tabs" id="lbTabs"></div>
+    <ul class="lb-list" id="lbList"></ul>
+  </div>
+</div>
+</div>
+
+<button class="kbd-toggle" id="kbdToggleBtn" onclick="toggleOSK()" title="On-screen keyboard">⌨</button>
+<div class="osk hidden" id="osk">
+  <div class="osk-topbar">
+    <div class="osk-action-btns">
+      <button class="osk-skip" onclick="oskSkip()">⏭ Skip</button>
+      <button class="osk-check" onclick="oskCheck()">CHECK ✓</button>
+    </div>
+    <button class="osk-close" onclick="toggleOSK()">✕</button>
+  </div>
+  <div class="osk-keys" id="oskKeys"></div>
+</div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwihbBr7sA6LvqLTAUD6wK-xoUgslCkyqWenIWYxnRPidn85ihhqcbwKW8I_dcFF_uzOw/exec';
-const urlP=new URLSearchParams(location.search);
-const _stored=(function(){try{return JSON.parse(sessionStorage.getItem('student')||'{}');}catch(e){return {};}})();
-const hero={name:urlP.get('hero')||_stored.name||'',cls:urlP.get('cls')||_stored.cls||'',returnTo:urlP.get('returnTo')||'student-portal.html'};
+// ══════════════════════════════════════════════
+// SHARED SCRIPT URL — same as all other games
+// Scores feed into the same Google Sheet and
+// teacher dashboard as Grammar, Reported, VTC, Synthesis
+// ══════════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwihbBr7sA6LvqLTAUD6wK-xoUgslCkyqWenIWYxnRPidn85ihhqcbwKW8I_dcFF_uzOw/exec';
 
-document.getElementById('heroLabel').textContent='Hello, '+hero.name+'! 👋';
+// Spelling-specific leaderboard (in-game Top 10 only)
+const SPELLING_LB_URL = 'https://script.google.com/macros/s/AKfycbzhZls_bxxdB6p2DI5aPl_lsRzIm-toFdMDyHG28wg5Q2om3m-Pnggyc4__sjnXSCyyeg/exec';
 
-const PASSAGES=[
-  {id:'gc1',title:'The Lost Kite',
-   text:'Yesterday, Ahmad _1_ flying his kite in the park when a strong wind _2_ it away. He _3_ after it as fast as he could, but the kite _4_ already landed in a tall tree. Ahmad _5_ for help and a kind man used a long pole _6_ the kite down.',
-   blanks:[1,2,3,4,5,6],answers:['was','blew','ran','had','called','to get'],
-   options:['was','blew','ran','had','called','to get','has','throw','is','went']},
-  {id:'gc2',title:'A Rainy Day',
-   text:'It _1_ raining heavily when school ended. Priya _2_ her umbrella at home and _3_ know what to do. Her friend Mei _4_ her umbrella _5_ them. By the time they _6_ home, their shoes were completely wet.',
-   blanks:[1,2,3,4,5,6],answers:['was','had left','did not','shared','with','reached'],
-   options:['was','had left','did not','shared','with','reached','is','forgot','could','gives','for','arrived']},
-  {id:'gc3',title:'The Science Project',
-   text:'The students _1_ excited because they _2_ just finished their science project. Mrs Tan _3_ them that their model volcano _4_ the best in the class. They _5_ worked very hard _6_ two weeks.',
-   blanks:[1,2,3,4,5,6],answers:['were','had','told','was','had','for'],
-   options:['were','had','told','was','had','for','are','have','said','is','has','since']},
-  {id:'gc4',title:'A Visit to the Zoo',
-   text:'Last Saturday, our family _1_ to the zoo. We _2_ there for three hours. My little sister _3_ never seen a giraffe before, so she _4_ very surprised. Dad _5_ us ice cream after _6_ all the animals.',
-   blanks:[1,2,3,4,5,6],answers:['went','stayed','had','was','bought','seeing'],
-   options:['went','stayed','had','was','bought','seeing','goes','spend','has','were','buys','see']},
-  {id:'gc5',title:'The Helpful Neighbour',
-   text:'Mr Lim, _1_ lives next door, is very kind. Last week, he _2_ my mother carry her heavy bags _3_ the stairs. He also _4_ our cat _5_ it was lost. We are _6_ grateful for his help.',
-   blanks:[1,2,3,4,5,6],answers:['who','helped','up','found','when','always'],
-   options:['who','helped','up','found','when','always','which','help','down','sees','while','very']}
-];
+// ── Read student from URL params (passed from portal) ──
+// Falls back to sessionStorage if student navigated directly
+const urlP = new URLSearchParams(location.search);
+const _stored = (function(){
+  try{ return JSON.parse(sessionStorage.getItem('student') || '{}'); }
+  catch(e){ return {}; }
+})();
+const hero = {
+  name:     urlP.get('hero') || _stored.name || '',
+  cls:      urlP.get('cls')  || _stored.cls  || '',
+  returnTo: urlP.get('returnTo') || 'student-portal.html'
+};
 
-let currentPassage=null,selectedBlank=null,answers={},score=0,finalPts=0,submitted=false;
-
-// Build tabs
-const tabsEl=document.getElementById('setTabs');
-PASSAGES.forEach((p,i)=>{
-  const btn=document.createElement('button');
-  btn.className='set-tab'+(i===0?' active':'');
-  btn.textContent=p.title;
-  btn.onclick=()=>loadPassage(p,btn);
-  tabsEl.appendChild(btn);
-});
-loadPassage(PASSAGES[0],tabsEl.children[0]);
-
-function loadPassage(p,tabBtn){
-  currentPassage=p;selectedBlank=null;answers={};score=0;submitted=false;
-  document.querySelectorAll('.set-tab').forEach(t=>t.classList.remove('active'));
-  if(tabBtn)tabBtn.classList.add('active');
-  document.getElementById('quizCard').style.display='block';
-  document.getElementById('resultScreen').classList.remove('show');
-  document.getElementById('passageTitle').textContent=p.title;
-  renderPassage();renderOptions();updateProgress();
-}
-
-function renderPassage(){
-  const p=currentPassage;
-  let html=p.text;
-  p.blanks.forEach((n,i)=>{
-    const val=answers[n]?`<span style="font-size:12px">${answers[n]}</span>`:'';
-    const cls=answers[n]?(answers[n]===p.answers[i]?'answered':'wrong'):(selectedBlank===n?'selected':'');
-    html=html.replace('_'+n+'_',
-      `<span class="blank-wrap"><span class="blank ${cls}" data-blank="${n}" onclick="selectBlank(${n})"><span class="blank-num">${n}</span>${val||'&nbsp;&nbsp;&nbsp;'}</span></span>`);
-  });
-  document.getElementById('passageText').innerHTML=html;
-}
-
-function renderOptions(){
-  const grid=document.getElementById('optionsGrid');
-  grid.innerHTML='';
-  currentPassage.options.forEach(opt=>{
-    const usedCorrectly=currentPassage.blanks.some((n,i)=>answers[n]===opt&&currentPassage.answers[i]===opt);
-    const btn=document.createElement('button');
-    btn.className='opt-btn'+(usedCorrectly?' used':'');
-    btn.textContent=opt;btn.dataset.opt=opt;
-    btn.onclick=()=>chooseOption(opt,btn);
-    grid.appendChild(btn);
-  });
-}
-
-function selectBlank(n){
-  if(answers[n]&&answers[n]===currentPassage.answers[currentPassage.blanks.indexOf(n)])return;
-  selectedBlank=n;renderPassage();
-  showToast('Blank '+n+' selected — pick a word below');
-}
-
-function chooseOption(opt,btn){
-  if(!selectedBlank){showToast('Tap a blank first!');return}
-  const n=selectedBlank;
-  const idx=currentPassage.blanks.indexOf(n);
-  const correct=currentPassage.answers[idx];
-  answers[n]=opt;selectedBlank=null;renderPassage();
-  if(opt===correct){
-    score++;showFeedback(true,'✅ Correct! "'+opt+'" is right.');btn.classList.add('used');
+// ── Hero bar ──
+(function(){
+  const bar = document.getElementById('heroBar');
+  if(hero.name){
+    bar.innerHTML = `
+      <div class="hero-badge">✓ Logged in</div>
+      <div>
+        <div class="hero-name">${hero.name}</div>
+        <div class="hero-cls">${hero.cls}</div>
+      </div>
+      <div style="margin-left:auto;font-size:10px;color:var(--muted);letter-spacing:.5px">Scores auto-save on completion</div>
+      <button class="btn-back-island" onclick="goBack()">← Island</button>`;
   } else {
-    showFeedback(false,'❌ Not quite. Try again for blank '+n+'.');
-    delete answers[n];
-    setTimeout(()=>{renderPassage();hideFeedback()},1200);
+    bar.innerHTML = `
+      <div style="font-size:12px;color:var(--gold);font-weight:700">⚠️ Not logged in — go back to the portal to log in first.</div>
+      <button class="btn-back-island" onclick="goBack()">← Island</button>`;
   }
-  updateProgress();
-  const allCorrect=currentPassage.blanks.every((n,i)=>answers[n]===currentPassage.answers[i]);
-  if(allCorrect)setTimeout(()=>showResult(),700);
+})();
+
+function goBack(){
+  window.location.href = hero.returnTo
+    + '?hero=' + encodeURIComponent(hero.name)
+    + '&cls='  + encodeURIComponent(hero.cls);
 }
 
-function updateProgress(){
-  const done=Object.keys(answers).length,total=currentPassage.blanks.length;
-  document.getElementById('progressFill').style.width=(done/total*100)+'%';
-  document.getElementById('progressTxt').textContent=done+' / '+total;
+// ══════════════════════════════════════════════
+// SUBMIT TO SHARED PORTAL TRACKER
+// This is the same POST that Grammar, Reported,
+// VTC and Synthesis all use — feeds the teacher
+// dashboard and the island leaderboard
+// ══════════════════════════════════════════════
+async function submitToPortal(correct, total) {
+  if(!hero.name || !total) return;
+  const pct   = Math.round(correct / total * 100);
+  const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
+  const list  = getList();
+  await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'saveScore',
+      name:   hero.name,
+      cls:    hero.cls,
+      zone:   'sp',
+      topic:  (list?.title || 'Spelling'),
+      score:  correct,
+      total,
+      stars,
+      coins:  correct * 10,
+      ts:     new Date().toISOString()
+    })
+  }).catch(e => console.warn('Portal save failed:', e));
 }
 
-function showFeedback(ok,msg){const el=document.getElementById('feedback');el.className='feedback show '+(ok?'ok':'bad');el.textContent=msg}
-function hideFeedback(){document.getElementById('feedback').className='feedback'}
+// ── Submit & return to island (shown on results screen) ──
+let submitDone = false;
+async function submitAndReturn() {
+  if(submitDone) return;
+  const btn = document.getElementById('submitIslandBtn');
+  btn.disabled = true; btn.textContent = '⏳ Submitting…';
+  submitDone = true;
 
-function showResult(){
-  const total=currentPassage.blanks.length;
-  const pct=Math.round(score/total*100);
-  const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
-  finalPts=score*10;
-  document.getElementById('quizCard').style.display='none';
-  document.getElementById('resultScreen').classList.add('show');
-  document.getElementById('resultEmoji').textContent=stars===3?'🏆':stars===2?'🌟':stars===1?'⭐':'💪';
-  document.getElementById('resultTitle').textContent=stars===3?'Perfect!':stars===2?'Great Work!':stars===1?'Good Try!':'Keep Practising!';
-  document.getElementById('resultSub').textContent='You got '+score+'/'+total+' correct on "'+currentPassage.title+'"';
-  document.getElementById('rScore').textContent=score;
-  document.getElementById('rStars').textContent=stars;
-  document.getElementById('rPts').textContent='+'+finalPts;
-  document.getElementById('submitNote').textContent='✅ Ready to submit! Click below to save your score and return.';
-  document.getElementById('submitBtn').disabled=false;
+  const total   = G.answers.length;
+  const correct = G.answers.filter(a => a.correct).length;
+  const pct     = total ? Math.round(correct / total * 100) : 0;
+  const stars   = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
+
+  await submitToPortal(correct, total);
+
+  // Show toast
+  document.getElementById('toastTitle').textContent = `Spelling saved — ${correct}/${total} (${pct}%)`;
+  document.getElementById('toastSub').textContent   = hero.name + ' · ' + hero.cls;
+  document.getElementById('submitToast').classList.add('show');
+
+  // Return to portal with score params so it can update localStorage + show reward modal
+  setTimeout(() => {
+    window.location.href = hero.returnTo
+      + '?hero='  + encodeURIComponent(hero.name)
+      + '&cls='   + encodeURIComponent(hero.cls)
+      + '&zone=sp'
+      + '&score=' + correct
+      + '&total=' + total
+      + '&stars=' + stars;
+  }, 1200);
 }
 
-async function doSubmit(){
-  if(submitted)return;
-  const btn=document.getElementById('submitBtn');
-  btn.disabled=true;btn.textContent='⏳ Submitting...';
-  submitted=true;
-  const total=currentPassage.blanks.length;
-  const pct=Math.round(score/total*100);
-  const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
+// ══════════════════════════════════════════════
+// WORD LISTS
+// ══════════════════════════════════════════════
+const LISTS=[{"id":101,"title":"Term 1 · List 1","theme":"Excitement","book":"Book 1","items":[{"prompt":"Henry's skin tingled with excitement as he watched the race.","answer":"tingled with excitement"},{"prompt":"He heard his children's shouts from the garden, shrill with excitement.","answer":"shrill with excitement"},{"prompt":"Tom was quivering all over with excitement.","answer":"quivering"},{"prompt":"The crowd let out a stupendous cheer as the team scored a home goal.","answer":"stupendous cheer"},{"prompt":"Their pulses raced as they neared their final goal.","answer":"pulses raced"},{"prompt":"They stared at him in blank amazement.","answer":"blank amazement"},{"prompt":"My mind was whirling with excitement.","answer":"whirling with excitement"},{"prompt":"He tossed his bag and ran out to join the crowd of onlookers.","answer":"ran out to join"},{"prompt":"Her face lit up as her eyes widened.","answer":"face lit up"},{"prompt":"The children clambered down from the roller-coaster, exhilarated.","answer":"exhilarated"}],"dictation":"The moment had finally arrived. Excitement rolled over all the students in waves as they sat on the benches arranged around the highlight of the event. John held his breath as the rest did the countdown. Finally, his principal lit the tinder. Everyone was in high spirits for the P4 campfire."},{"id":102,"title":"Term 1 · List 2","theme":"Unit 1: Making Ice Cream","book":"Book 1","items":[{"prompt":"The class monitor took the PE equipment from the storeroom.","answer":"equipment"},{"prompt":"Mother measured the ingredients needed to bake my birthday cake.","answer":"measured the ingredients"},{"prompt":"Jane added some sugar into her coffee and waited for it to dissolve.","answer":"dissolve"},{"prompt":"The chef sprinkled some salt over his dish.","answer":"sprinkled"},{"prompt":"The ice clinked against the glass jars and made some noise.","answer":"clinked against"},{"prompt":"It is important to keep the temperature low to allow the cream to solidify.","answer":"temperature"},{"prompt":"The children witnessed an accident while on their way to school.","answer":"witnessed an accident"},{"prompt":"The little girl held her mother's hand as they walked towards the traffic light junction.","answer":"traffic light junction"},{"prompt":"The onlookers heard the screeching of brakes before the loud bang.","answer":"screeching of brakes"},{"prompt":"The paramedics lifted the victim onto the stretcher.","answer":"paramedics lifted the victim"}],"dictation":"We kept our eyes on the clock. We wanted to open the jars and check the ice cream, but our teacher said we had to be patient. When we eventually opened them, the ice cream had turned smooth and creamy. All the hard work was worthwhile!"},{"id":103,"title":"Term 1 · List 3","theme":"Relief","book":"Book 1","items":[{"prompt":"The lady gave an audible sigh of relief when she had found her handbag.","answer":"audible sigh of relief"},{"prompt":"Gary heaved a sigh of relief when he learnt that he had passed his exams.","answer":"heaved a sigh of relief"},{"prompt":"Mr Lim could breathe more easily when he heard that his wife is out of danger.","answer":"breathe more easily"},{"prompt":"To Peter's great relief, no one asked him about his absence from school.","answer":"great relief"},{"prompt":"Jonathan could relax after completing his assignment.","answer":"relax"},{"prompt":"The passenger on the delayed flight were filled with relief when their plane took off.","answer":"filled with relief"},{"prompt":"\"Finally!\" she thought in relief.","answer":"Finally!"},{"prompt":"To the mother's vast relief, the baby stopped crying and fell asleep.","answer":"vast relief"},{"prompt":"He felt as though a huge weight had been lifted off his shoulder.","answer":"lifted off his shoulder"},{"prompt":"So great was her relief at the news that she hugged her friend.","answer":"So great was her relief"}],"dictation":"Ann took a deep breath. She was first off the starting blocks the moment she heard the starting pistol. While nearing the finish line, she saw her rivals catching up. Ann, with all her might, sprinted towards the finish line to come in first. She gave an audible sigh of relief when she saw her name in first place."},{"id":104,"title":"Term 1 · List 4","theme":"Unit 2: Life of a Vet","book":"Book 1","items":[{"prompt":"A veterinarian specialises in the treatment of animals.","answer":"veterinarian"},{"prompt":"Rabbits are known to be delicate and sensitive creatures.","answer":"delicate and sensitive creatures"},{"prompt":"The nurse assured the patient that he will feel better soon.","answer":"assured"},{"prompt":"You need to consider if you can handle the responsibilities before owning a pet.","answer":"handle the responsibilities"},{"prompt":"My brother volunteers to help out at an animal shelter every weekend.","answer":"volunteers"},{"prompt":"The doctor prescribed me some medicine upon close examination.","answer":"close examination"},{"prompt":"I suffered minor injuries when I fell off the bicycle.","answer":"suffered minor injuries"},{"prompt":"Accidents are preventable if we take safety procedures.","answer":"Accidents are preventable"},{"prompt":"My dog became partially paralysed after the unfortunate incident.","answer":"partially paralysed"},{"prompt":"There are many pets available for adoption.","answer":"adoption"}],"dictation":"Cutie is a mischievous and busybody cat who is interested in everything around her. She likes to sit by the door of the clinic and greet every client that steps in. Sometimes, she jumps onto the reception counter to have a good view of everything that is happening. Everyone loves to pat on Cutie's head."},{"id":105,"title":"Term 1 · List 5","theme":"Curiosity","book":"Book 1","items":[{"prompt":"He raised an eyebrow and looked at me questioningly.","answer":"questioningly"},{"prompt":"She shot a quizzical look as she opened the door.","answer":"quizzical look"},{"prompt":"A small crowd gathered around her, whispering among themselves in hushed tones.","answer":"hushed tones"},{"prompt":"As I pretended to read my papers, I stole a glance at him from the corner of my eye.","answer":"stole a glance"},{"prompt":"I craned my neck and strained my eyes to see what lay ahead.","answer":"strained my eyes"},{"prompt":"I pressed my ear against the door trying to make out what my parents were arguing about.","answer":"trying to make out"},{"prompt":"I listened intently hoping to catch what they were discussing.","answer":"listened intently"},{"prompt":"The inquisitive children asked a lot of questions.","answer":"inquisitive"},{"prompt":"My aunt has a keen nose for gossip.","answer":"keen nose"},{"prompt":"The unsolved mystery kept her awake at night.","answer":"unsolved"}],"dictation":"Kumar has an unerring nose for gossip and his sharp, inquisitive eyes miss nothing. One day, he realised that his neighbour's house lights were on. He felt it strange as he knew his neighbour was away on holiday. Kumar decided to take a closer look and saw an intruder inside."},{"id":106,"title":"Term 1 · List 6","theme":"Unit 3: The Paralympic Games","book":"Book 1","items":[{"prompt":"The paralympic games attract the best athletes from all around the world.","answer":"athletes"},{"prompt":"Having physical disabilities does not hinder them from excelling in sports.","answer":"physical disabilities"},{"prompt":"The wheelchairs used in the paralympic games are specially designed to move fast.","answer":"specially designed"},{"prompt":"Many sports games require strategy and accuracy.","answer":"strategy and accuracy"},{"prompt":"The referee blows his whistle to stop the game.","answer":"referee"},{"prompt":"The children won medals and trophies during their sports day.","answer":"medals and trophies"},{"prompt":"The team fought hard against their opponents.","answer":"opponents"},{"prompt":"Spectators roared loudly when the football player scored a goal.","answer":"Spectators roared loudly"},{"prompt":"The school boy helped the visually impaired elderly to cross the road.","answer":"visually impaired"},{"prompt":"Despite the challenges, my brother did well in his PSLE examinations.","answer":"challenges"}],"dictation":"The Paralympic Games have become some of the largest sporting events in the world. They celebrate ability beyond disability. Not only do the games showcase the talent of the athletes, but they also train them to be resilient. Watching the paralympic athletes provide a source of inspiration for us to always try our best and not give up."},{"id":1,"title":"Term 2 · List 1","theme":"Disappointment","book":"Book 2","items":[{"prompt":"I buried my face in my hands and sighed.","answer":"sighed"},{"prompt":"To my utter dismay, I had left my lunch money on the table.","answer":"utter dismay"},{"prompt":"She shook her head and left without saying a single syllable.","answer":"shook her head"},{"prompt":"Her face fell when she saw the single two-dollar note in the red packet.","answer":"face fell"},{"prompt":"I moaned in despair throwing my hands up in the air.","answer":"despair"},{"prompt":"She shrugged nonchalantly and snorted, 'Who cares?' but her eyes reddened.","answer":"eyes reddened"},{"prompt":"She had pinned all her hopes on him but he had shattered all her dreams.","answer":"shattered"},{"prompt":"Nodding grudgingly she turned and left, head hung low and shoulders stooped.","answer":"shoulders stooped"},{"prompt":"Her voice faltered as it trailed off.","answer":"faltered"},{"prompt":"She was forlorn when she found out the trip was cancelled.","answer":"forlorn"}],"dictation":"Patrick had been saving up diligently to buy the stalk of flower for his mother for Mother's Day. However, when he went to the bookshop during his recess, the flowers were sold out. Disappointment was written all over his face."},{"id":2,"title":"Term 2 · List 2","theme":"Unit 4: The World Beyond Us","book":"Book 2","items":[{"prompt":"Outer space is an infinitely huge place with trillions of stars.","answer":"infinitely"},{"prompt":"Many people gathered to watch the solar eclipse.","answer":"solar eclipse"},{"prompt":"Some species of the tigers are facing extinction.","answer":"extinction"},{"prompt":"We should observe and appreciate the natural phenomena happening around us.","answer":"natural phenomena"},{"prompt":"Scientists use technology to predict disasters.","answer":"predict"},{"prompt":"A system refers to a group of things that interact.","answer":"interact"},{"prompt":"Some plants have unique features to survive under harsh weather.","answer":"unique features"},{"prompt":"My father regularly travels for his work.","answer":"regularly travels"},{"prompt":"Jenny reflected on her actions and decided to apologise.","answer":"reflected"},{"prompt":"My aunt went through many challenges during the early phases of her career.","answer":"phases"}],"dictation":"People from all over came together to witness the amazing solar eclipse. As the surface of the Sun was covered completely, the sky became as dark as night. This only lasted a few minutes before the sky turned bright again."},{"id":3,"title":"Term 2 · List 3","theme":"Anxiety","book":"Book 2","items":[{"prompt":"Axel paced up and down the corridor.","answer":"paced up and down"},{"prompt":"Charlie watched the snarling dog apprehensively.","answer":"apprehensively"},{"prompt":"Suresh fidgeted nervously before the competition started.","answer":"fidgeted nervously"},{"prompt":"Joyce was restless as she waited to hear the score.","answer":"restless"},{"prompt":"Harvinder cast anxious looks at his father who was coughing badly.","answer":"cast anxious looks"},{"prompt":"Alex glanced frantically around the room as he looked for his wallet.","answer":"glanced frantically"},{"prompt":"Susie looked through her bag in a frenzy of panic for her mobile phone.","answer":"frenzy of panic"},{"prompt":"Anson's heart almost skipped a beat.","answer":"skipped a beat"},{"prompt":"Passers-by gave the lost child, who was crying hysterically, concerned looks.","answer":"crying hysterically"},{"prompt":"The patient was worried sick after hearing the bad news.","answer":"worried sick"}],"dictation":"Joseph fidgeted anxiously with his pen. He was such a bundle of nerves that he could not sit still. He trembled like a leaf as he walked down the corridor towards the principal's office."},{"id":4,"title":"Term 2 · List 4","theme":"Unit 5: Ruby's Sunflower","book":"Book 2","items":[{"prompt":"Ruby's cheeks gave off a rosy glow.","answer":"rosy glow"},{"prompt":"Her hair was adorned with a pink clip.","answer":"adorned with"},{"prompt":"Saul was clad in a checkered shirt.","answer":"clad"},{"prompt":"Mr Buckley flashed a toothless grin.","answer":"toothless grin"},{"prompt":"The school organised a gardening contest.","answer":"contest"},{"prompt":"The chief judge decided to disqualify the team.","answer":"chief judge"},{"prompt":"The form teacher announced the winners of the competition.","answer":"announced"},{"prompt":"John was in the lead during the race.","answer":"in the lead"},{"prompt":"Mother washed the shoes and they were as good as new.","answer":"as good as new"},{"prompt":"Her fingers were tightly crossed as she waited for the results.","answer":"fingers were tightly crossed"}],"dictation":"Ken punched the air with delight when he heard that he was in the top position. He collected his prize in front of the whole school. Everyone gave him a loud round of applause. Ken smiled from ear to ear with pride."},{"id":5,"title":"Term 2 · List 5","theme":"Tiredness","book":"Book 2","items":[{"prompt":"I felt exhausted after a hard day's work.","answer":"exhausted"},{"prompt":"My mother felt drowsy and weary during her night shift.","answer":"felt drowsy and weary"},{"prompt":"He was fast asleep the moment his head touched the pillow.","answer":"fast asleep"},{"prompt":"She was extremely tired and kept yawning endlessly.","answer":"yawning endlessly"},{"prompt":"His eyes were bloodshot red from the lack of sleep.","answer":"bloodshot red"},{"prompt":"James was snoring loudly after a few minutes.","answer":"snoring loudly"},{"prompt":"Tom was curled up in bed after the long school day.","answer":"curled up in bed"},{"prompt":"My brother was overcome with fatigue during the hike.","answer":"overcome with fatigue"},{"prompt":"Minutes ticked by and soon his eyes began to droop sleepily.","answer":"eyes began to droop sleepily"},{"prompt":"Upon finishing the marathon, he was drained of energy.","answer":"drained of energy"}],"dictation":"Stumbling with exhaustion, Mel bent and unlaced her running shoes. She was still panting heavily as she completed the last lap. She felt as if she had used up every ounce of her energy."},{"id":1,"title":"Term 3 · List 1","theme":"Annoyance","book":"Book 3","items":[{"prompt":"He furrowed his eyebrows in annoyance.","answer":"furrowed"},{"prompt":"He shook his head disapprovingly but kept silent.","answer":"disapprovingly"},{"prompt":"He sat glumly, with his arms crossed.","answer":"sat glumly"},{"prompt":"Disapproval was written all over their faces.","answer":"Disapproval was written"},{"prompt":"She folded her arms and rolled her eyes.","answer":"folded her arms"},{"prompt":"\"I don't know!\" she answered in a gruff voice.","answer":"gruff voice"},{"prompt":"\"Stop that!\" she said in the firmest of voices.","answer":"firmest of voices"},{"prompt":"She was visibly agitated.","answer":"visibly agitated"},{"prompt":"Vexed, she tossed the books and notes onto the bed.","answer":"Vexed"},{"prompt":"\"Silence! Silence! Boys!\" she shouted, her temper rising.","answer":"temper rising"}],"dictation":"Tom's father bellowed, \"Switch off your computer now!\" Tom had been playing computer games for the past two hours. However, once he heard his father's voice, he knew that he had to stop as it was dinner time."},{"id":2,"title":"Term 3 · List 2","theme":"Unit 6: Dinosaurs Exist!","book":"Book 3","items":[{"prompt":"Dinosaurs had vanished from the planet millions of years ago.","answer":"vanished"},{"prompt":"The team was ready for their first dangerous expedition.","answer":"dangerous expedition"},{"prompt":"Hannah brought along an insect repellent for the hike.","answer":"insect repellent"},{"prompt":"Once they were pleased with their plan, they set off on the journey.","answer":"pleased with their plan"},{"prompt":"With vivid imaginations, the young toddler told his mother about his dream.","answer":"vivid imaginations"},{"prompt":"My little brother loves to invent amazing fantasies and share them with me.","answer":"invent amazing fantasies"},{"prompt":"Reluctantly, James switched off the computer and went to bed.","answer":"Reluctantly"},{"prompt":"I looked away from my teacher's raging face.","answer":"raging face"},{"prompt":"The children were prepared for the blood-curdling terrors awaiting them at the haunted house.","answer":"blood-curdling terrors"},{"prompt":"Kit struggled to comprehend the Math word problem.","answer":"struggled to comprehend"}],"dictation":"Peering around its neck, Vicky noticed a smaller dinosaur. Its body seemed to be ripped open. Inside, there were stairs with a climbing frame. Vicky grinned to herself upon realising that her brother had found a new playground full of dinosaur models."},{"id":3,"title":"Term 3 · List 3","theme":"Embarrassment","book":"Book 3","items":[{"prompt":"She was visibly embarrassed after falling down the stairs.","answer":"visibly embarrassed"},{"prompt":"As my mother continued berating me, I lowered my eyes, fighting back the tears.","answer":"lowered my eyes"},{"prompt":"She blushed so furiously that even the tips of her ears were red.","answer":"blushed so furiously"},{"prompt":"I entered the new classroom with my eyes downcast.","answer":"my eyes downcast"},{"prompt":"I scratched my head sheepishly.","answer":"sheepishly"},{"prompt":"She turned away and avoided the stares of curious passers-by.","answer":"avoided the stares"},{"prompt":"I stole a furtive look around when I spilled my glass of water.","answer":"stole a furtive look"},{"prompt":"I pretended as if nothing had happened though my face was as red as a beetroot.","answer":"as red as a beetroot"},{"prompt":"I apologised and smiled nervously.","answer":"smiled nervously"},{"prompt":"Peter was burning with humiliation when he was reprimanded.","answer":"humiliation"}],"dictation":"Kai wanted to give his mother an ice cream cone for a birthday surprise. He held it behind his back and walked towards her. \"Happy Birthday!\" shouted Kai. As he was about to pass it to her, he unknowingly turned it upside down and the ice cream dropped off from the cone."},{"id":4,"title":"Term 3 · List 4","theme":"Bad Weather","book":"Book 3","items":[{"prompt":"The sky above was full of dark, ragged clouds.","answer":"dark, ragged clouds"},{"prompt":"Gusts of wind slammed against the gaping windows.","answer":"Gusts of wind"},{"prompt":"The bitterly cold wind stung my face.","answer":"bitterly cold wind"},{"prompt":"Thunder roared and lightning flashed across the sky.","answer":"lightning flashed"},{"prompt":"The howling of the wind frightened us all.","answer":"howling of the wind"},{"prompt":"Rain pelted down from the skies.","answer":"pelted down"},{"prompt":"There was a deep rumble in the distance.","answer":"a deep rumble"},{"prompt":"Rain blurred the distant images of the buildings.","answer":"blurred the distant images"},{"prompt":"Puddles, big and small, gathered all over the place.","answer":"Puddles"},{"prompt":"The cars made swish-swish sounds as they sped past.","answer":"swish-swish sounds"}],"dictation":"Ali was awakened by the sound that he had thought was from his alarm clock. Suddenly, he heard a deafening crack. The noise filled his ears while a blinding light filled his room. He looked out of his window and saw heavy rain pelting down from the sky."},{"id":5,"title":"Term 3 · List 5","theme":"Unit 7: Heartbeats in the Dark","book":"Book 3","items":[{"prompt":"Though my grandmother is forgetful and wrinkly, she is loving towards us.","answer":"forgetful and wrinkly"},{"prompt":"The robber's eyes glint with evil as he demands money from the cashier.","answer":"eyes glint with evil"},{"prompt":"My heart bangs in my chest each time I hear the loud thunder.","answer":"heart bangs in my chest"},{"prompt":"Jane's smile slid around her face when she spotted her brother's hiding place.","answer":"smile slid around her face"},{"prompt":"I tried to calm myself down by drumming my fingers on my desk.","answer":"drumming my fingers"},{"prompt":"The room is so dark that it feels like it is suffocating me.","answer":"suffocating"},{"prompt":"He yanked the curtains open once he woke up.","answer":"yanked the curtains"},{"prompt":"Sucking in a ball of air, John walked into the abandoned house.","answer":"Sucking in a ball of air"},{"prompt":"His throat felt tight and he failed to deliver the speech.","answer":"throat felt tight"},{"prompt":"Father swallowed his saliva upon breaking the bad news.","answer":"swallowed his saliva"}],"dictation":"I tried to open my eyes but I could not do that. I sit up but I could not breathe. I stare at where I know the curtains are. I tell myself that the sun is blazing on the other side of those curtains."},{"id":6,"title":"Term 3 · List 6","theme":"Discomfort","book":"Book 3","items":[{"prompt":"My stomach was growling.","answer":"growling"},{"prompt":"He grimaced in pain as he hobbled along.","answer":"grimaced in pain"},{"prompt":"She was aching all over.","answer":"aching all over"},{"prompt":"A nauseating feeling overcame her.","answer":"nauseating feeling"},{"prompt":"\"No, thanks. I have no appetite,\" she said with a faint smile.","answer":"no appetite"},{"prompt":"Her vision grew blurred and the things around her started to spin.","answer":"vision grew blurred"},{"prompt":"He retched violently throwing up all that he had eaten.","answer":"retched violently"},{"prompt":"The pain in his stomach was so excruciating that he groaned out loudly.","answer":"excruciating"},{"prompt":"She felt so cold that she was literally shivering uncontrollably.","answer":"shivering uncontrollably"},{"prompt":"She tossed and turned in pain on the bed the whole night.","answer":"tossed and turned"}],"dictation":"As the second half of the game started, Kelly's palms felt clammy and her heart pounded vigorously. Her head was throbbing in pain. However, she wanted to win the game badly. Gritting her teeth, Kelly played on despite the discomfort."},{"id":1,"title":"Term 4 · List 1","theme":"Sadness","book":"Book 4","items":[{"prompt":"A dark mood came over Jane.","answer":"dark mood"},{"prompt":"She was on the verge of tears.","answer":"verge of tears"},{"prompt":"No words could express his agony.","answer":"agony"},{"prompt":"Tears welled up in her eyes.","answer":"Tears welled up"},{"prompt":"The poor child sobbed sorrowfully.","answer":"sobbed sorrowfully"},{"prompt":"My heart sank when I heard the sad news.","answer":"heart sank"},{"prompt":"Her eyes were puffy and red after crying.","answer":"puffy and red"},{"prompt":"She cried her eyes out on hearing the tragic news.","answer":"tragic"},{"prompt":"Tears brimmed in her reddened eyes.","answer":"Tears brimmed"},{"prompt":"Her sobs escalated into wails when she found that her mother was not beside her.","answer":"escalated into wails"}],"dictation":"The group of soccer boys sat on the grass. They were waiting for their coach to call out the names of the sixteen selected ones who will be representing the school. When the sixteenth name was read out, he sobbed uncontrollably and was inconsolable."},{"id":2,"title":"Term 4 · List 2","theme":"Unit 8: All the Buzz about Honey","book":"Book 4","items":[{"prompt":"Honey can be used for medicinal purposes.","answer":"medicinal purposes"},{"prompt":"Honeybees feed on nectar to survive.","answer":"survive"},{"prompt":"The beehive is a structure in which bees live and raise their young.","answer":"structure"},{"prompt":"Beeswax has antibacterial properties.","answer":"antibacterial properties"},{"prompt":"The natural aroma of the beeswax helps to soothe the pain.","answer":"natural aroma"},{"prompt":"We should not smack the bees as they may turn aggressive.","answer":"aggressive"},{"prompt":"Some students memorise facts only to regurgitate them during the exam.","answer":"regurgitate"},{"prompt":"My mother left the bread under the sun to evaporate its moisture.","answer":"evaporate its moisture"},{"prompt":"We need to wash our hands before preparing food to prevent contamination.","answer":"prevent contamination"},{"prompt":"To ensure that the cake is baked well, my mother controls the temperature of the oven.","answer":"controls the temperature"}],"dictation":"Beekeepers extract honey from hives for it to be processed for our use. The beekeepers work quickly to pick out the honeycomb, remove the beeswax and pour out the honey. The empty honeycomb is then returned to the hive."},{"id":3,"title":"Term 4 · List 3","theme":"Fear","book":"Book 4","items":[{"prompt":"Terror seized us all when we watched the horror movie.","answer":"Terror seized"},{"prompt":"Panic engulfed him the moment he saw his house on fire.","answer":"Panic engulfed"},{"prompt":"He froze momentarily upon seeing a shadow lurking behind him.","answer":"froze momentarily"},{"prompt":"I rose shakily to my feet to receive my test results.","answer":"rose shakily"},{"prompt":"A rude shock awaited them as they reached the destination.","answer":"rude shock"},{"prompt":"As she walked onto the stage, a chill went down her spine.","answer":"chill went down her spine"},{"prompt":"She screamed her head off when she saw the rat.","answer":"screamed her head off"},{"prompt":"Upon hearing the loud explosion, everyone stood rooted to the ground.","answer":"stood rooted to the ground"},{"prompt":"When Ken saw his friend falling down the slope, the shock robbed him of speech.","answer":"shock robbed him of speech"},{"prompt":"I was too afraid to utter a word when I saw my mother's piercing stare.","answer":"afraid to utter a word"}],"dictation":"It was Tom's first night sleeping alone in the tent. Suddenly, he saw a shadow gliding past outside of his tent. He opened his mouth to scream but found himself completely incapable of making a sound."},{"id":4,"title":"Term 4 · List 4","theme":"Unit 9: What Happens When You Laugh","book":"Book 4","items":[{"prompt":"Laughter is the body's way of releasing tension.","answer":"releasing tension"},{"prompt":"Laughing and crying act as safety valves for the body.","answer":"safety valves"},{"prompt":"When you laugh, blood is pumped faster around your body and this gives you an energy boost.","answer":"energy boost"},{"prompt":"Engaging in physical activities is good for our health.","answer":"physical activities"},{"prompt":"Exercising regularly keeps you fit.","answer":"Exercising regularly"},{"prompt":"You need to eat healthy food to help your body fight diseases.","answer":"fight diseases"},{"prompt":"Your muscles relax as you take a slow, deep breath.","answer":"muscles relax"},{"prompt":"Dancing and singing helps to reduce my sister's stress levels.","answer":"stress levels"},{"prompt":"Sarah trains her vocal cords for the upcoming singing competition.","answer":"vocal cords"},{"prompt":"His phone vibrated continuously while he was sleeping.","answer":"vibrated continuously"}],"dictation":"When we laugh, our bodies get some internal jogging and our brains get more happy chemicals. The effect of laughing on our body is like having a good workout. One expert says that laughing a hundred times a day is equal to about ten minutes of rowing."}];
 
-  // POST to Google Sheets
+// ══ STATE ══
+let voices=[],currentInput=null,isShiftActive=false,isRedemptionMode=false,dictPaused=false,dictUtterance=null,physicalKbdMode=false;
+let G={mode:'classic',listId:null,book:null,currentQ:0,answers:[],hearts:3,redemptionItems:null};
+let wrongQueue=[],speedInterval=null,currentItem=null;
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function norm(s){return s.trim().toLowerCase().replace(/[^a-z0-9\s\-]/g,'').replace(/\s+/g,' ');}
+function getList(){return LISTS.find(l=>l.id===G.listId&&l.book===G.book);}
+
+function loadVoices(){
+  if(!('speechSynthesis' in window))return;
+  voices=speechSynthesis.getVoices();if(voices.length===0)return;
+  ['voiceSelect','dictVoiceSelect'].forEach(id=>{
+    const vs=document.getElementById(id);if(!vs)return;
+    const prev=vs.value;vs.innerHTML='<option value="">Default</option>';
+    voices.forEach(v=>{const o=document.createElement('option');o.value=v.voiceURI;o.textContent=v.name+' ('+v.lang+')';vs.appendChild(o);});
+    if(prev)vs.value=prev;
+  });
+}
+function getVoiceFor(id){const u=document.getElementById(id)?.value;return voices.find(v=>v.voiceURI===u)||null;}
+function getRateFor(id){return parseFloat(document.getElementById(id)?.value||0.9);}
+function speak(text,voiceId,rateId,cb){
+  if(!('speechSynthesis' in window)){if(cb)cb();return;}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);u.voice=getVoiceFor(voiceId||'voiceSelect');u.rate=getRateFor(rateId||'speedSelect');
+  u.onend=cb||null;speechSynthesis.speak(u);return u;
+}
+function speakItem(item){
+  const btn=document.getElementById('playBtn');if(btn)btn.classList.add('playing');
+  speak(item.answer,'voiceSelect','speedSelect',()=>{setTimeout(()=>{speak(item.answer,'voiceSelect','speedSelect',()=>{if(btn)btn.classList.remove('playing');});},600);});
+}
+function renderHearts(){const el=document.getElementById('heartsRow');if(el)el.innerHTML=Array(3).fill(0).map((_,i)=>i<G.hearts?'❤️':'🤍').join('');}
+function createBlankSentence(prompt,answer){
+  const letters=answer.replace(/[^a-zA-Z0-9\s\-]/g,'').length;
+  const blank='<span class="blank-space">'+'_'.repeat(Math.max(6,letters))+'</span>';
+  if(prompt.includes(answer))return prompt.replace(answer,blank);
+  return prompt+' <strong style="color:var(--accent2)">['+esc(answer)+']</strong>';
+}
+function getSpellingTip(correct,typed){
+  if(!typed)return '💡 Listen carefully and try again!';
+  if(typed.length!==correct.length)return `💡 Check the length — correct has ${correct.length} letters, you typed ${typed.length}.`;
+  for(let i=0;i<correct.length;i++){if(correct[i]!==typed[i])return `💡 Check position ${i+1}: you typed "${typed[i]}" but it should be "${correct[i]}".`;}
+  return '💡 Almost! Check spacing or punctuation.';
+}
+function addToWrongQueue(item){if(!wrongQueue.find(i=>i.answer===item.answer))wrongQueue.push(item);}
+
+function renderClassic(item){
+  document.getElementById('gameContent').innerHTML=`
+    <div class="sent-box">${createBlankSentence(esc(item.prompt),esc(item.answer))}</div>
+    <div class="audio-row"><button class="play-btn" id="playBtn" onclick="speakItem(currentItem)">▶</button><span style="font-size:11px;color:var(--muted);font-weight:600">Hear word twice</span></div>
+    <div style="text-align:center;margin-bottom:12px"><button class="phys-kbd-toggle ${physicalKbdMode?'active':''}" onclick="togglePhysicalKbd()" id="physKbdBtn"><span class="phys-kbd-toggle-dot"></span><span>${physicalKbdMode?'⌨ Physical Keyboard On':'⌨ Use Physical Keyboard'}</span></button></div>
+    <input class="ans-input" id="ans" ${physicalKbdMode?'':'readonly'} placeholder="Type your answer…" spellcheck="false" autocomplete="off">
+    <div id="fb"></div>
+    <div class="btn-row"><button class="skip-btn" id="skipBtn">⏭ Skip</button><button class="check-btn" id="subBtn">Check ✓</button></div>`;
+  document.getElementById('subBtn').onclick=()=>checkAnswer(item);
+  document.getElementById('skipBtn').onclick=()=>skipQ(item);
+  document.getElementById('ans').addEventListener('keypress',e=>{if(e.key==='Enter')checkAnswer(item);});
+  showOSK(document.getElementById('ans'));setTimeout(()=>speakItem(item),300);
+}
+function renderScramble(item){
+  const letters=item.answer.split('').sort(()=>Math.random()-.5);
+  document.getElementById('gameContent').innerHTML=`
+    <div class="sent-box" style="margin-bottom:10px">${esc(item.prompt)}</div>
+    <div class="audio-row" style="margin-bottom:10px"><button class="play-btn" id="playBtn" onclick="speakItem(currentItem)">▶</button><span style="font-size:11px;color:var(--muted);font-weight:700">Hear the phrase</span></div>
+    <p style="text-align:center;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px;letter-spacing:1.5px;text-transform:uppercase">Tap letters to build the word</p>
+    <div class="scramble-tiles" id="tiles">${letters.map((l,i)=>`<div class="s-tile" data-idx="${i}" onclick="tileClick(this,'${esc(l)}')">${esc(l.toUpperCase())}</div>`).join('')}</div>
+    <input class="ans-input" id="ans" readonly placeholder="Letters will appear here…" spellcheck="false" autocomplete="off">
+    <div id="fb"></div>
+    <div class="btn-row"><button class="skip-btn" id="skipBtn">⏭ Skip</button><button class="skip-btn" id="clearBtn" style="color:var(--coral)">🗑 Clear</button><button class="check-btn" id="subBtn">Check ✓</button></div>`;
+  document.getElementById('subBtn').onclick=()=>checkAnswer(item);
+  document.getElementById('skipBtn').onclick=()=>skipQ(item);
+  document.getElementById('clearBtn').onclick=()=>{document.getElementById('ans').value='';document.querySelectorAll('.s-tile').forEach(t=>t.classList.remove('used'));};
+  currentInput=document.getElementById('ans');setTimeout(()=>speakItem(item),300);
+}
+function tileClick(el,letter){if(!currentInput)return;currentInput.value+=letter;el.classList.add('used');}
+function renderMissing(item){
+  const answer=item.answer;const hideCount=Math.max(2,Math.floor(answer.length*0.5));
+  const indices=[...Array(answer.length).keys()].sort(()=>Math.random()-.5).slice(0,hideCount);
+  const display=answer.split('').map((c,i)=>indices.includes(i)?'_':c).join(' ');
+  document.getElementById('gameContent').innerHTML=`
+    <div class="sent-box">${esc(item.prompt)}</div>
+    <p style="text-align:center;font-size:22px;font-weight:700;letter-spacing:8px;color:var(--accent2);margin:14px 0">${display}</p>
+    <div class="audio-row"><button class="play-btn" id="playBtn" onclick="speakItem(currentItem)">▶</button><span style="font-size:11px;color:var(--muted);font-weight:600">Hear the word</span></div>
+    <div style="text-align:center;margin-bottom:12px"><button class="phys-kbd-toggle ${physicalKbdMode?'active':''}" onclick="togglePhysicalKbd()" id="physKbdBtn"><span class="phys-kbd-toggle-dot"></span><span>${physicalKbdMode?'⌨ Physical Keyboard On':'⌨ Use Physical Keyboard'}</span></button></div>
+    <input class="ans-input" id="ans" ${physicalKbdMode?'':'readonly'} placeholder="Type the full word…" spellcheck="false" autocomplete="off">
+    <div id="fb"></div>
+    <div class="btn-row"><button class="skip-btn" id="skipBtn">⏭ Skip</button><button class="check-btn" id="subBtn">Check ✓</button></div>`;
+  document.getElementById('subBtn').onclick=()=>checkAnswer(item);
+  document.getElementById('skipBtn').onclick=()=>skipQ(item);
+  document.getElementById('ans').addEventListener('keypress',e=>{if(e.key==='Enter')checkAnswer(item);});
+  showOSK(document.getElementById('ans'));setTimeout(()=>speakItem(item),300);
+}
+function renderSpeed(item){
+  let timeLeft=30;
+  document.getElementById('gameContent').innerHTML=`
+    <div class="speed-timer" id="spTimer" style="color:var(--teal)">${timeLeft}</div>
+    <div class="sent-box">${createBlankSentence(esc(item.prompt),esc(item.answer))}</div>
+    <div class="audio-row"><button class="play-btn" id="playBtn" onclick="speakItem(currentItem)">▶</button></div>
+    <div style="text-align:center;margin-bottom:12px"><button class="phys-kbd-toggle ${physicalKbdMode?'active':''}" onclick="togglePhysicalKbd()" id="physKbdBtn"><span class="phys-kbd-toggle-dot"></span><span>${physicalKbdMode?'⌨ Physical Keyboard On':'⌨ Use Physical Keyboard'}</span></button></div>
+    <input class="ans-input" id="ans" ${physicalKbdMode?'':'readonly'} placeholder="Quick! Type your answer…" spellcheck="false" autocomplete="off">
+    <div id="fb"></div>
+    <div class="btn-row"><button class="skip-btn" id="skipBtn">⏭ Skip</button><button class="check-btn" id="subBtn">Check ✓</button></div>`;
+  document.getElementById('subBtn').onclick=()=>{clearInterval(speedInterval);checkAnswer(item);};
+  document.getElementById('skipBtn').onclick=()=>{clearInterval(speedInterval);skipQ(item);};
+  showOSK(document.getElementById('ans'));setTimeout(()=>speakItem(item),200);
+  speedInterval=setInterval(()=>{timeLeft--;const el=document.getElementById('spTimer');if(el){el.textContent=timeLeft;el.style.color=timeLeft<=10?'var(--coral)':timeLeft<=20?'var(--gold)':'var(--teal)';}if(timeLeft<=0){clearInterval(speedInterval);skipQ(item);}},1000);
+}
+function renderDictation(list){
+  document.getElementById('heartsRow').style.display='none';hideOSK();document.getElementById('kbdToggleBtn').style.display='none';
+  document.getElementById('gameContent').innerHTML=`
+    <div class="dict-controls"><div class="dict-ctrl-title">🎛 Playback Settings</div>
+      <div class="dict-ctrl-grid">
+        <div><div class="field-label">Voice</div><select id="dictVoiceSelect"><option value="">Default</option></select></div>
+        <div><div class="field-label">Speed</div><select id="dictSpeedSelect"><option value="0.6">🐢 Very Slow</option><option value="0.75">🐌 Slow</option><option value="0.9" selected>🚶 Normal</option><option value="1.0">🏃 Fast</option></select></div>
+      </div></div>
+    <div class="dict-playbar">
+      <button class="play-btn" id="dictPlayBtn" onclick="dictPlay()">▶</button>
+      <button class="pause-btn" id="dictPauseBtn" onclick="dictPause()" style="display:none">⏸</button>
+      <div class="dict-playbar-label" id="dictStatus"><span class="status-dot stopped" id="statusDot"></span><span id="statusText">Press ▶ to hear the passage</span></div>
+      <button class="skip-btn" onclick="dictStop()" style="font-size:12px;padding:6px 12px">■ Stop</button>
+    </div>
+    <textarea class="dict-textarea" id="dictArea" placeholder="Type what you hear using your keyboard…" rows="6"></textarea>
+    <div id="fb"><div class="kbd-indicator"><span class="kbd-dot"></span> Physical keyboard active — type freely</div></div>
+    <div class="btn-row"><button class="check-btn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px rgba(124,110,250,0.4)" id="dictCheckBtn">✓ Check My Passage</button></div>`;
+  const dvs=document.getElementById('dictVoiceSelect');
+  voices.forEach(v=>{const o=document.createElement('option');o.value=v.voiceURI;o.textContent=v.name+' ('+v.lang+')';dvs.appendChild(o);});
+  const mainVoice=document.getElementById('voiceSelect')?.value;if(mainVoice)dvs.value=mainVoice;
+  document.getElementById('dictCheckBtn').onclick=()=>checkDictation(list.dictation||'');
+  document.getElementById('dictArea').focus();
+}
+function setDictStatus(state,text){
+  const dot=document.getElementById('statusDot');const txt=document.getElementById('statusText');
+  const playBtn=document.getElementById('dictPlayBtn');const pauseBtn=document.getElementById('dictPauseBtn');
+  if(!dot)return;dot.className='status-dot '+state;if(txt)txt.textContent=text;
+  if(state==='playing'){if(playBtn)playBtn.style.display='none';if(pauseBtn)pauseBtn.style.display='flex';}
+  else{if(playBtn)playBtn.style.display='flex';if(pauseBtn)pauseBtn.style.display='none';}
+}
+function dictPlay(){
+  if(!('speechSynthesis' in window))return;const list=getList();if(!list)return;
+  if(dictPaused&&speechSynthesis.paused){speechSynthesis.resume();dictPaused=false;setDictStatus('playing','Playing…');return;}
+  speechSynthesis.cancel();dictPaused=false;
+  const u=new SpeechSynthesisUtterance(list.dictation||'');u.voice=getVoiceFor('dictVoiceSelect');u.rate=getRateFor('dictSpeedSelect');
+  u.onstart=()=>setDictStatus('playing','Playing… listen carefully');
+  u.onend=()=>{setDictStatus('stopped','Done! Now write what you heard.');dictPaused=false;};
+  u.onerror=()=>setDictStatus('stopped','Playback stopped.');
+  dictUtterance=u;speechSynthesis.speak(u);
+}
+function dictPause(){
+  if(!('speechSynthesis' in window))return;
+  if(speechSynthesis.speaking&&!speechSynthesis.paused){speechSynthesis.pause();dictPaused=true;setDictStatus('paused','Paused — press ▶ to resume');}
+  else if(speechSynthesis.paused){speechSynthesis.resume();dictPaused=false;setDictStatus('playing','Playing…');}
+}
+function dictStop(){speechSynthesis.cancel();dictPaused=false;setDictStatus('stopped','Stopped. Press ▶ to hear again.');}
+function checkDictation(passage){
+  const typed=(document.getElementById('dictArea')?.value||'').trim();const fb=document.getElementById('fb');
+  if(!typed){fb.innerHTML='<div class="feedback wrong">Please write something first! 📝</div>';return;}
+  dictStop();
+  const words=passage.split(/\s+/);const typedWords=typed.split(/\s+/);let correct=0;
+  words.forEach((w,i)=>{const c=w.replace(/[^a-zA-Z0-9]/g,'').toLowerCase();const t=(typedWords[i]||'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();if(c===t)correct++;});
+  const pct=Math.round(correct/words.length*100);const stars=pct>=90?'⭐⭐⭐':pct>=70?'⭐⭐':pct>=50?'⭐':'';
+  fb.innerHTML=`<div class="feedback ${pct>=60?'correct':'wrong'}">${stars} You got ${correct}/${words.length} words correct (${pct}%)</div>`;
+  if(pct>=80)launchConfetti();
+  G.answers.push({question:'Dictation Passage',userAnswer:typed,correctAnswer:passage,correct:pct>=70,pct});
+  setTimeout(showResults,2500);
+}
+function checkAnswer(item){
+  const inp=document.getElementById('ans');const typed=(inp?.value||'').trim();const fb=document.getElementById('fb');
+  const correct=norm(item.answer);const given=norm(typed);inp.classList.remove('correct','wrong');
+  if(given===correct){
+    inp.classList.add('correct');fb.innerHTML='<div class="feedback correct">🎉 Brilliant! That\'s correct!</div>';
+    G.answers.push({question:item.prompt,userAnswer:typed,correctAnswer:item.answer,correct:true});
+    if(G.mode==='speed')clearInterval(speedInterval);launchMini();setTimeout(nextQ,1200);
+  }else{
+    G.hearts=Math.max(0,G.hearts-1);renderHearts();addToWrongQueue(item);
+    fb.innerHTML=`<div class="feedback wrong">❌ Not quite! Correct: <strong>${esc(item.answer)}</strong><div class="spelling-tip">${getSpellingTip(item.answer,typed)}</div></div>`;
+    inp.classList.add('wrong');
+    G.answers.push({question:item.prompt,userAnswer:typed,correctAnswer:item.answer,correct:false});
+    if(G.hearts<=0){setTimeout(()=>{if(G.mode==='speed')clearInterval(speedInterval);nextQ();},1500);}
+    else{inp.value='';inp.classList.remove('wrong');}
+  }
+}
+function skipQ(item){G.answers.push({question:item.prompt,userAnswer:'',correctAnswer:item.answer,correct:false,skipped:true});G.hearts=Math.max(0,G.hearts-1);renderHearts();G.currentQ++;showQWithRedemption();}
+function nextQ(){G.hearts=3;G.currentQ++;showQWithRedemption();}
+function showQWithRedemption(){
+  const list=getList();
+  if(isRedemptionMode&&G.redemptionItems){if(G.currentQ>=G.redemptionItems.length){isRedemptionMode=false;showResults();return;}showQ(G.redemptionItems[G.currentQ]);return;}
+  if(!list||G.currentQ>=list.items.length){if(wrongQueue.length>0)showRedemptionPrompt();else showResults();return;}
+  showQ(list.items[G.currentQ]);
+}
+function showQ(item){
+  currentItem=item;const list=getList();const total=isRedemptionMode?G.redemptionItems.length:(list?.items.length||0);
+  const qNum=G.currentQ+1;document.getElementById('qNum').textContent='Q '+qNum+(isRedemptionMode?' 🔄':'');
+  document.getElementById('qTotal').textContent=qNum+' / '+total;
+  document.getElementById('progFill').style.width=(((qNum-1)/total)*100)+'%';
+  G.hearts=3;renderHearts();document.getElementById('heartsRow').style.display='';document.getElementById('kbdToggleBtn').style.display='flex';
+  if(G.mode==='classic')renderClassic(item);else if(G.mode==='scramble')renderScramble(item);else if(G.mode==='missing')renderMissing(item);else if(G.mode==='speed')renderSpeed(item);
+}
+function showRedemptionPrompt(){
+  document.getElementById('heartsRow').style.display='none';
+  document.getElementById('gameContent').innerHTML=`
+    <div class="redemption-banner"><h3>🔄 Redemption Round!</h3><p>You got ${wrongQueue.length} word${wrongQueue.length>1?'s':''} wrong.<br>Want another chance to get them right?</p></div>
+    <div class="btn-row" style="margin-top:12px"><button class="btn-start" style="max-width:220px" onclick="startRedemption()">↩ Try Again</button><button class="skip-btn" onclick="showResults()">See Results</button></div>`;
+}
+function startRedemption(){isRedemptionMode=true;G.redemptionItems=[...wrongQueue];wrongQueue=[];G.currentQ=0;showQ(G.redemptionItems[0]);}
+
+// ── Spelling-specific leaderboard (in-game Top 10 only) ──
+async function saveSpellingLB(name,cls,score,total,mode,listTitle){
+  if(!name||!total)return false;
   try{
-    await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({
-      action:'saveScore',name:hero.name,cls:hero.cls,
-      zone:'gc',topic:currentPassage.title,
-      score,total,stars,coins:finalPts,
-      ts:new Date().toISOString()
-    })});
-  }catch(e){console.warn('Sheet error:',e)}
-
-  // Return to portal with score params
-  const ret=hero.returnTo
-    +'?hero='+encodeURIComponent(hero.name)
-    +'&cls='+encodeURIComponent(hero.cls)
-    +'&zone=gc'
-    +'&score='+score
-    +'&total='+total
-    +'&stars='+stars;
-  window.location.href=ret;
+    const payload={name,cls,score,total,pct:Math.round(score/total*100),mode,listTitle,date:new Date().toLocaleDateString('en-SG',{day:'2-digit',month:'short'})};
+    await fetch(SPELLING_LB_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});return true;
+  }catch(e){return false;}
+}
+async function loadLeaderboard(){
+  try{const resp=await fetch(SPELLING_LB_URL+'?t='+Date.now());const data=await resp.json();return Array.isArray(data)?data:[];}
+  catch(e){return [];}
+}
+async function renderLeaderboard(filterClass){
+  const tabDiv=document.getElementById('lbTabs');const listEl=document.getElementById('lbList');if(!tabDiv||!listEl)return;
+  const allEntries=await loadLeaderboard();
+  const classes=['4 Care','4 Graciousness','4 Resilience','4 Respect','4 Integrity'];
+  tabDiv.innerHTML='';
+  const allTab=document.createElement('button');allTab.className='lb-tab'+((!filterClass)?' active':'');allTab.textContent='All Classes';allTab.onclick=()=>renderLeaderboard(null);tabDiv.appendChild(allTab);
+  classes.forEach(cls=>{const btn=document.createElement('button');btn.className='lb-tab'+(filterClass===cls?' active':'');btn.textContent=cls;btn.onclick=()=>renderLeaderboard(cls);tabDiv.appendChild(btn);});
+  const filtered=filterClass?allEntries.filter(e=>e.cls===filterClass):allEntries;
+  const best={};filtered.forEach(e=>{const k=e.name+'|'+e.listTitle;if(!best[k]||e.pct>best[k].pct)best[k]=e;});
+  const studentMap={};Object.values(best).forEach(e=>{if(!studentMap[e.name])studentMap[e.name]={name:e.name,cls:e.cls,totalPct:0,count:0};studentMap[e.name].totalPct+=e.pct;studentMap[e.name].count++;});
+  const ranked=Object.values(studentMap).map(s=>({...s,avgPct:Math.round(s.totalPct/s.count)})).sort((a,b)=>b.avgPct-a.avgPct).slice(0,10);
+  if(ranked.length===0){listEl.innerHTML='<li class="lb-empty">🏆 No scores yet! Complete a game to appear here.</li>';return;}
+  const medals=['🥇','🥈','🥉'];listEl.innerHTML='';
+  ranked.forEach((s,i)=>{const li=document.createElement('li');li.className='lb-item'+(i===0?' top1':i===1?' top2':i===2?' top3':'');
+    li.innerHTML=`<span class="lb-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i<3?medals[i]:(i+1)}</span><div><div class="lb-name">${esc(s.name)}</div><div class="lb-class">${esc(s.cls)}</div></div><div style="text-align:right"><div class="lb-score">${s.avgPct}%</div><div class="lb-pct">${s.count} session${s.count>1?'s':''}</div></div>`;
+    listEl.appendChild(li);});
 }
 
-function restart(){loadPassage(currentPassage,document.querySelector('.set-tab.active'))}
-function goBack(){window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls)}
-
-function showToast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2000);
+async function showResults(){
+  if(speedInterval)clearInterval(speedInterval);dictStop();hideOSK();document.getElementById('kbdToggleBtn').style.display='flex';
+  document.getElementById('gameScreen').classList.add('hidden');document.getElementById('resultsScreen').classList.remove('hidden');
+  const total=G.answers.length;const correct=G.answers.filter(a=>a.correct).length;const pct=total?Math.round(correct/total*100):0;
+  const stars=pct>=90?'⭐⭐⭐':pct>=70?'⭐⭐':pct>=50?'⭐':'😅';
+  const msg=pct>=90?"Outstanding! You're a Spelling Star! 🌟":pct>=70?"Great job! Keep it up! 💪":pct>=50?"Good effort! Practice makes perfect! 📚":"Keep trying! You can do it! 🌈";
+  document.getElementById('scoreNum').textContent=correct+'/'+total;
+  document.getElementById('starsRow').textContent=stars;
+  document.getElementById('scoreMsg').textContent=msg;
+  if(pct>=80)launchConfetti();
+  document.getElementById('resTbody').innerHTML=G.answers.map((a,i)=>`<tr><td>${i+1}</td><td style="color:${a.correct?'var(--teal)':'var(--coral)'}">${esc(a.userAnswer||'(skipped)')}</td><td>${esc((a.correctAnswer||'').slice(0,60))}</td><td>${a.correct?'<span class="ok">✓</span>':'<span class="no">✗</span>'}</td></tr>`).join('');
+  // Save to spelling-specific in-game leaderboard
+  const list=getList();
+  if(hero.name&&total>0){
+    const saved=await saveSpellingLB(hero.name,hero.cls,correct,total,G.mode,list?.title||'Unknown');
+    if(saved){const badge=document.getElementById('saveBadge');if(badge)badge.classList.remove('hidden');}
+  }
+  renderLeaderboard(hero.cls||null);
 }
+
+function startGame(){
+  const errEl=document.getElementById('setupError');if(!G.listId){errEl.textContent='⚠️ Please choose a word list first!';errEl.style.display='block';return;}errEl.style.display='none';
+  const list=getList();if(!list)return;
+  G.currentQ=0;G.answers=[];G.hearts=3;wrongQueue=[];isRedemptionMode=false;
+  document.getElementById('setupScreen').classList.add('hidden');document.getElementById('gameScreen').classList.remove('hidden');
+  if(G.mode==='dictation')renderDictation(list);else showQ(list.items[0]);
+}
+
+function init(){
+  if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();setTimeout(loadVoices,500);setTimeout(loadVoices,1500);}
+  const books=[...new Set(LISTS.map(l=>l.book))];const tabDiv=document.getElementById('bookTabs');
+  books.forEach((b,i)=>{const btn=document.createElement('button');btn.className='book-tab'+(i===0?' active':'');btn.textContent=b;btn.onclick=()=>{tabDiv.querySelectorAll('.book-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderListCards(b);};tabDiv.appendChild(btn);});
+  renderListCards(books[0]);
+  document.querySelectorAll('.mode-card').forEach(c=>{c.addEventListener('click',()=>{document.querySelectorAll('.mode-card').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');G.mode=c.dataset.mode;});});
+  document.getElementById('startBtn').addEventListener('click',startGame);
+  buildOSK();
+  document.addEventListener('keydown',e=>{if(!currentInput||currentInput.hasAttribute('readonly'))return;highlightOSKKey(e.key,true);if(e.key==='Enter'){e.preventDefault();document.getElementById('subBtn')?.click();}});
+  document.addEventListener('keyup',e=>highlightOSKKey(e.key,false));
+}
+
+function renderListCards(book){
+  const grid=document.getElementById('listGrid');grid.innerHTML='';
+  LISTS.filter(l=>l.book===book).forEach(list=>{
+    const d=document.createElement('div');d.className='list-card'+(G.listId===list.id&&G.book===book?' sel':'');
+    d.innerHTML=`<div class="lc-num">${esc(list.title)}</div><div class="lc-theme">${esc(list.theme)}</div><div class="lc-count">📝 ${list.items.length} words</div>`;
+    d.onclick=()=>{document.querySelectorAll('.list-card').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');G.listId=list.id;G.book=book;};
+    grid.appendChild(d);});
+}
+
+const KEYS=[['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['SHIFT','z','x','c','v','b','n','m','BACK'],['SPACE','-']];
+function buildOSK(){
+  const container=document.getElementById('oskKeys');
+  KEYS.forEach(row=>{const rowDiv=document.createElement('div');rowDiv.className='osk-row';
+    row.forEach(k=>{const btn=document.createElement('button');btn.className='osk-key';
+      if(k==='SHIFT'){btn.className+=' special';btn.textContent='⇧';btn.dataset.key='SHIFT';}
+      else if(k==='BACK'){btn.className+=' back-key';btn.textContent='⌫';btn.dataset.key='BACK';}
+      else if(k==='SPACE'){btn.className+=' space-key';btn.textContent='SPACE';btn.dataset.key='SPACE';}
+      else{btn.textContent=k;btn.dataset.key=k;}
+      btn.addEventListener('click',()=>handleKey(k));rowDiv.appendChild(btn);});
+    container.appendChild(rowDiv);});
+}
+function handleKey(key){
+  if(!currentInput)return;
+  if(key==='BACK')currentInput.value=currentInput.value.slice(0,-1);
+  else if(key==='SPACE')currentInput.value+=' ';
+  else if(key==='SHIFT'){isShiftActive=!isShiftActive;updateShiftDisplay();}
+  else{const ch=isShiftActive?key.toUpperCase():key;currentInput.value+=ch;if(isShiftActive){isShiftActive=false;updateShiftDisplay();}}
+  currentInput.dispatchEvent(new Event('input'));currentInput.scrollIntoView({behavior:'instant',block:'center'});
+}
+function updateShiftDisplay(){
+  const shiftBtn=document.querySelector('.osk-key[data-key="SHIFT"]');if(shiftBtn)shiftBtn.classList.toggle('shift-active',isShiftActive);
+  document.querySelectorAll('.osk-key:not(.special):not(.back-key):not(.space-key)').forEach(btn=>{const k=btn.dataset.key;if(k&&k.length===1)btn.textContent=isShiftActive?k.toUpperCase():k;});
+}
+function showOSK(inputEl){
+  currentInput=inputEl;
+  if(!physicalKbdMode){inputEl.setAttribute('readonly','true');const osk=document.getElementById('osk');osk.classList.remove('hidden');document.body.classList.add('kbd-open');setTimeout(()=>inputEl.scrollIntoView({behavior:'smooth',block:'center'}),120);}
+  else{inputEl.removeAttribute('readonly');inputEl.focus();}
+}
+function hideOSK(){document.getElementById('osk').classList.add('hidden');document.body.classList.remove('kbd-open');}
+function toggleOSK(){
+  const osk=document.getElementById('osk');
+  if(osk.classList.contains('hidden')){osk.classList.remove('hidden');document.body.classList.add('kbd-open');if(currentInput){currentInput.setAttribute('readonly','true');setTimeout(()=>currentInput.scrollIntoView({behavior:'smooth',block:'center'}),120);}}
+  else{hideOSK();if(currentInput&&physicalKbdMode){currentInput.removeAttribute('readonly');currentInput.focus();}}
+}
+function togglePhysicalKbd(){
+  physicalKbdMode=!physicalKbdMode;
+  if(currentInput){if(physicalKbdMode){hideOSK();currentInput.removeAttribute('readonly');currentInput.focus();}else{currentInput.setAttribute('readonly','true');document.getElementById('osk').classList.remove('hidden');document.body.classList.add('kbd-open');}}
+  document.querySelectorAll('.phys-kbd-toggle span:last-child').forEach(el=>{el.textContent=physicalKbdMode?'⌨ Physical Keyboard On':'⌨ Use Physical Keyboard';});
+  document.querySelectorAll('.phys-kbd-toggle').forEach(btn=>btn.classList.toggle('active',physicalKbdMode));
+  document.getElementById('kbdToggleBtn').style.display=physicalKbdMode?'none':'flex';
+}
+function highlightOSKKey(key,active){
+  let dk=key.toLowerCase();if(key===' ')dk='SPACE';else if(key==='Backspace')dk='BACK';else if(key==='Shift')dk='SHIFT';else if(key.length>1)return;
+  const btn=document.querySelector(`.osk-key[data-key="${dk}"]`);if(btn)btn.classList.toggle('phys-active',active);
+}
+function oskCheck(){document.getElementById('subBtn')?.click();}
+function oskSkip(){document.getElementById('skipBtn')?.click();}
+
+function launchConfetti(){
+  const canvas=document.getElementById('confetti');const ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const pieces=Array.from({length:120},()=>({x:Math.random()*canvas.width,y:Math.random()*-canvas.height,r:Math.random()*8+4,c:['#6C63FF','#00C9B1','#FF6B6B','#FFD166','#8B80FF'][Math.floor(Math.random()*5)],v:Math.random()*3+2,spin:Math.random()*.2-.1,angle:Math.random()*Math.PI*2}));
+  let frame=0;(function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);pieces.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.4);ctx.restore();p.y+=p.v;p.angle+=p.spin;if(p.y>canvas.height)p.y=-20;});if(++frame<180)requestAnimationFrame(draw);else ctx.clearRect(0,0,canvas.width,canvas.height);})();
+}
+function launchMini(){
+  const canvas=document.getElementById('confetti');const ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const cx=canvas.width/2,cy=canvas.height/2;
+  const pieces=Array.from({length:20},()=>({x:cx,y:cy,vx:(Math.random()-.5)*12,vy:(Math.random()-1)*10,r:Math.random()*6+3,c:['#6C63FF','#00C9B1','#FFD166'][Math.floor(Math.random()*3)],life:1}));
+  (function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);let alive=false;pieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.4;p.life-=.03;if(p.life>0){alive=true;ctx.save();ctx.globalAlpha=p.life;ctx.fillStyle=p.c;ctx.restore();}});if(alive)requestAnimationFrame(draw);else ctx.clearRect(0,0,canvas.width,canvas.height);})();
+}
+
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
