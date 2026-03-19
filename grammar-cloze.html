@@ -360,13 +360,15 @@ function showToast(msg){
 </script>
 <script>
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script>
 (function(){
-  var c={apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",authDomain:"english-island-cps.firebaseapp.com",projectId:"english-island-cps",storageBucket:"english-island-cps.firebasestorage.app",messagingSenderId:"892743482834",appId:"1:892743482834:web:6705bc3e3bc832cf749c0b",databaseURL:"https://english-island-cps-default-rtdb.firebaseio.com"};
-  if(!firebase.apps.length)firebase.initializeApp(c);
-  window._fbDb=firebase.database();
+  var cfg={apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",authDomain:"english-island-cps.firebaseapp.com",databaseURL:"https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"english-island-cps",storageBucket:"english-island-cps.firebasestorage.app",messagingSenderId:"892743482834",appId:"1:892743482834:web:6705bc3e3bc832cf749c0b"};
+  function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;s.onerror=function(){};document.head.appendChild(s);}
+  loadScript('https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',function(){
+    loadScript('https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js',function(){
+      try{if(!firebase.apps.length)firebase.initializeApp(cfg);window._fbDb=firebase.database();}catch(e){}
+    });
+  });
 })();
 </script>
 </body>
