@@ -102,6 +102,10 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   color:rgba(255,255,255,.5);font-size:11px;font-weight:700;border-radius:8px;
   padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .btn-back-island:hover{background:rgba(255,255,255,.13);color:#fff}
+.result-banner{display:none;margin-top:14px;padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-align:center}
+.result-banner.show{display:block}
+.result-banner.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--teal)}
+.result-banner.bad{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--coral)}
 </style>
 </head>
 <body>
@@ -133,14 +137,19 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
       <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
       <div class="progress-txt" id="progressTxt">0 / 0</div>
     </div>
+    <div class="set-tabs" id="passageTabs"></div>
     <div class="card-title"><div class="card-icon">✏️</div><span id="passageTitle">Passage</span></div>
-    <div class="passage" id="passageText"></div>
+    <div class="passage" id="passageCard"></div>
     <div class="options-area">
       <div class="options-label">Word Bank — tap a blank first, then pick a word</div>
       <div class="options-grid" id="optionsGrid"></div>
     </div>
+    <div class="result-banner" id="resultBanner"></div>
     <div class="feedback" id="feedback"></div>
     <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkAnswers()">✅ Check Answers</button>
+      <button class="btn btn-ghost" onclick="resetPassage()">🔄 Reset</button>
+      <button class="btn btn-ghost" onclick="revealAnswers()">💡 Show Answers</button>
       <button class="btn btn-ghost" onclick="goBack()">← Back</button>
     </div>
   </div>
@@ -165,198 +174,402 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <div class="toast" id="toast"></div>
 
 <script>
-
-function fbKey(s){ return (s||'').replace(/[.#$\[\]\/]/g,'_'); }
-
+function fbKey(s){return(s||'').replace(/[.#$[\]\/]/g,'_');}
 async function fbSaveScore(name,cls,zone,topic,score,total,stars){
   if(!name||!window._fbDb) return;
-  try{
-    await window._fbDb.ref('scores/'+fbKey(name)).update({
-      name, cls,
-      ['zone_'+zone]:{score,total,stars,pts:score*10,topic,ts:Date.now()}
-    });
-  }catch(e){console.warn('Firebase save error:',e);}
+  return new Promise(function(resolve){
+    var pct=total>0?Math.round(score/total*100):0;
+    window._fbDb.ref('scores/'+fbKey(cls)+'/'+fbKey(name)+'/'+zone).set({
+      name:name,cls:cls,component:zone,topic:topic,
+      score:score,total:total,pct:pct,stars:stars,timestamp:Date.now()
+    }).then(resolve).catch(function(e){console.warn('FB write:',e);resolve();});
+  });
 }
-
 </script>
 <script>
 const urlP=new URLSearchParams(location.search);
-const _stored=(function(){try{return JSON.parse(sessionStorage.getItem('student')||'{}');}catch(e){return {};}})();
+const _stored=(function(){try{return JSON.parse(sessionStorage.getItem('student')||'{}');}catch(e){return{};}})();
 const hero={name:urlP.get('hero')||_stored.name||'',cls:urlP.get('cls')||_stored.cls||'',returnTo:urlP.get('returnTo')||'student-portal.html'};
 
-// ── Render hero bar ──
 (function(){
-  const bar = document.getElementById('heroBar');
-  if(!bar) return;
+  const bar=document.getElementById('heroBar');if(!bar)return;
   if(hero.name){
-    bar.innerHTML =
-      '<div class="hero-badge">\u2713 Logged in</div>' +
-      '<div>' +
-        '<div class="hero-name">' + hero.name + '</div>' +
-        '<div class="hero-cls">' + hero.cls + '</div>' +
-      '</div>' +
-      '<div style="margin-left:auto;font-size:10px;color:rgba(232,234,246,.45);letter-spacing:.5px">Scores auto-save on completion</div>' +
-      '<button class="btn-back-island" onclick="goBack()">← Island</button>';
-  } else {
-    bar.innerHTML =
-      '<div style="font-size:12px;color:#FBBF24;font-weight:700">\u26a0\ufe0f Not logged in \u2014 go back to the portal to log in first.</div>' +
-      '<button class="btn-back-island" onclick="window.location.href=hero.returnTo">← Island</button>';
+    bar.innerHTML='<div class="hero-badge">✓ Logged in</div><div><div class="hero-name">'+hero.name+'</div><div class="hero-cls">'+hero.cls+'</div></div><div style="margin-left:auto;font-size:10px;color:rgba(232,234,246,.45);letter-spacing:.5px">Scores auto-save on completion</div><button class="btn-back-island" onclick="goBack()">← Island</button>';
+  }else{
+    bar.innerHTML='<div style="font-size:12px;color:#FBBF24;font-weight:700">⚠️ Not logged in — go back to the portal to log in first.</div><button class="btn-back-island" onclick="window.location.href=hero.returnTo">← Island</button>';
   }
 })();
 
-
-
-
-const PASSAGES=[
-  {id:'gc1',title:'The Lost Kite',
-   text:'Yesterday, Ahmad _1_ flying his kite in the park when a strong wind _2_ it away. He _3_ after it as fast as he could, but the kite _4_ already landed in a tall tree. Ahmad _5_ for help and a kind man used a long pole _6_ the kite down.',
-   blanks:[1,2,3,4,5,6],answers:['was','blew','ran','had','called','to get'],
-   options:['was','blew','ran','had','called','to get','has','throw','is','went']},
-  {id:'gc2',title:'A Rainy Day',
-   text:'It _1_ raining heavily when school ended. Priya _2_ her umbrella at home and _3_ know what to do. Her friend Mei _4_ her umbrella _5_ them. By the time they _6_ home, their shoes were completely wet.',
-   blanks:[1,2,3,4,5,6],answers:['was','had left','did not','shared','with','reached'],
-   options:['was','had left','did not','shared','with','reached','is','forgot','could','gives','for','arrived']},
-  {id:'gc3',title:'The Science Project',
-   text:'The students _1_ excited because they _2_ just finished their science project. Mrs Tan _3_ them that their model volcano _4_ the best in the class. They _5_ worked very hard _6_ two weeks.',
-   blanks:[1,2,3,4,5,6],answers:['were','had','told','was','had','for'],
-   options:['were','had','told','was','had','for','are','have','said','is','has','since']},
-  {id:'gc4',title:'A Visit to the Zoo',
-   text:'Last Saturday, our family _1_ to the zoo. We _2_ there for three hours. My little sister _3_ never seen a giraffe before, so she _4_ very surprised. Dad _5_ us ice cream after _6_ all the animals.',
-   blanks:[1,2,3,4,5,6],answers:['went','stayed','had','was','bought','seeing'],
-   options:['went','stayed','had','was','bought','seeing','goes','spend','has','were','buys','see']},
-  {id:'gc5',title:'The Helpful Neighbour',
-   text:'Mr Lim, _1_ lives next door, is very kind. Last week, he _2_ my mother carry her heavy bags _3_ the stairs. He also _4_ our cat _5_ it was lost. We are _6_ grateful for his help.',
-   blanks:[1,2,3,4,5,6],answers:['who','helped','up','found','when','always'],
-   options:['who','helped','up','found','when','always','which','help','down','sees','while','very']}
+// ══════════════════════════════════════════════
+// QUIZ DATA — 10 Grammar Cloze sets
+// Each set has 2 passages: Pronouns + Verb Tenses / SVA
+// ══════════════════════════════════════════════
+const CLOZES=[
+  {
+    title:"Grammar Cloze 1",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) her","(B) his","(C) ours","(D) us","(E) we","(F) you"],
+       answers:["E","F","A","D"],
+       wordMap:{A:"her",B:"his",C:"ours",D:"us",E:"we",F:"you"},
+       text:"Dear Alice,\n\nHow have you been? Hope you are adapting well in your new environment. Life is the same back home. Max and I walk to school every day instead of taking the bus. {1} miss going to school with you. Do {2} remember our friend, Janet? She has just returned from Australia and {3} house is located near mine. I managed to have a chat with her the other day. I'm sending you a photo that both of {4} took together before you left.\n\nBye for now. Write soon.\n\nLove,\nGeraldine"},
+      {label:"Passage B – Verb Tenses",
+       words:["(A) swim","(B) swimming","(C) has been swimming","(D) swam","(E) swims","(F) had been swimming"],
+       answers:["B","C","A","E"],
+       wordMap:{A:"swim",B:"swimming",C:"has been swimming",D:"swam",E:"swims",F:"had been swimming"},
+       text:"Benjamin likes to participate in sports activities. In fact, his hobby is {1}. He {2} for the past three years. He often goes to the public pool or beach for a {3}. He is very good in the sport and often {4} in the inter-school swimming competition. In fact, there is another competition coming up and he will swim in it. He hopes to emerge the winner."}
+    ]
+  },
+  {
+    title:"Grammar Cloze 2",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) I","(B) he","(C) our","(D) she","(E) we","(F) they"],
+       answers:["D","B","C","A"],
+       wordMap:{A:"I",B:"he",C:"our",D:"she",E:"we",F:"they"},
+       text:"Last Monday, my form teacher, Miss Lim asked my class about our ambitions. She shared that {1} had wanted to be a ballerina. The tallest boy, Lucas, was good at basketball so {2} wanted to be a basketball player. However, many of us had no idea what we wanted to be when we grow up. Miss Lim assured us that we had time to decide on our ambitions as long as we try {3} best to do well in school. Upon hearing that, I heaved a sigh of relief. Then, {4} made a promise to myself that I would work hard so that I could become whatever I want to be when I decide one day."},
+      {label:"Passage B – Verb Tenses",
+       words:["(A) play","(B) played","(C) playing","(D) plays","(E) was playing","(F) were playing","(G) will play"],
+       answers:["D","F","G","B","A"],
+       wordMap:{A:"play",B:"played",C:"playing",D:"plays",E:"was playing",F:"were playing",G:"will play"},
+       text:"Sam always {1} together with his friends. One day while they {2} on the lawn, his mother shouted, \"You must stop playing and start doing your homework!\" \"{3} first and do my homework later,\" he said. Sam {4} until it was evening. When he came home, his mother was furious. She told Sam that he could not {5} with his friends anymore until he had finished his homework."}
+    ]
+  },
+  {
+    title:"Grammar Cloze 3",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) he","(B) her","(C) his","(D) she","(E) them","(F) they"],
+       answers:["F","C","E","B"],
+       wordMap:{A:"he",B:"her",C:"his",D:"she",E:"them",F:"they"},
+       text:"Every year, Mr and Mrs Lim will make a trip to Hong Kong to visit their friends. This year, {1} decided to bring their children along. Danny, their youngest son, was elated as this was {2} first overseas trip. \"We can visit Disneyland!\" exclaimed Danny's sister, Eliza, eagerly. Both of {3} were looking forward to the trip. Mrs Lim smiled at {4} children."},
+      {label:"Passage B – Verb Tenses",
+       words:["(A) has been baking","(B) bake","(C) baked","(D) bakes","(E) is baking","(F) will bake"],
+       answers:["D","A","F","E"],
+       wordMap:{A:"has been baking",B:"bake",C:"baked",D:"bakes",E:"is baking",F:"will bake"},
+       text:"My grandmother {1} a cake for us every Sunday. She {2} for many years and her cakes are always delicious. This coming Sunday, she promised that she {3} us a chocolate cake. Right now, she {4} in the kitchen and the whole house smells wonderful."}
+    ]
+  },
+  {
+    title:"Grammar Cloze 4",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) he","(B) his","(C) him","(D) it","(E) its","(F) they"],
+       answers:["B","E","F","A"],
+       wordMap:{A:"he",B:"his",C:"him",D:"it",E:"its",F:"they"},
+       text:"Marcus has a pet hamster called Peanut. {1} cage is kept in the living room. The hamster runs in {2} wheel every night. Marcus's siblings love Peanut too. {3} always ask to hold the hamster. Marcus is proud that {4} takes good care of his pet."},
+      {label:"Passage B – Verb Tenses",
+       words:["(A) has visited","(B) visit","(C) visited","(D) visits","(E) was visiting","(F) will visit"],
+       answers:["D","C","F","A"],
+       wordMap:{A:"has visited",B:"visit",C:"visited",D:"visits",E:"was visiting",F:"will visit"},
+       text:"My uncle {1} us every month. Last December, he {2} us and brought many presents. He promised that he {3} us again during the Chinese New Year holidays. He {4} us four times already this year."}
+    ]
+  },
+  {
+    title:"Grammar Cloze 5",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) she","(B) her","(C) hers","(D) they","(E) their","(F) them"],
+       answers:["A","D","E","B"],
+       wordMap:{A:"she",B:"her",C:"hers",D:"they",E:"their",F:"them"},
+       text:"Jane has a pet cat named Fluffy. {1} loves Fluffy very much and takes good care of him. Jane's neighbours also have pets. {2} have two dogs and a cat. {3} pets are very well-trained. Jane often plays with {4} neighbours' animals. However, Fluffy will always be her favourite."},
+      {label:"Passage B – Verb Tenses",
+       words:["(A) is knitting","(B) has been knitting","(C) knit","(D) knits","(E) knitted","(F) will knit"],
+       answers:["C","F","B","A"],
+       wordMap:{A:"is knitting",B:"has been knitting",C:"knit",D:"knits",E:"knitted",F:"will knit"},
+       text:"My grandmother loves to {1} scarves and mittens for her grandchildren. She promised that she {2} one for each of us next winter. She {3} for many years now and her work is very beautiful. At this moment, she {4} a red scarf by the fireplace."}
+    ]
+  },
+  {
+    title:"Grammar Cloze 6",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) us","(B) our","(C) we","(D) them","(E) they","(F) their"],
+       answers:["B","A","C","E"],
+       wordMap:{A:"us",B:"our",C:"we",D:"them",E:"they",F:"their"},
+       text:"{1} school celebrated its 50th anniversary last week. The principal invited all {2} parents to the event. {3} put up a spectacular performance that amazed everyone. The old students also came. {4} shared many fond memories of their time in school."},
+      {label:"Passage B – Subject-Verb Agreement",
+       words:["is","curls","are","encourage"],
+       answers:["is","curls","are","encourage"],
+       wordMap:null,
+       text:"Mary has beautiful hair. It {1} long and shiny. It {2} naturally at the ends. Her friends {3} always complimenting her hair. They often {4} her to enter the school's beauty pageant."}
+    ]
+  },
+  {
+    title:"Grammar Cloze 7",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) he","(B) him","(C) his","(D) its","(E) it","(F) they"],
+       answers:["E","C","F","B"],
+       wordMap:{A:"he",B:"him",C:"his",D:"its",E:"it",F:"they"},
+       text:"Jake has a tortoise named Rocky. {1} has a hard brown shell. {2} movements are slow and steady. Jake's friends love Rocky too. {3} often come over just to see the tortoise. Jake lets {4} hold Rocky carefully."},
+      {label:"Passage B – Subject-Verb Agreement",
+       words:["takes","show","grow","is"],
+       answers:["takes","show","grow","is"],
+       wordMap:null,
+       text:"My father {1} me to the botanical gardens every Sunday. The flowers there {2} a wide range of colours. Many of the trees {3} very tall. It {4} a wonderful place to relax."}
+    ]
+  },
+  {
+    title:"Grammar Cloze 8",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) she","(B) her","(C) us","(D) they","(E) we","(F) our"],
+       answers:["D","F","A","B"],
+       wordMap:{A:"she",B:"her",C:"us",D:"they",E:"we",F:"our"},
+       text:"The Wong family went to Sentosa last Saturday. {1} left early in the morning to avoid the crowd. It was {2} first visit to Universal Studios. Mrs Wong was very excited. {3} had always wanted to visit the theme park. Her children bought {4} a souvenir as a surprise."},
+      {label:"Passage B – Subject-Verb Agreement",
+       words:["play","uses","wins","does"],
+       answers:["play","uses","wins","does"],
+       wordMap:null,
+       text:"The students in my class {1} chess during recess. Our chess champion, Ali, {2} different strategies each time. He often {3} the school chess competition. He {4} not boast about his achievements though."}
+    ]
+  },
+  {
+    title:"Grammar Cloze 9",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) their","(B) them","(C) us","(D) we","(E) our","(F) they"],
+       answers:["D","B","E","A"],
+       wordMap:{A:"their",B:"them",C:"us",D:"we",E:"our",F:"they"},
+       text:"My classmates and I went for a field trip to the zoo. {1} were very excited as it was our first class outing. Our teacher reminded {2} to stay together at all times. It was {3} responsibility to look after one another. The animals were amazing and we took many photos of {4} different habitats."},
+      {label:"Passage B – Subject-Verb Agreement",
+       words:["goes","are","gets","sell"],
+       answers:["goes","are","gets","sell"],
+       wordMap:null,
+       text:"My mother {1} to the wet market every weekend. The vegetables there {2} always fresh. She usually {3} there early in the morning. The stall owners {4} a variety of fruits and vegetables."}
+    ]
+  },
+  {
+    title:"Grammar Cloze 10",
+    passages:[
+      {label:"Passage A – Pronouns",
+       words:["(A) he","(B) his","(C) him","(D) they","(E) their","(F) them"],
+       answers:["B","C","E","A"],
+       wordMap:{A:"he",B:"his",C:"him",D:"they",E:"their",F:"them"},
+       text:"Mr Tan is a popular teacher. {1} lessons are always interesting and fun. Students enjoy listening to {2} as he tells many stories. The students always look forward to {3} classes. {4} always comes to school well prepared."},
+      {label:"Passage B – Subject-Verb Agreement",
+       words:["runs","enjoy","has","meet"],
+       answers:["runs","enjoy","has","meet"],
+       wordMap:null,
+       text:"Our school {1} a reading programme every term. Students {2} borrowing books from the library. The library {3} more than ten thousand books. Students {4} the librarian during lunch breaks to get book recommendations."}
+    ]
+  }
 ];
 
-let currentPassage=null,selectedBlank=null,answers={},score=0,finalPts=0,submitted=false;
+// ── State ──
+let currentCloze=null, currentPassageIdx=0, selectedBlank=null, blanksData=[], selectedWord=null;
+let totalCorrect=0, totalQs=0, submitted=false;
 
-// Build tabs
+// ── Build tabs ──
 const tabsEl=document.getElementById('setTabs');
-PASSAGES.forEach((p,i)=>{
-  const btn=document.createElement('button');
+CLOZES.forEach(function(c,i){
+  var btn=document.createElement('button');
   btn.className='set-tab'+(i===0?' active':'');
-  btn.textContent=p.title;
-  btn.onclick=()=>loadPassage(p,btn);
+  btn.textContent=c.title;
+  btn.onclick=function(){loadCloze(c,btn);};
   tabsEl.appendChild(btn);
 });
-loadPassage(PASSAGES[0],tabsEl.children[0]);
 
-function loadPassage(p,tabBtn){
-  currentPassage=p;selectedBlank=null;answers={};score=0;submitted=false;
-  document.querySelectorAll('.set-tab').forEach(t=>t.classList.remove('active'));
+function loadCloze(c,tabBtn){
+  currentCloze=c; currentPassageIdx=0; totalCorrect=0; totalQs=0; submitted=false;
+  document.querySelectorAll('.set-tab').forEach(function(t){t.classList.remove('active');});
   if(tabBtn)tabBtn.classList.add('active');
   document.getElementById('quizCard').style.display='block';
   document.getElementById('resultScreen').classList.remove('show');
-  document.getElementById('passageTitle').textContent=p.title;
-  renderPassage();renderOptions();updateProgress();
+  buildPassageTabs();
+  loadPassage(0);
 }
 
-function renderPassage(){
-  const p=currentPassage;
-  let html=p.text;
-  p.blanks.forEach((n,i)=>{
-    const val=answers[n]?`<span style="font-size:12px">${answers[n]}</span>`:'';
-    const cls=answers[n]?(answers[n]===p.answers[i]?'answered':'wrong'):(selectedBlank===n?'selected':'');
-    html=html.replace('_'+n+'_',
-      `<span class="blank-wrap"><span class="blank ${cls}" data-blank="${n}" onclick="selectBlank(${n})"><span class="blank-num">${n}</span>${val||'&nbsp;&nbsp;&nbsp;'}</span></span>`);
+function buildPassageTabs(){
+  var tabs=document.getElementById('passageTabs');
+  if(!tabs){
+    // Create passage tabs area if not present
+    var qt=document.getElementById('quizCard');
+    var newTabs=document.createElement('div');
+    newTabs.className='set-tabs';newTabs.id='passageTabs';
+    qt.insertBefore(newTabs,qt.querySelector('.progress-row'));
+    tabs=newTabs;
+  }
+  tabs.innerHTML='';
+  currentCloze.passages.forEach(function(p,i){
+    var btn=document.createElement('button');
+    btn.className='set-tab'+(i===0?' active':'');
+    btn.textContent=p.label;
+    btn.onclick=function(){
+      document.querySelectorAll('#passageTabs .set-tab').forEach(function(t){t.classList.remove('active');});
+      btn.classList.add('active');
+      loadPassage(i);
+    };
+    tabs.appendChild(btn);
   });
-  document.getElementById('passageText').innerHTML=html;
 }
 
-function renderOptions(){
-  const grid=document.getElementById('optionsGrid');
+function loadPassage(idx){
+  currentPassageIdx=idx;
+  selectedBlank=null; selectedWord=null; blanksData=[];
+  var p=currentCloze.passages[idx];
+  document.getElementById('passageTitle').textContent=currentCloze.title+' — '+p.label;
+  buildWordBank(p);
+  buildPassage(p);
+  updateProgress();
+  document.getElementById('resultBanner').className='result-banner';
+  document.getElementById('feedback').className='feedback';
+}
+
+function buildWordBank(p){
+  var grid=document.getElementById('optionsGrid');
   grid.innerHTML='';
-  currentPassage.options.forEach(opt=>{
-    const usedCorrectly=currentPassage.blanks.some((n,i)=>answers[n]===opt&&currentPassage.answers[i]===opt);
-    const btn=document.createElement('button');
-    btn.className='opt-btn'+(usedCorrectly?' used':'');
-    btn.textContent=opt;btn.dataset.opt=opt;
-    btn.onclick=()=>chooseOption(opt,btn);
+  p.words.forEach(function(w){
+    var btn=document.createElement('button');
+    btn.className='opt-btn';
+    btn.textContent=w;
+    btn.dataset.word=w;
+    btn.dataset.letter=p.wordMap?w.match(/^\(([A-Z])\)/)[1]:w;
+    btn.onclick=function(){selectWord(btn);};
     grid.appendChild(btn);
   });
 }
 
-function selectBlank(n){
-  if(answers[n]&&answers[n]===currentPassage.answers[currentPassage.blanks.indexOf(n)])return;
-  selectedBlank=n;renderPassage();
-  showToast('Blank '+n+' selected — pick a word below');
+function selectWord(btn){
+  if(btn.classList.contains('used'))return;
+  document.querySelectorAll('.opt-btn').forEach(function(b){b.style.outline='';});
+  btn.style.outline='3px solid var(--accent)';
+  selectedWord=btn;
+  if(selectedBlank!==null)fillBlank();
 }
 
-function chooseOption(opt,btn){
-  if(!selectedBlank){showToast('Tap a blank first!');return}
-  const n=selectedBlank;
-  const idx=currentPassage.blanks.indexOf(n);
-  const correct=currentPassage.answers[idx];
-  answers[n]=opt;selectedBlank=null;renderPassage();
-  if(opt===correct){
-    score++;showFeedback(true,'✅ Correct! "'+opt+'" is right.');btn.classList.add('used');
-  } else {
-    showFeedback(false,'❌ Not quite. Try again for blank '+n+'.');
-    delete answers[n];
-    setTimeout(()=>{renderPassage();hideFeedback()},1200);
+function buildPassage(p){
+  var card=document.getElementById('passageCard');
+  var html='';
+  var parts=p.text.split(/(\{\d+\})/);
+  var blankCount=0;
+  parts.forEach(function(part){
+    var m=part.match(/\{(\d+)\}/);
+    if(m){
+      var num=parseInt(m[1])-1;
+      html+='<span class="blank-wrap"><span class="blank empty" data-idx="'+blankCount+'" onclick="blankClick(this)"><span class="blank-num">'+(num+1)+'</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>';
+      blanksData.push({answer:p.answers[num],filled:null});
+      blankCount++;
+    }else{
+      html+=part.replace(/\n/g,'<br>');
+    }
+  });
+  card.innerHTML=html;
+}
+
+function blankClick(el){
+  var idx=parseInt(el.dataset.idx);
+  if(blanksData[idx]&&el.classList.contains('correct'))return;
+  document.querySelectorAll('.blank').forEach(function(b){b.classList.remove('selected');});
+  el.classList.add('selected');
+  selectedBlank=el;
+  if(selectedWord!==null)fillBlank();
+}
+
+function fillBlank(){
+  if(!selectedWord||!selectedBlank)return;
+  var idx=parseInt(selectedBlank.dataset.idx);
+  var word=selectedWord.dataset.word;
+  var letter=selectedWord.dataset.letter;
+  if(blanksData[idx].filled){
+    document.querySelectorAll('.opt-btn').forEach(function(b){
+      if(b.dataset.letter===blanksData[idx].filled)b.classList.remove('used');
+    });
   }
+  blanksData[idx].filled=letter;
+  selectedBlank.innerHTML='<span class="blank-num">'+(idx+1)+'</span>'+word;
+  selectedBlank.classList.remove('empty','wrong','selected');
+  selectedWord.classList.add('used');
+  selectedWord.style.outline='';
+  selectedWord=null; selectedBlank=null;
+  document.getElementById('resultBanner').className='result-banner';
   updateProgress();
-  const allCorrect=currentPassage.blanks.every((n,i)=>answers[n]===currentPassage.answers[i]);
-  if(allCorrect)setTimeout(()=>showResult(),700);
 }
 
 function updateProgress(){
-  const done=Object.keys(answers).length,total=currentPassage.blanks.length;
-  document.getElementById('progressFill').style.width=(done/total*100)+'%';
-  document.getElementById('progressTxt').textContent=done+' / '+total;
+  var filled=blanksData.filter(function(b){return b.filled!==null;}).length;
+  var total=blanksData.length;
+  document.getElementById('progressTxt').textContent=filled+' / '+total;
+  document.getElementById('progressFill').style.width=total?(filled/total*100)+'%':'0%';
 }
 
-function showFeedback(ok,msg){const el=document.getElementById('feedback');el.className='feedback show '+(ok?'ok':'bad');el.textContent=msg}
-function hideFeedback(){document.getElementById('feedback').className='feedback'}
+function checkAnswers(){
+  var p=currentCloze.passages[currentPassageIdx];
+  var correct=0;
+  document.querySelectorAll('.blank').forEach(function(el,i){
+    if(!blanksData[i]||!blanksData[i].filled)return;
+    var ok=blanksData[i].filled===blanksData[i].answer;
+    el.classList.remove('correct','wrong');
+    el.classList.add(ok?'correct':'wrong');
+    if(ok)correct++;
+  });
+  var total=blanksData.length;
+  totalCorrect+=correct; totalQs+=total;
+  var banner=document.getElementById('resultBanner');
+  var pct=total>0?Math.round(correct/total*100):0;
+  banner.className='result-banner show '+(pct>=80?'ok':'bad');
+  banner.textContent=pct>=80?'🎉 '+correct+'/'+total+' correct — Great work!':'📝 '+correct+'/'+total+' correct — Keep trying!';
+  // Check if all passages done and auto-show result
+  var allPassagesDone=document.querySelectorAll('#passageTabs .set-tab').length===currentPassageIdx+1;
+  if(allPassagesDone){setTimeout(function(){showResult();},1200);}
+}
+
+function resetPassage(){
+  blanksData.forEach(function(b){b.filled=null;});
+  document.querySelectorAll('.opt-btn').forEach(function(b){b.classList.remove('used');b.style.outline='';});
+  selectedBlank=null; selectedWord=null;
+  loadPassage(currentPassageIdx);
+}
+
+function revealAnswers(){
+  var p=currentCloze.passages[currentPassageIdx];
+  document.querySelectorAll('.blank').forEach(function(el,i){
+    if(!blanksData[i])return;
+    blanksData[i].filled=blanksData[i].answer;
+    var label=p.wordMap?'('+blanksData[i].answer+') '+Object.entries(p.wordMap).find(function(e){return e[0]===blanksData[i].answer;})?.[1]:blanksData[i].answer;
+    el.innerHTML='<span class="blank-num">'+(i+1)+'</span>'+(label||blanksData[i].answer);
+    el.classList.remove('empty','wrong','selected');
+    el.classList.add('correct');
+  });
+  updateProgress();
+}
 
 function showResult(){
-  const total=currentPassage.blanks.length;
-  const pct=Math.round(score/total*100);
-  const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
-  finalPts=score*10;
+  var total=totalQs||blanksData.length;
+  var correct=totalCorrect||blanksData.filter(function(b,i){return b.filled&&b.filled===b.answer;}).length;
+  var pct=total>0?Math.round(correct/total*100):0;
+  var stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
   document.getElementById('quizCard').style.display='none';
   document.getElementById('resultScreen').classList.add('show');
   document.getElementById('resultEmoji').textContent=stars===3?'🏆':stars===2?'🌟':stars===1?'⭐':'💪';
   document.getElementById('resultTitle').textContent=stars===3?'Perfect!':stars===2?'Great Work!':stars===1?'Good Try!':'Keep Practising!';
-  document.getElementById('resultSub').textContent='You got '+score+'/'+total+' correct on "'+currentPassage.title+'"';
-  document.getElementById('rScore').textContent=score;
+  document.getElementById('resultSub').textContent='You got '+correct+'/'+total+' correct on "'+currentCloze.title+'"';
+  document.getElementById('rScore').textContent=correct;
   document.getElementById('rStars').textContent=stars;
-  document.getElementById('rPts').textContent='+'+finalPts;
-  document.getElementById('submitNote').textContent='✅ Ready to submit! Click below to save your score and return.';
+  document.getElementById('rPts').textContent='+'+(correct*10);
   document.getElementById('submitBtn').disabled=false;
 }
 
 async function doSubmit(){
   if(submitted)return;
-  const btn=document.getElementById('submitBtn');
-  btn.disabled=true;btn.textContent='⏳ Submitting...';
+  var btn=document.getElementById('submitBtn');
+  btn.disabled=true; btn.textContent='⏳ Submitting...';
   submitted=true;
-  const total=currentPassage.blanks.length;
-  const pct=Math.round(score/total*100);
-  const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
-
-  await fbSaveScore(hero.name,hero.cls,'gc',currentPassage.title,score,total,stars);
-
-  // Return to portal with score params
-  const ret=hero.returnTo
-    +'?hero='+encodeURIComponent(hero.name)
-    +'&cls='+encodeURIComponent(hero.cls)
-    +'&zone=gc'
-    +'&score='+score
-    +'&total='+total
-    +'&stars='+stars;
-  window.location.href=ret;
+  var total=totalQs||blanksData.length;
+  var correct=totalCorrect;
+  var pct=total>0?Math.round(correct/total*100):0;
+  var stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
+  await fbSaveScore(hero.name,hero.cls,'gc',currentCloze.title,correct,total,stars);
+  window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls)+'&zone=gc&score='+correct+'&total='+total+'&stars='+stars;
 }
 
-function restart(){loadPassage(currentPassage,document.querySelector('.set-tab.active'))}
-function goBack(){window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls)}
+function restart(){loadCloze(currentCloze,document.querySelector('.set-tab.active'));}
+function goBack(){window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls);}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(function(){t.classList.remove('show');},2000);}
 
-function showToast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2000);
-}
+// Init — load first cloze
+loadCloze(CLOZES[0], tabsEl.children[0]);
 </script>
 <script>
 </script>
