@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Fortress 🏰</title>
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;600;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a14;
+  --surface:rgba(255,255,255,.06);
+  --surface2:rgba(255,255,255,.1);
+  --border:rgba(255,200,80,.15);
+  --text:#f0e6c8;
+  --muted:rgba(240,230,200,.45);
+  --gold:#ffd700;
+  --gold2:#ffaa00;
+  --wood:#a0522d;
+  --wood2:#cd853f;
+  --energy:#00e5ff;
+  --glory:#ff4081;
+  --green:#4caf50;
+  --red:#f44336;
+  --radius:12px;
+  --stone:#8a8a9a;
+}
+html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+
+/* Starfield background */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(60,20,80,.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(20,40,80,.5) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(40,10,60,.3) 0%, transparent 50%);
+  pointer-events:none;z-index:0;
+}
+
+/* Noise texture overlay */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.6;
+}
+
+/* ── LAYOUT ── */
+.app{position:relative;z-index:1;display:grid;grid-template-columns:240px 1fr 260px;grid-template-rows:64px 1fr;height:100vh;gap:0}
+
+/* ── TOP BAR ── */
+.topbar{
+  grid-column:1/-1;
+  background:rgba(0,0,0,.5);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+}
+.tb-logo{
+  font-family:'Cinzel',serif;font-size:20px;font-weight:900;
+  color:var(--gold);
+  text-shadow:0 0 20px rgba(255,215,0,.5);
+  display:flex;align-items:center;gap:8px;
+  letter-spacing:1px;
+}
+.tb-logo span{font-size:24px}
+.tb-divider{width:1px;height:28px;background:var(--border)}
+.tb-user{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800}
+.tb-avatar{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;
+  border:2px solid var(--gold);
+  box-shadow:0 0 10px rgba(255,215,0,.3);
+}
+.tb-name{color:#fff;font-size:14px}
+.tb-class{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+
+/* ── RESOURCES BAR ── */
+.resources-row{display:flex;gap:8px;align-items:center}
+.res-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:4px 12px;
+  font-size:12px;font-weight:800;
+  transition:all .3s;
+}
+.res-pill.gold{border-color:rgba(255,215,0,.3);color:var(--gold)}
+.res-pill.wood{border-color:rgba(160,82,45,.4);color:var(--wood2)}
+.res-pill.energy{border-color:rgba(0,229,255,.3);color:var(--energy)}
+.res-pill.glory{border-color:rgba(255,64,129,.3);color:var(--glory)}
+.res-pill .res-icon{font-size:14px}
+.res-pill .res-val{font-family:'Cinzel',serif;font-size:13px}
+
+/* ── SIDEBAR LEFT ── */
+.sidebar-left{
+  background:rgba(0,0,0,.35);
+  border-right:1px solid var(--border);
+  overflow-y:auto;padding:16px 12px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.sidebar-left::-webkit-scrollbar{width:4px}
+.sidebar-left::-webkit-scrollbar-thumb{background:rgba(255,215,0,.2);border-radius:4px}
+
+.section-title{
+  font-family:'Cinzel',serif;
+  font-size:10px;font-weight:700;
+  color:var(--muted);letter-spacing:2px;text-transform:uppercase;
+  padding:4px 0;border-bottom:1px solid var(--border);
+}
+
+/* Nav buttons */
+.nav-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:10px;
+  border:1px solid transparent;
+  background:transparent;color:var(--text);
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s;text-align:left;width:100%;
+}
+.nav-btn:hover{background:var(--surface);border-color:var(--border)}
+.nav-btn.active{
+  background:rgba(255,215,0,.1);
+  border-color:rgba(255,215,0,.3);
+  color:var(--gold);
+}
+.nav-btn .nav-icon{font-size:18px;width:24px;text-align:center}
+.nav-btn .nav-badge{
+  margin-left:auto;
+  background:var(--glory);color:#fff;
+  font-size:9px;font-weight:900;
+  border-radius:10px;padding:2px 6px;
+}
+
+/* Streak card */
+.streak-card{
+  background:linear-gradient(135deg,rgba(255,140,0,.15),rgba(255,69,0,.1));
+  border:1px solid rgba(255,140,0,.3);
+  border-radius:12px;padding:12px;
+}
+.streak-title{font-size:10px;font-weight:800;color:rgba(255,140,0,.8);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.streak-days{display:flex;gap:4px;margin-bottom:8px}
+.streak-day{
+  flex:1;height:28px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:900;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  color:var(--muted);
+  transition:all .3s;
+}
+.streak-day.done{background:rgba(255,140,0,.25);border-color:rgba(255,140,0,.4);color:#ffa040}
+.streak-day.today{background:rgba(255,140,0,.4);border-color:rgba(255,140,0,.6);color:#fff;box-shadow:0 0 8px rgba(255,140,0,.4)}
+.streak-claim{
+  width:100%;padding:7px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,#ff8c00,#ff4500);
+  color:#fff;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;
+  cursor:pointer;transition:all .2s;
+}
+.streak-claim:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.streak-claim:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── MAIN CONTENT ── */
+.main{overflow-y:auto;padding:20px;background:transparent}
+.main::-webkit-scrollbar{width:4px}
+.main::-webkit-scrollbar-thumb{background:rgba(255,215,0,.2);border-radius:4px}
+
+/* Page heading */
+.page-heading{
+  font-family:'Cinzel',serif;font-size:22px;font-weight:900;
+  color:var(--gold);margin-bottom:4px;
+  text-shadow:0 0 30px rgba(255,215,0,.3);
+}
+.page-sub{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:20px}
+
+/* ── BASE VIEW ── */
+.base-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:repeat(5,1fr);
+  gap:6px;
+  width:100%;aspect-ratio:1;
+  max-width:460px;margin:0 auto 24px;
+}
+.base-cell{
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;
+  transition:all .25s;position:relative;overflow:hidden;
+  aspect-ratio:1;
+}
+.base-cell:hover{border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.06)}
+.base-cell.occupied{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15)}
+.base-cell.occupied:hover{border-color:var(--gold)}
+.base-cell .cell-emoji{font-size:26px;line-height:1}
+.base-cell .cell-name{font-size:8px;font-weight:800;color:var(--muted);text-align:center;letter-spacing:.3px}
+.base-cell .cell-level{
+  position:absolute;top:4px;right:4px;
+  background:rgba(0,0,0,.6);color:var(--gold);
+  font-size:8px;font-weight:900;
+  border-radius:4px;padding:1px 4px;
+  font-family:'Cinzel',serif;
+}
+.base-cell.empty .cell-emoji{font-size:20px;opacity:.3}
+.base-cell.hq{
+  background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,140,0,.08));
+  border-color:rgba(255,215,0,.4);
+}
+
+/* Build panel */
+.build-panel{
+  background:rgba(0,0,0,.4);
+  border:1px solid var(--border);
+  border-radius:16px;padding:20px;
+  max-width:460px;margin:0 auto;
+}
+.build-panel-title{
+  font-family:'Cinzel',serif;font-size:14px;font-weight:700;
+  color:var(--gold);margin-bottom:14px;
+}
+.build-tabs{display:flex;gap:6px;margin-bottom:16px}
+.build-tab{
+  flex:1;padding:7px;border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;background:transparent;
+  color:var(--muted);font-family:'Nunito',sans-serif;
+  font-size:11px;font-weight:800;cursor:pointer;transition:all .2s;
+}
+.build-tab.active{background:rgba(255,215,0,.1);border-color:rgba(255,215,0,.3);color:var(--gold)}
+
+.buildings-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.building-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:12px;
+  cursor:pointer;transition:all .25s;
+  position:relative;
+}
+.building-card:hover{border-color:rgba(255,215,0,.4);background:rgba(255,215,0,.06);transform:translateY(-2px)}
+.building-card.locked{opacity:.5;cursor:not-allowed}
+.building-card.locked:hover{transform:none;border-color:rgba(255,255,255,.1)}
+.bc-emoji{font-size:28px;margin-bottom:6px}
+.bc-name{font-size:12px;font-weight:800;color:#fff;margin-bottom:3px}
+.bc-desc{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:8px;line-height:1.4}
+.bc-cost{display:flex;gap:6px;flex-wrap:wrap}
+.bc-cost-item{
+  font-size:10px;font-weight:800;
+  background:rgba(0,0,0,.3);border-radius:6px;padding:2px 6px;
+}
+.bc-cost-item.gold{color:var(--gold)}
+.bc-cost-item.wood{color:var(--wood2)}
+.bc-cost-item.energy{color:var(--energy)}
+.bc-tier{
+  position:absolute;top:8px;right:8px;
+  font-size:9px;font-weight:900;border-radius:6px;padding:2px 6px;
+}
+.bc-tier.t1{background:rgba(100,200,100,.15);color:#4caf50}
+.bc-tier.t2{background:rgba(100,150,255,.15);color:#6699ff}
+.bc-tier.t3{background:rgba(255,100,100,.15);color:var(--glory)}
+.bc-locked-msg{font-size:9px;color:var(--muted);font-weight:700;margin-top:4px}
+
+/* ── QUEST VIEW ── */
+.quest-list{display:flex;flex-direction:column;gap:10px;max-width:560px}
+.quest-card{
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:16px;
+  display:flex;align-items:center;gap:14px;
+  transition:all .25s;
+}
+.quest-card:hover{border-color:var(--border);background:rgba(255,215,0,.04)}
+.quest-card.done{opacity:.6;border-color:rgba(100,200,100,.2)}
+.quest-icon{font-size:32px;flex-shrink:0}
+.quest-body{flex:1}
+.quest-name{font-size:14px;font-weight:800;color:#fff;margin-bottom:3px}
+.quest-desc{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px}
+.quest-progress{height:6px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.quest-progress-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s ease}
+.quest-progress-bar.energy{background:linear-gradient(90deg,var(--energy),#0099cc)}
+.quest-rewards{display:flex;gap:6px;margin-top:8px}
+.quest-reward{font-size:10px;font-weight:800;background:rgba(0,0,0,.3);border-radius:6px;padding:2px 8px}
+.quest-reward.gold{color:var(--gold)}
+.quest-reward.wood{color:var(--wood2)}
+.quest-reward.energy{color:var(--energy)}
+.quest-btn{
+  padding:8px 14px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#000;font-family:'Nunito',sans-serif;
+  font-size:11px;font-weight:900;cursor:pointer;
+  white-space:nowrap;transition:all .2s;flex-shrink:0;
+}
+.quest-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.quest-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;background:#555;color:#888}
+
+/* ── SIDEBAR RIGHT ── */
+.sidebar-right{
+  background:rgba(0,0,0,.35);
+  border-left:1px solid var(--border);
+  overflow-y:auto;padding:16px 12px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.sidebar-right::-webkit-scrollbar{width:4px}
+.sidebar-right::-webkit-scrollbar-thumb{background:rgba(255,215,0,.2);border-radius:4px}
+
+/* Fortress stats */
+.fortress-stats{
+  background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(255,140,0,.05));
+  border:1px solid rgba(255,215,0,.2);
+  border-radius:14px;padding:14px;
+}
+.fs-title{
+  font-family:'Cinzel',serif;font-size:11px;font-weight:700;
+  color:var(--gold);letter-spacing:1px;margin-bottom:12px;
+}
+.fs-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.fs-label{font-size:11px;color:var(--muted);font-weight:700}
+.fs-val{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#fff}
+.fs-bar{height:5px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;margin-bottom:10px}
+.fs-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+
+/* War status */
+.war-card{
+  background:linear-gradient(135deg,rgba(255,64,129,.08),rgba(200,0,80,.05));
+  border:1px solid rgba(255,64,129,.2);
+  border-radius:14px;padding:14px;
+}
+.war-title{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--glory);letter-spacing:1px;margin-bottom:10px}
+.class-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.class-flag{font-size:20px}
+.class-info{flex:1}
+.class-name{font-size:11px;font-weight:800;color:#fff}
+.class-bar{height:5px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;margin-top:3px}
+.class-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.class-bar-fill.c4a{background:linear-gradient(90deg,#ff6b6b,#ee0979)}
+.class-bar-fill.c4b{background:linear-gradient(90deg,#4facfe,#00f2fe)}
+.class-bar-fill.c4c{background:linear-gradient(90deg,#43e97b,#38f9d7)}
+.class-score{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--muted)}
+
+/* Activity feed */
+.activity-feed{display:flex;flex-direction:column;gap:7px}
+.activity-item{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;font-size:11px;
+}
+.ai-icon{font-size:16px;flex-shrink:0}
+.ai-text{color:var(--muted);font-weight:600;line-height:1.3}
+.ai-text strong{color:var(--text)}
+.ai-time{font-size:9px;color:rgba(255,255,255,.25);font-weight:700;margin-left:auto;flex-shrink:0}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  display:flex;align-items:center;justify-content:center;
+  z-index:100;backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:linear-gradient(135deg,#0d1428,#0a0f20);
+  border:1px solid var(--border);border-radius:20px;
+  padding:28px;max-width:400px;width:90%;
+  transform:scale(.9) translateY(20px);
+  transition:all .3s;
+}
+.modal-overlay.open .modal{transform:scale(1) translateY(0)}
+.modal-title{font-family:'Cinzel',serif;font-size:18px;font-weight:900;color:var(--gold);margin-bottom:6px}
+.modal-sub{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:20px}
+.modal-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.modal-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;text-align:center}
+.modal-stat-val{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:#fff}
+.modal-stat-label{font-size:10px;color:var(--muted);font-weight:700;margin-top:3px}
+.modal-cost{margin-bottom:20px}
+.modal-cost-title{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.modal-cost-row{display:flex;gap:8px}
+.modal-cost-chip{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 12px;border-radius:10px;
+  background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);
+  font-size:12px;font-weight:800;
+}
+.modal-cost-chip.gold{color:var(--gold);border-color:rgba(255,215,0,.2)}
+.modal-cost-chip.wood{color:var(--wood2);border-color:rgba(160,82,45,.2)}
+.modal-cost-chip.energy{color:var(--energy);border-color:rgba(0,229,255,.2)}
+.modal-cost-chip.insufficient{color:var(--red);text-decoration:line-through}
+.modal-btns{display:flex;gap:10px}
+.modal-btn{
+  flex:1;padding:12px;border:none;border-radius:10px;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s;
+}
+.modal-btn.confirm{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000}
+.modal-btn.confirm:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.modal-btn.confirm:disabled{background:#444;color:#666;cursor:not-allowed;transform:none}
+.modal-btn.cancel{background:rgba(255,255,255,.08);color:var(--text)}
+.modal-btn.cancel:hover{background:rgba(255,255,255,.12)}
+
+/* Cell select modal */
+.cell-select-grid{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:5px;
+  margin-bottom:16px;
+}
+.cell-select-item{
+  aspect-ratio:1;border-radius:8px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;font-size:10px;
+}
+.cell-select-item:hover{border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.06)}
+.cell-select-item.taken{opacity:.4;cursor:not-allowed}
+.cell-select-item.selected{border-color:var(--gold);background:rgba(255,215,0,.1)}
+.cell-select-item .cs-emoji{font-size:18px}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:rgba(10,15,30,.95);border:1px solid var(--border);
+  border-radius:12px;padding:12px 20px;
+  font-size:13px;font-weight:700;color:#fff;
+  z-index:200;transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.5);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:rgba(76,175,80,.4);color:#81c784}
+.toast.error{border-color:rgba(244,67,54,.4);color:#ef9a9a}
+.toast.warning{border-color:rgba(255,152,0,.4);color:#ffb74d}
+
+/* ── PAGES ── */
+.page{display:none}
+.page.active{display:block}
+
+/* Animate resource gain */
+@keyframes floatUp{
+  0%{opacity:1;transform:translateY(0)}
+  100%{opacity:0;transform:translateY(-60px)}
+}
+.float-gain{
+  position:fixed;font-size:16px;font-weight:900;pointer-events:none;
+  animation:floatUp 1.2s ease forwards;z-index:300;
+  text-shadow:0 0 10px currentColor;
+}
+
+/* Responsive */
+@media(max-width:900px){
+  .app{grid-template-columns:1fr;grid-template-rows:64px auto 1fr}
+  .sidebar-left,.sidebar-right{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="tb-logo"><span>🏰</span> English Fortress</div>
+    <div class="tb-divider"></div>
+    <div class="tb-user">
+      <div class="tb-avatar" id="tbAvatar" style="background:#1a237e">?</div>
+      <div>
+        <div class="tb-name" id="tbName">Loading...</div>
+        <div class="tb-class" id="tbClass">—</div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="resources-row">
+        <div class="res-pill gold"><span class="res-icon">🪙</span><span class="res-val" id="resGold">0</span></div>
+        <div class="res-pill wood"><span class="res-icon">🪵</span><span class="res-val" id="resWood">0</span></div>
+        <div class="res-pill energy"><span class="res-icon">⚡</span><span class="res-val" id="resEnergy">0</span></div>
+        <div class="res-pill glory"><span class="res-icon">🏆</span><span class="res-val" id="resGlory">0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR LEFT -->
+  <div class="sidebar-left">
+    <div class="section-title">Navigation</div>
+    <button class="nav-btn active" id="nav-base" onclick="showPage('base')">
+      <span class="nav-icon">🏰</span> My Fortress
+    </button>
+    <button class="nav-btn" id="nav-build" onclick="showPage('build')">
+      <span class="nav-icon">🔨</span> Build Shop
+    </button>
+    <button class="nav-btn" id="nav-quests" onclick="showPage('quests')">
+      <span class="nav-icon">📜</span> Daily Quests
+      <span class="nav-badge" id="questBadge">3</span>
+    </button>
+    <button class="nav-btn" id="nav-war" onclick="showPage('war')">
+      <span class="nav-icon">⚔️</span> War Map
+      <span class="nav-badge" style="background:#ff8c00">Soon</span>
+    </button>
+    <button class="nav-btn" id="nav-rank" onclick="showPage('rank')">
+      <span class="nav-icon">📊</span> Rankings
+    </button>
+
+    <div style="margin-top:auto"></div>
+
+    <!-- Streak Card -->
+    <div class="streak-card">
+      <div class="streak-title">🔥 Login Streak</div>
+      <div class="streak-days" id="streakDays"></div>
+      <button class="streak-claim" id="streakClaimBtn" onclick="claimStreak()">⚡ Claim Daily Reward</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- MY FORTRESS PAGE -->
+    <div class="page active" id="page-base">
+      <div class="page-heading">🏰 My Fortress</div>
+      <div class="page-sub" id="fortressSubtitle">Your stronghold — tap a cell to manage buildings</div>
+      <div class="base-grid" id="baseGrid"></div>
+      <div class="build-panel">
+        <div class="build-panel-title">🔨 Quick Build — Select an empty cell above, then choose a building</div>
+        <div id="selectedCellInfo" style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:12px">No cell selected</div>
+        <div class="build-tabs">
+          <button class="build-tab active" onclick="switchBuildTab('defense')">🛡️ Defense</button>
+          <button class="build-tab" onclick="switchBuildTab('resource')">⛏️ Resource</button>
+          <button class="build-tab" onclick="switchBuildTab('army')">⚔️ Army</button>
+        </div>
+        <div class="buildings-grid" id="quickBuildGrid"></div>
+      </div>
+    </div>
+
+    <!-- BUILD SHOP PAGE -->
+    <div class="page" id="page-build">
+      <div class="page-heading">🔨 Build Shop</div>
+      <div class="page-sub">Unlock and construct buildings to strengthen your fortress</div>
+      <div class="build-tabs" style="max-width:560px;margin-bottom:16px">
+        <button class="build-tab active" onclick="switchShopTab('defense')">🛡️ Defense</button>
+        <button class="build-tab" onclick="switchShopTab('resource')">⛏️ Resource</button>
+        <button class="build-tab" onclick="switchShopTab('army')">⚔️ Army</button>
+        <button class="build-tab" onclick="switchShopTab('special')">✨ Special</button>
+      </div>
+      <div class="buildings-grid" style="max-width:560px" id="shopGrid"></div>
+    </div>
+
+    <!-- DAILY QUESTS PAGE -->
+    <div class="page" id="page-quests">
+      <div class="page-heading">📜 Daily Quests</div>
+      <div class="page-sub">Complete quests to earn resources. Resets daily at midnight!</div>
+      <div class="quest-list" id="questList"></div>
+    </div>
+
+    <!-- WAR MAP PAGE -->
+    <div class="page" id="page-war">
+      <div class="page-heading">⚔️ War Map</div>
+      <div class="page-sub">Territory control — coming in Phase 2!</div>
+      <div style="text-align:center;padding:60px 20px">
+        <div style="font-size:80px;margin-bottom:16px">🗺️</div>
+        <div style="font-family:'Cinzel',serif;font-size:20px;color:var(--gold);margin-bottom:8px">Battle Map Unlocking Soon</div>
+        <div style="font-size:13px;color:var(--muted);max-width:360px;margin:0 auto;line-height:1.6">
+          Build your fortress to Level 3 to unlock Territory Wars.<br>
+          Attack classmates, claim zones, and lead your class to victory!
+        </div>
+        <div style="margin-top:24px;display:flex;gap:10px;justify-content:center">
+          <div class="res-pill gold" style="padding:8px 16px"><span class="res-icon">🏰</span> Fortress Lv <span class="res-val" id="warFortressLv">1</span> / 3</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RANKINGS PAGE -->
+    <div class="page" id="page-rank">
+      <div class="page-heading">📊 Rankings</div>
+      <div class="page-sub">Top fortresses across all classes</div>
+      <div id="rankList" style="max-width:560px;display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- SIDEBAR RIGHT -->
+  <div class="sidebar-right">
+
+    <!-- Fortress Stats -->
+    <div class="fortress-stats">
+      <div class="fs-title">🏰 Fortress Stats</div>
+      <div class="fs-row"><span class="fs-label">Level</span><span class="fs-val" id="fsLevel">1</span></div>
+      <div class="fs-row"><span class="fs-label">Buildings</span><span class="fs-val" id="fsBuildings">1 / 25</span></div>
+      <div class="fs-row"><span class="fs-label">Attack Power</span><span class="fs-val" id="fsAtk">⚔️ 0</span></div>
+      <div class="fs-row"><span class="fs-label">Defense</span><span class="fs-val" id="fsDef">🛡️ 10</span></div>
+      <div class="fs-label" style="margin-bottom:5px">XP to next level</div>
+      <div class="fs-bar"><div class="fs-bar-fill" id="fsXpBar" style="width:0%"></div></div>
+      <div style="font-size:10px;color:var(--muted);font-weight:700"><span id="fsXp">0</span> / <span id="fsXpNext">100</span> XP</div>
+    </div>
+
+    <!-- Class War Standing -->
+    <div class="war-card">
+      <div class="war-title">⚔️ Class War</div>
+      <div class="class-row">
+        <div class="class-flag">🔴</div>
+        <div class="class-info">
+          <div class="class-name">Class 4A</div>
+          <div class="class-bar"><div class="class-bar-fill c4a" id="bar4a" style="width:0%"></div></div>
+        </div>
+        <div class="class-score" id="score4a">0</div>
+      </div>
+      <div class="class-row">
+        <div class="class-flag">🔵</div>
+        <div class="class-info">
+          <div class="class-name">Class 4B</div>
+          <div class="class-bar"><div class="class-bar-fill c4b" id="bar4b" style="width:0%"></div></div>
+        </div>
+        <div class="class-score" id="score4b">0</div>
+      </div>
+      <div class="class-row">
+        <div class="class-flag">🟢</div>
+        <div class="class-info">
+          <div class="class-name">Class 4C</div>
+          <div class="class-bar"><div class="class-bar-fill c4c" id="bar4c" style="width:0%"></div></div>
+        </div>
+        <div class="class-score" id="score4c">0</div>
+      </div>
+    </div>
+
+    <!-- Section Title -->
+    <div class="section-title">Recent Activity</div>
+
+    <!-- Activity Feed -->
+    <div class="activity-feed" id="activityFeed">
+      <div class="activity-item"><span class="ai-icon">⏳</span><span class="ai-text">Loading activity...</span></div>
+    </div>
+
+  </div><!-- /sidebar-right -->
+</div><!-- /app -->
+
+<!-- Build Confirm Modal -->
+<div class="modal-overlay" id="buildModal">
+  <div class="modal">
+    <div style="font-size:40px;text-align:center;margin-bottom:12px" id="modalEmoji">🏰</div>
+    <div class="modal-title" id="modalTitle">Build Tower</div>
+    <div class="modal-sub" id="modalSub">Increases your fortress defense</div>
+    <div class="modal-info">
+      <div class="modal-stat"><div class="modal-stat-val" id="modalAtk">+0</div><div class="modal-stat-label">Attack</div></div>
+      <div class="modal-stat"><div class="modal-stat-val" id="modalDef">+0</div><div class="modal-stat-label">Defense</div></div>
+      <div class="modal-stat"><div class="modal-stat-val" id="modalHp">+0</div><div class="modal-stat-label">HP</div></div>
+      <div class="modal-stat"><div class="modal-stat-val" id="modalXp">+0</div><div class="modal-stat-label">XP</div></div>
+    </div>
+    <div class="modal-cost">
+      <div class="modal-cost-title">Build Cost</div>
+      <div class="modal-cost-row" id="modalCostRow"></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;font-weight:800;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Place at cell:</div>
+      <div class="cell-select-grid" id="cellSelectGrid"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn confirm" id="modalConfirm" onclick="confirmBuild()">⚒️ Build!</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script>
+// ═══════════════════════════════════════
+// FIREBASE CONFIG
+// ═══════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",
+  authDomain: "english-island-cps.firebaseapp.com",
+  databaseURL: "https://english-island-cps-default-rtdb.firebaseio.com",
+  projectId: "english-island-cps",
+  storageBucket: "english-island-cps.firebasestorage.app",
+  messagingSenderId: "892743482834",
+  appId: "1:892743482834:web:6705bc3e3bc832cf749c0b"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ═══════════════════════════════════════
+// IDENTITY (from localStorage — same as your other portal pages)
+// ═══════════════════════════════════════
+const CLASS_COLORS = {
+  '4A':'#ee0979','4B':'#00b4db','4C':'#38f9d7',
+  '4D':'#f7971e','4E':'#a18cd1','4F':'#56ab2f'
+};
+
+let me = {name:'', cls:''};
+
+  const stored = localStorage.getItem('p4_student');
+  if(stored){
+    try{
+      const p = JSON.parse(stored);
+      me.name = p.name || p.studentName || '';
+      me.cls  = p.class || p.className || '';
+    }catch(e){
+      me.name = stored; me.cls = '';
+    }
+  }
+  if(!me.name){
+    me.name = 'Student'; me.cls = '4A';
+  }
+
+  // Update topbar
+  const initials = me.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const col = CLASS_COLORS[me.cls] || '#3f51b5';
+  document.getElementById('tbAvatar').textContent = initials;
+  document.getElementById('tbAvatar').style.background = col;
+  document.getElementById('tbName').textContent = me.name;
+  document.getElementById('tbClass').textContent = `Class ${me.cls}`;
+
+  initGame();
+
+// ═══════════════════════════════════════
+// GAME DATA
+// ═══════════════════════════════════════
+
+// Building definitions
+const BUILDINGS = {
+  // ── DEFENSE ──
+  wooden_wall:  {id:'wooden_wall',  name:'Wooden Wall',   emoji:'🪵', cat:'defense', tier:1, desc:'Basic outer wall. A fortress starts here.',    cost:{gold:50,wood:30},       stats:{def:5,atk:0,hp:20,xp:15}},
+  arrow_tower:  {id:'arrow_tower',  name:'Arrow Tower',   emoji:'🏹', cat:'defense', tier:1, desc:'Rains arrows on attackers. Quick to build.',    cost:{gold:80,wood:40},       stats:{def:8,atk:5,hp:30,xp:20}},
+  stone_wall:   {id:'stone_wall',   name:'Stone Wall',    emoji:'🧱', cat:'defense', tier:2, desc:'Heavy fortification. Hard to breach.',           cost:{gold:150,wood:80},      stats:{def:15,atk:0,hp:60,xp:35}, requires:{buildings:2}},
+  cannon:       {id:'cannon',       name:'Cannon',        emoji:'💣', cat:'defense', tier:2, desc:'Devastating AoE damage. Tier 2 power.',          cost:{gold:200,wood:100},     stats:{def:5,atk:20,hp:40,xp:45}, requires:{buildings:3}},
+  moat:         {id:'moat',         name:'Moat',          emoji:'💧', cat:'defense', tier:2, desc:'Slows enemy troops. Requires 3 buildings.',      cost:{gold:180,wood:60},      stats:{def:20,atk:0,hp:0,xp:40}, requires:{buildings:3}},
+  iron_fortress:{id:'iron_fortress',name:'Iron Fortress', emoji:'🏯', cat:'defense', tier:3, desc:'The ultimate wall. Requires fortress Lv 3.',     cost:{gold:500,wood:300,energy:50}, stats:{def:40,atk:0,hp:150,xp:100}, requires:{level:3}},
+  dragon_tower: {id:'dragon_tower', name:'Dragon Tower',  emoji:'🐉', cat:'defense', tier:3, desc:'Breathes fire. Devastating attack power.',       cost:{gold:600,wood:200,energy:80}, stats:{def:20,atk:50,hp:80,xp:120}, requires:{level:3}},
+
+  // ── RESOURCE ──
+  gold_mine:    {id:'gold_mine',    name:'Gold Mine',     emoji:'⛏️', cat:'resource', tier:1, desc:'Generates +10 Gold every 30 minutes.',         cost:{gold:60,wood:40},       stats:{def:0,atk:0,hp:20,xp:15}, passive:{type:'gold',rate:10}},
+  lumber_yard:  {id:'lumber_yard',  name:'Lumber Yard',   emoji:'🌲', cat:'resource', tier:1, desc:'Generates +8 Wood every 30 minutes.',           cost:{gold:40,wood:20},       stats:{def:0,atk:0,hp:20,xp:12}, passive:{type:'wood',rate:8}},
+  energy_lab:   {id:'energy_lab',   name:'Energy Lab',    emoji:'⚗️', cat:'resource', tier:2, desc:'Generates +5 Energy every hour.',               cost:{gold:200,energy:30},    stats:{def:0,atk:0,hp:30,xp:40}, requires:{buildings:4}, passive:{type:'energy',rate:5}},
+  market:       {id:'market',       name:'Market',        emoji:'🏪', cat:'resource', tier:2, desc:'Trade resources. +20% resource efficiency.',    cost:{gold:180,wood:80},      stats:{def:0,atk:0,hp:25,xp:35}, requires:{buildings:3}},
+
+  // ── ARMY ──
+  barracks:     {id:'barracks',     name:'Barracks',      emoji:'⚔️', cat:'army',    tier:1, desc:'Trains soldiers for battle. Start here.',       cost:{gold:100,wood:60},      stats:{def:0,atk:10,hp:40,xp:25}},
+  stable:       {id:'stable',       name:'Stable',        emoji:'🐴', cat:'army',    tier:2, desc:'Train cavalry. Fast, high attack units.',       cost:{gold:220,wood:100},     stats:{def:0,atk:25,hp:50,xp:50}, requires:{buildings:3}},
+  siege_works:  {id:'siege_works',  name:'Siege Works',   emoji:'🪃', cat:'army',    tier:3, desc:'Builds catapults and battering rams.',           cost:{gold:400,wood:250,energy:40}, stats:{def:0,atk:40,hp:60,xp:90}, requires:{level:3}},
+
+  // ── SPECIAL ──
+  great_library:{id:'great_library',name:'Great Library', emoji:'📚', cat:'special', tier:2, desc:'Boosts XP from English quests by +50%.',        cost:{gold:250,energy:40},    stats:{def:0,atk:0,hp:30,xp:60}, requires:{buildings:4}},
+  wizard_tower: {id:'wizard_tower', name:'Wizard Tower',  emoji:'🧙', cat:'special', tier:3, desc:'Magic defence. Deflects 20% of attacks.',        cost:{gold:500,energy:100},   stats:{def:30,atk:20,hp:80,xp:110}, requires:{level:3}},
+};
+
+// Quest definitions
+const QUEST_DEFS = [
+  {id:'q_login',   name:'Daily Login',          emoji:'☀️',  desc:'Log in today to claim your daily reward.',           type:'login',    target:1,  rewards:{wood:50}},
+  {id:'q_gc',      name:'Grammar Cloze Master', emoji:'✏️',  desc:'Score 8+ on Grammar Cloze component.',               type:'component',component:'GC', target:1,  rewards:{gold:80,xp:20}},
+  {id:'q_rs',      name:'Reported Speech Pro',  emoji:'💬',  desc:'Complete a Reported Speech quiz.',                   type:'component',component:'RS', target:1,  rewards:{gold:80,xp:20}},
+  {id:'q_sp',      name:'Spelling Champion',    emoji:'🔤',  desc:'Complete a Spelling quiz.',                          type:'component',component:'Sp', target:1,  rewards:{gold:60,xp:15}},
+  {id:'q_vt',      name:'Visual Text Explorer', emoji:'🖼️', desc:'Complete a Visual Text quiz.',                       type:'component',component:'VT', target:1,  rewards:{gold:70,xp:15}},
+  {id:'q_syn',     name:'Synthesis Star',       emoji:'🌟',  desc:'Complete a Synthesis & Transformation exercise.',    type:'component',component:'Syn',target:1,  rewards:{gold:100,energy:20}},
+  {id:'q_build1',  name:'Builder',              emoji:'🔨',  desc:'Construct 1 new building today.',                    type:'build',    target:1,  rewards:{wood:40,gold:30}},
+  {id:'q_build3',  name:'Master Builder',       emoji:'🏗️', desc:'Construct 3 buildings total in your fortress.',      type:'total_build',target:3, rewards:{gold:100,energy:15}},
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let state = {
+  resources: {gold:150, wood:100, energy:0, glory:0},
+  fortress: {
+    level:1, xp:0,
+    grid: Array(25).fill(null), // 5x5 = 25 cells, index 12 is centre HQ
+    atk:0, def:10, hp:100
+  },
+  streak: {count:0, lastClaim:''},
+  quests: {},
+  totalBuildings: 1, // HQ counts as 1
+};
+state.fortress.grid[12] = {id:'hq', name:'Headquarters', emoji:'🏰', tier:0, stats:{def:10,atk:0,hp:100,xp:0}};
+
+let selectedCell = null;
+let currentBuildTab = 'defense';
+let currentShopTab  = 'defense';
+let pendingBuild    = null;
+
+// ═══════════════════════════════════════
+// FIREBASE SYNC
+// ═══════════════════════════════════════
+const playerKey = () => me.name.replace(/[.#$[\]/\s]/g, '_');
+
+function saveState(){
+  if(!me.name) return;
+  db.ref(`fortress/players/${playerKey()}`).set({
+    name: me.name,
+    cls:  me.cls,
+    resources: state.resources,
+    fortress: state.fortress,
+    streak: state.streak,
+    quests: state.quests,
+    totalBuildings: state.totalBuildings,
+    updatedAt: Date.now()
+  }).catch(e => console.warn('Save error:', e));
+}
+
+function loadState(){
+  db.ref(`fortress/players/${playerKey()}`).once('value').then(snap => {
+    if(snap.exists()){
+      const d = snap.val();
+      if(d.resources) state.resources = {...state.resources, ...d.resources};
+      if(d.fortress){
+        state.fortress = {...state.fortress, ...d.fortress};
+        // Restore grid (Firebase strips nulls from arrays — rebuild)
+        if(d.fortress.grid){
+          state.fortress.grid = Array(25).fill(null);
+          Object.keys(d.fortress.grid).forEach(i => {
+            state.fortress.grid[parseInt(i)] = d.fortress.grid[i];
+          });
+          if(!state.fortress.grid[12])
+            state.fortress.grid[12] = {id:'hq', name:'Headquarters', emoji:'🏰', tier:0, stats:{def:10,atk:0,hp:100,xp:0}};
+        }
+      }
+      if(d.streak)  state.streak  = d.streak;
+      if(d.quests)  state.quests  = d.quests;
+      if(d.totalBuildings) state.totalBuildings = d.totalBuildings;
+    }
+    renderAll();
+    loadClassWar();
+    loadRankings();
+    loadActivityFeed();
+    autoCollectPassive();
+  }).catch(e => {
+    console.warn('Load error:', e);
+    renderAll();
+  });
+}
+
+// ═══════════════════════════════════════
+// PASSIVE RESOURCE GENERATION
+// ═══════════════════════════════════════
+function autoCollectPassive(){
+  const now = Date.now();
+  const lastCollect = parseInt(localStorage.getItem('ef_lastCollect') || '0');
+  const elapsed = (now - lastCollect) / 1000 / 60; // minutes
+  if(elapsed < 1) return;
+
+  let gained = {gold:0, wood:0, energy:0};
+  state.fortress.grid.forEach(cell => {
+    if(!cell || !BUILDINGS[cell.id] || !BUILDINGS[cell.id].passive) return;
+    const b = BUILDINGS[cell.id];
+    const cycles = Math.floor(elapsed / (b.passive.type === 'energy' ? 60 : 30));
+    if(cycles > 0 && b.passive.rate){
+      gained[b.passive.type] = (gained[b.passive.type]||0) + b.passive.rate * cycles;
+    }
+  });
+
+  const total = Object.values(gained).reduce((a,b)=>a+b,0);
+  if(total > 0){
+    Object.keys(gained).forEach(r => { if(gained[r]) addResource(r, gained[r], false); });
+    showToast(`⛏️ Passive income: +${gained.gold>0?'🪙'+gained.gold+' ':''} ${gained.wood>0?'🪵'+gained.wood+' ':''} ${gained.energy>0?'⚡'+gained.energy:''}`, 'success');
+    saveState();
+    addActivity(`${me.name} collected passive resources`);
+  }
+  localStorage.setItem('ef_lastCollect', now.toString());
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+function initGame(){
+  loadState();
+  renderStreakDays();
+  setInterval(autoCollectPassive, 5 * 60 * 1000); // check every 5 min
+}
+
+// ═══════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════
+function renderAll(){
+  renderResources();
+  renderBaseGrid();
+  renderQuickBuild();
+  renderQuests();
+  renderFortressStats();
+  renderStreakDays();
+  updateQuestBadge();
+}
+
+function renderResources(){
+  document.getElementById('resGold').textContent   = state.resources.gold;
+  document.getElementById('resWood').textContent   = state.resources.wood;
+  document.getElementById('resEnergy').textContent = state.resources.energy;
+  document.getElementById('resGlory').textContent  = state.resources.glory;
+}
+
+// ═══════════════════════════════════════
+// BASE GRID
+// ═══════════════════════════════════════
+function renderBaseGrid(){
+  const grid = document.getElementById('baseGrid');
+  grid.innerHTML = '';
+  const count = state.fortress.grid.filter(c=>c).length;
+  document.getElementById('fortressSubtitle').textContent =
+    `${count} building${count!==1?'s':''} — tap a cell to build or upgrade`;
+
+  state.fortress.grid.forEach((cell, i) => {
+    const div = document.createElement('div');
+    div.className = 'base-cell ' + (cell ? 'occupied' : 'empty') + (i===12?' hq':'');
+    if(cell){
+      div.innerHTML = `
+        <div class="cell-emoji">${cell.emoji}</div>
+        <div class="cell-name">${cell.name.split(' ')[0]}</div>
+        ${cell.tier > 0 ? `<div class="cell-level">T${cell.tier}</div>` : ''}
+      `;
+    } else {
+      div.innerHTML = `<div class="cell-emoji">➕</div>`;
+    }
+    div.onclick = () => selectCell(i);
+    grid.appendChild(div);
+  });
+}
+
+function selectCell(i){
+  if(i === 12) { showToast('🏰 Headquarters — cannot replace!','warning'); return; }
+  selectedCell = i;
+  const cell = state.fortress.grid[i];
+  document.getElementById('selectedCellInfo').textContent =
+    cell ? `Cell ${i+1}: ${cell.emoji} ${cell.name} — click a building to upgrade or replace` : `Cell ${i+1}: Empty — choose a building below to build`;
+
+  // Highlight selected
+  document.querySelectorAll('.base-cell').forEach((el,idx) => {
+    el.style.outline = idx === i ? '2px solid var(--gold)' : 'none';
+  });
+  renderQuickBuild();
+}
+
+// ═══════════════════════════════════════
+// BUILD TABS
+// ═══════════════════════════════════════
+function switchBuildTab(cat){
+  currentBuildTab = cat;
+  document.querySelectorAll('#page-base .build-tab').forEach(t => {
+    t.classList.toggle('active', t.textContent.toLowerCase().includes(cat) ||
+      (cat==='defense'&&t.textContent.includes('Defense')) ||
+      (cat==='resource'&&t.textContent.includes('Resource')) ||
+      (cat==='army'&&t.textContent.includes('Army')));
+  });
+  renderQuickBuild();
+}
+
+function switchShopTab(cat){
+  currentShopTab = cat;
+  document.querySelectorAll('#page-build .build-tab').forEach(t => {
+    t.classList.toggle('active', t.textContent.toLowerCase().includes(cat) ||
+      (cat==='defense'&&t.textContent.includes('Defense')) ||
+      (cat==='resource'&&t.textContent.includes('Resource')) ||
+      (cat==='army'&&t.textContent.includes('Army')) ||
+      (cat==='special'&&t.textContent.includes('Special')));
+  });
+  renderShopGrid();
+}
+
+function renderQuickBuild(){
+  const grid = document.getElementById('quickBuildGrid');
+  const buildings = Object.values(BUILDINGS).filter(b=>b.cat===currentBuildTab);
+  grid.innerHTML = buildings.map(b => buildingCardHTML(b, true)).join('');
+}
+
+function renderShopGrid(){
+  const grid = document.getElementById('shopGrid');
+  const buildings = Object.values(BUILDINGS).filter(b=>b.cat===currentShopTab);
+  grid.innerHTML = buildings.map(b => buildingCardHTML(b, false)).join('');
+}
+
+function buildingCardHTML(b, compact){
+  const locked = isLocked(b);
+  const canAfford = canAffordBuilding(b);
+  const tierLabel = ['','T1','T2','T3'][b.tier] || '';
+  const tierClass = ['','t1','t2','t3'][b.tier] || '';
+
+  let lockReason = '';
+  if(b.requires){
+    if(b.requires.level && state.fortress.level < b.requires.level)
+      lockReason = `Fortress Lv ${b.requires.level} needed`;
+    else if(b.requires.buildings && state.totalBuildings < b.requires.buildings)
+      lockReason = `Need ${b.requires.buildings} buildings`;
+  }
+
+  const costHtml = Object.entries(b.cost).map(([r,v]) => {
+    const have = state.resources[r] || 0;
+    const insuf = have < v ? 'insufficient' : '';
+    const icons = {gold:'🪙',wood:'🪵',energy:'⚡'};
+    return `<span class="bc-cost-item ${r} ${insuf}">${icons[r]||''} ${v}</span>`;
+  }).join('');
+
+  return `<div class="building-card ${locked?'locked':''}" onclick="${locked?'showToast(\"'+lockReason+'\")':`openBuildModal('${b.id}')`}">
+    <div class="bc-emoji">${b.emoji}</div>
+    <div class="bc-name">${b.name}</div>
+    <div class="bc-desc">${b.desc}</div>
+    <div class="bc-cost">${costHtml}</div>
+    ${lockReason ? `<div class="bc-locked-msg">🔒 ${lockReason}</div>` : ''}
+    <span class="bc-tier ${tierClass}">${tierLabel}</span>
+  </div>`;
+}
+
+function isLocked(b){
+  if(!b.requires) return false;
+  if(b.requires.level && state.fortress.level < b.requires.level) return true;
+  if(b.requires.buildings && state.totalBuildings < b.requires.buildings) return true;
+  return false;
+}
+
+function canAffordBuilding(b){
+  return Object.entries(b.cost).every(([r,v]) => (state.resources[r]||0) >= v);
+}
+
+// ═══════════════════════════════════════
+// BUILD MODAL
+// ═══════════════════════════════════════
+function openBuildModal(buildingId){
+  const b = BUILDINGS[buildingId];
+  if(!b) return;
+  pendingBuild = buildingId;
+
+  document.getElementById('modalEmoji').textContent  = b.emoji;
+  document.getElementById('modalTitle').textContent  = b.name;
+  document.getElementById('modalSub').textContent    = b.desc;
+  document.getElementById('modalAtk').textContent    = '+'+b.stats.atk;
+  document.getElementById('modalDef').textContent    = '+'+b.stats.def;
+  document.getElementById('modalHp').textContent     = '+'+b.stats.hp;
+  document.getElementById('modalXp').textContent     = '+'+b.stats.xp;
+
+  // Cost row
+  const icons = {gold:'🪙',wood:'🪵',energy:'⚡'};
+  document.getElementById('modalCostRow').innerHTML = Object.entries(b.cost).map(([r,v]) => {
+    const insuf = (state.resources[r]||0) < v ? 'insufficient' : '';
+    return `<div class="modal-cost-chip ${r} ${insuf}">${icons[r]||r} ${v}</div>`;
+  }).join('');
+
+  // Cell grid
+  renderCellSelectGrid();
+
+  // Enable/disable confirm
+  const canBuild = canAffordBuilding(b) && (selectedCell !== null);
+  document.getElementById('modalConfirm').disabled = !canBuild;
+
+  document.getElementById('buildModal').classList.add('open');
+}
+
+function renderCellSelectGrid(){
+  const grid = document.getElementById('cellSelectGrid');
+  grid.innerHTML = state.fortress.grid.map((cell, i) => {
+    if(i === 12) return `<div class="cell-select-item taken"><span class="cs-emoji">🏰</span></div>`;
+    const sel = selectedCell === i ? 'selected' : '';
+    return `<div class="cell-select-item ${cell?'taken':''} ${sel}" onclick="selectModalCell(${i})">
+      <span class="cs-emoji">${cell ? cell.emoji : '➕'}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectModalCell(i){
+  if(state.fortress.grid[i] && i!==12) { /* allow replacing */ }
+  selectedCell = i;
+  renderCellSelectGrid();
+  const b = BUILDINGS[pendingBuild];
+  if(b) document.getElementById('modalConfirm').disabled = !canAffordBuilding(b);
+}
+
+function closeModal(){
+  document.getElementById('buildModal').classList.remove('open');
+  pendingBuild = null;
+}
+
+function confirmBuild(){
+  if(!pendingBuild || selectedCell === null) return;
+  const b = BUILDINGS[pendingBuild];
+  if(!b || !canAffordBuilding(b)) { showToast('❌ Not enough resources!','error'); return; }
+
+  // Deduct resources
+  Object.entries(b.cost).forEach(([r,v]) => { state.resources[r] = (state.resources[r]||0) - v; });
+
+  // Place building
+  state.fortress.grid[selectedCell] = {
+    id: b.id, name: b.name, emoji: b.emoji, tier: b.tier,
+    stats: b.stats, builtAt: Date.now()
+  };
+
+  // Update fortress stats
+  state.fortress.atk  = (state.fortress.atk||0) + b.stats.atk;
+  state.fortress.def  = (state.fortress.def||0) + b.stats.def;
+  state.fortress.hp   = (state.fortress.hp||0)  + b.stats.hp;
+  state.fortress.xp   = (state.fortress.xp||0)  + b.stats.xp;
+  state.totalBuildings++;
+
+  // Level up check
+  checkLevelUp();
+
+  // Quest progress
+  progressQuest('build', 1);
+  checkTotalBuildQuest();
+
+  // Save + refresh
+  saveState();
+  renderAll();
+  closeModal();
+  showToast(`✅ ${b.emoji} ${b.name} built!`, 'success');
+  showFloatGain(`+${b.stats.xp} XP`, '#ffd700');
+  addActivity(`${me.name} built ${b.emoji} ${b.name}`);
+  updateClassWar();
+}
+
+function checkLevelUp(){
+  const thresholds = [0,100,300,600,1000,1500];
+  const newLevel = thresholds.findIndex(t => state.fortress.xp < t);
+  const lv = newLevel === -1 ? 5 : Math.max(1, newLevel);
+  if(lv > state.fortress.level){
+    state.fortress.level = lv;
+    showToast(`🎉 Fortress levelled up to Level ${lv}!`, 'success');
+    addActivity(`${me.name}'s fortress reached Level ${lv}!`);
+  }
+}
+
+// ═══════════════════════════════════════
+// FORTRESS STATS SIDEBAR
+// ═══════════════════════════════════════
+function renderFortressStats(){
+  const lv = state.fortress.level;
+  document.getElementById('fsLevel').textContent    = lv;
+  document.getElementById('warFortressLv').textContent = lv;
+  const cnt = state.fortress.grid.filter(c=>c).length;
+  document.getElementById('fsBuildings').textContent = `${cnt} / 25`;
+  document.getElementById('fsAtk').textContent      = `⚔️ ${state.fortress.atk||0}`;
+  document.getElementById('fsDef').textContent      = `🛡️ ${state.fortress.def||10}`;
+  document.getElementById('fsXp').textContent       = state.fortress.xp||0;
+
+  const thresholds = [100,300,600,1000,1500];
+  const lvIdx = Math.min(lv-1, thresholds.length-1);
+  const prevXp = lvIdx > 0 ? thresholds[lvIdx-1] : 0;
+  const nextXp = thresholds[lvIdx] || 1500;
+  document.getElementById('fsXpNext').textContent   = nextXp;
+  const pct = Math.min(100, ((state.fortress.xp - prevXp) / (nextXp - prevXp)) * 100);
+  document.getElementById('fsXpBar').style.width    = pct + '%';
+}
+
+// ═══════════════════════════════════════
+// DAILY QUESTS
+// ═══════════════════════════════════════
+const today = () => new Date().toISOString().slice(0,10);
+
+function renderQuests(){
+  const list = document.getElementById('questList');
+  list.innerHTML = QUEST_DEFS.map(q => {
+    const doneKey = `${q.id}_${today()}`;
+    const done = state.quests[doneKey];
+    const prog = state.quests[`${q.id}_prog_${today()}`] || 0;
+    const pct = Math.min(100, (prog / q.target) * 100);
+    const rewardHtml = Object.entries(q.rewards).map(([r,v]) => {
+      const icons = {gold:'🪙',wood:'🪵',energy:'⚡',xp:'⭐'};
+      return `<span class="quest-reward ${r}">${icons[r]||''}+${v}</span>`;
+    }).join('');
+
+    return `<div class="quest-card ${done?'done':''}">
+      <div class="quest-icon">${q.emoji}</div>
+      <div class="quest-body">
+        <div class="quest-name">${q.name}</div>
+        <div class="quest-desc">${q.desc}</div>
+        <div class="quest-progress">
+          <div class="quest-progress-bar ${q.rewards.energy?'energy':''}" style="width:${pct}%"></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);font-weight:700;margin-top:4px">${prog}/${q.target}</div>
+        <div class="quest-rewards">${rewardHtml}</div>
+      </div>
+      <button class="quest-btn" ${done?'disabled':''} onclick="claimQuest('${q.id}')">
+        ${done ? '✅ Done' : prog >= q.target ? '🎁 Claim!' : '🔒'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function progressQuest(type, amount){
+  const key = `${type}_prog_${today()}`;
+  QUEST_DEFS.filter(q=>q.type===type).forEach(q => {
+    const progKey = `${q.id}_prog_${today()}`;
+    state.quests[progKey] = Math.min(q.target, (state.quests[progKey]||0) + amount);
+  });
+}
+
+function checkTotalBuildQuest(){
+  const q = QUEST_DEFS.find(q=>q.type==='total_build');
+  if(!q) return;
+  const progKey = `${q.id}_prog_${today()}`;
+  state.quests[progKey] = Math.min(q.target, state.totalBuildings);
+}
+
+function claimQuest(qid){
+  const q = QUEST_DEFS.find(x=>x.id===qid);
+  if(!q) return;
+  const doneKey = `${q.id}_${today()}`;
+  const progKey = `${q.id}_prog_${today()}`;
+  if(state.quests[doneKey]) return;
+  const prog = state.quests[progKey] || 0;
+  if(q.type === 'login') {
+    // Auto-complete login quest
+    state.quests[progKey] = 1;
+  }
+  if((state.quests[progKey]||0) < q.target) {
+    showToast(`Complete the quest first!`, 'warning'); return;
+  }
+
+  // Give rewards
+  Object.entries(q.rewards).forEach(([r,v]) => {
+    if(r !== 'xp') addResource(r, v);
+    else { state.fortress.xp = (state.fortress.xp||0) + v; checkLevelUp(); }
+  });
+
+  state.quests[doneKey] = true;
+  saveState();
+  renderAll();
+  const rewardStr = Object.entries(q.rewards).map(([r,v])=>`+${v} ${r}`).join(', ');
+  showToast(`🎉 Quest complete! ${rewardStr}`, 'success');
+  addActivity(`${me.name} completed quest: ${q.name}`);
+}
+
+function updateQuestBadge(){
+  const incomplete = QUEST_DEFS.filter(q => {
+    const doneKey = `${q.id}_${today()}`;
+    const progKey = `${q.id}_prog_${today()}`;
+    return !state.quests[doneKey] && (state.quests[progKey]||0) >= q.target;
+  }).length;
+  const badge = document.getElementById('questBadge');
+  badge.textContent = incomplete || QUEST_DEFS.filter(q=>!state.quests[`${q.id}_${today()}`]).length;
+}
+
+// ═══════════════════════════════════════
+// STREAK SYSTEM
+// ═══════════════════════════════════════
+function renderStreakDays(){
+  const days = document.getElementById('streakDays');
+  const labels = ['M','T','W','T','F','S','S'];
+  const claimed = state.streak.count || 0;
+  days.innerHTML = labels.map((d,i) => {
+    const cls = i < claimed ? 'done' : i === claimed ? 'today' : '';
+    return `<div class="streak-day ${cls}">${d}</div>`;
+  }).join('');
+  const btn = document.getElementById('streakClaimBtn');
+  const alreadyClaimed = state.streak.lastClaim === today();
+  btn.disabled = alreadyClaimed;
+  btn.textContent = alreadyClaimed ? '✅ Claimed Today!' : '⚡ Claim Daily Reward';
+}
+
+function claimStreak(){
+  if(state.streak.lastClaim === today()){ showToast('Already claimed today!','warning'); return; }
+  const count = (state.streak.count || 0);
+  const wood = 10 + count * 10; // Day 1=10, Day 2=20... Day 7=70
+  state.streak.count = (count + 1) % 7;
+  state.streak.lastClaim = today();
+
+  addResource('wood', wood);
+  state.fortress.xp = (state.fortress.xp||0) + 10;
+  checkLevelUp();
+
+  // Mark login quest
+  const lq = QUEST_DEFS.find(q=>q.type==='login');
+  if(lq){
+    state.quests[`${lq.id}_prog_${today()}`] = 1;
+  }
+
+  saveState();
+  renderAll();
+  showToast(`🔥 Day ${state.streak.count} streak! +🪵${wood} Wood`, 'success');
+  addActivity(`${me.name} claimed their Day ${state.streak.count} streak!`);
+}
+
+// ═══════════════════════════════════════
+// RESOURCE HELPER
+// ═══════════════════════════════════════
+function addResource(type, amount, animate=true){
+  state.resources[type] = (state.resources[type]||0) + amount;
+  renderResources();
+  if(animate){
+    const icons = {gold:'🪙',wood:'🪵',energy:'⚡',glory:'🏆'};
+    showFloatGain(`${icons[type]||''}+${amount}`, type==='gold'?'#ffd700':type==='wood'?'#cd853f':type==='energy'?'#00e5ff':'#ff4081');
+  }
+}
+
+// ═══════════════════════════════════════
+// CLASS WAR
+// ═══════════════════════════════════════
+function updateClassWar(){
+  // Sum this player's fortress XP into class total
+  const classKey = me.cls.replace(/\s/g,'');
+  db.ref(`fortress/classWar/${classKey}/${playerKey()}`).set({
+    name: me.name,
+    xp: state.fortress.xp || 0
+  });
+}
+
+function loadClassWar(){
+  db.ref('fortress/classWar').on('value', snap => {
+    if(!snap.exists()) return;
+    const data = snap.val();
+    const scores = {};
+    Object.entries(data).forEach(([cls, players]) => {
+      scores[cls] = Object.values(players).reduce((sum,p)=>(sum+(p.xp||0)),0);
+    });
+    const max = Math.max(...Object.values(scores), 1);
+    ['4A','4B','4C'].forEach(cls => {
+      const key = cls.replace(/\s/g,'');
+      const s = scores[key] || 0;
+      document.getElementById(`score${key}`).textContent = s;
+      document.getElementById(`bar${key}`).style.width = Math.round((s/max)*100)+'%';
+    });
+  });
+}
+
+// ═══════════════════════════════════════
+// RANKINGS
+// ═══════════════════════════════════════
+function loadRankings(){
+  db.ref('fortress/players').orderByChild('fortress/xp').limitToLast(20).on('value', snap => {
+    if(!snap.exists()) return;
+    const players = [];
+    snap.forEach(c => players.push(c.val()));
+    players.sort((a,b)=>((b.fortress&&b.fortress.xp)||0)-((a.fortress&&a.fortress.xp)||0));
+    const list = document.getElementById('rankList');
+    const medals = ['🥇','🥈','🥉'];
+    list.innerHTML = players.slice(0,20).map((p,i) => {
+      const lv = (p.fortress&&p.fortress.level)||1;
+      const xp = (p.fortress&&p.fortress.xp)||0;
+      const col = CLASS_COLORS[p.cls] || '#555';
+      const init = (p.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      return `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px">
+        <div style="font-size:18px;width:24px;text-align:center">${medals[i]||'#'+(i+1)}</div>
+        <div style="width:32px;height:32px;border-radius:8px;background:${col};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0">${init}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:800;color:#fff">${p.name}</div>
+          <div style="font-size:10px;color:var(--muted);font-weight:700">Class ${p.cls} · Lv ${lv}</div>
+        </div>
+        <div style="font-family:'Cinzel',serif;color:var(--gold);font-weight:700;font-size:14px">${xp} XP</div>
+      </div>`;
+    }).join('');
+  });
+}
+
+// ═══════════════════════════════════════
+// ACTIVITY FEED
+// ═══════════════════════════════════════
+const ACTIVITY_ICONS = {
+  built:'🔨', level:'🎉', streak:'🔥', quest:'📜', collected:'⛏️'
+};
+function addActivity(text){
+  db.ref('fortress/activity').push({text, ts:Date.now()});
+}
+function loadActivityFeed(){
+  db.ref('fortress/activity').limitToLast(20).on('value', snap => {
+    if(!snap.exists()) return;
+    const items = [];
+    snap.forEach(c => items.push(c.val()));
+    items.reverse();
+    const feed = document.getElementById('activityFeed');
+    feed.innerHTML = items.map(item => {
+      const t = new Date(item.ts).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
+      return `<div class="activity-item">
+        <span class="ai-icon">⚔️</span>
+        <span class="ai-text">${item.text}</span>
+        <span class="ai-time">${t}</span>
+      </div>`;
+    }).join('') || '<div class="activity-item"><span class="ai-text">No activity yet</span></div>';
+  });
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.id === 'nav-'+id);
+  });
+  if(id==='build') renderShopGrid();
+  if(id==='quests') renderQuests();
+}
+
+// ═══════════════════════════════════════
+// TOAST & VISUAL FX
+// ═══════════════════════════════════════
+let toastTimer;
+function showToast(msg, type=''){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function showFloatGain(text, color='#ffd700'){
+  const el = document.createElement('div');
+  el.className = 'float-gain';
+  el.textContent = text;
+  el.style.color = color;
+  el.style.left = (40 + Math.random()*20) + '%';
+  el.style.top  = '80px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1300);
+}
+
+// ═══════════════════════════════════════
+// PORTAL SCORE INTEGRATION
+// Listen for quiz scores from the English portal
+// ═══════════════════════════════════════
+window.addEventListener('message', (e) => {
+  if(!e.data || !e.data.component) return;
+  const comp = e.data.component;
+  const score = e.data.score || 0;
+  const total = e.data.total || 10;
+  const pct = score / total;
+
+  let gold = 0;
+  if(comp==='GC')  gold = Math.round(pct * 80);
+  if(comp==='RS')  gold = Math.round(pct * 80);
+  if(comp==='Sp')  gold = Math.round(pct * 60);
+  if(comp==='VT')  gold = Math.round(pct * 70);
+  if(comp==='Syn') gold = Math.round(pct * 100);
+
+  if(gold > 0){
+    addResource('gold', gold);
+    progressQuest('component', 1);
+    // Also mark specific component quest
+    const qmap = {GC:'q_gc',RS:'q_rs',Sp:'q_sp',VT:'q_vt',Syn:'q_syn'};
+    if(qmap[comp]){
+      const pk = `${qmap[comp]}_prog_${today()}`;
+      if(pct >= 0.8) state.quests[pk] = 1; // Need 80%+ to count
+    }
+    saveState();
+    renderAll();
+    showToast(`📚 ${comp} score received! +🪙${gold} Gold`, 'success');
+    addActivity(`${me.name} scored ${score}/${total} on ${comp} → +${gold} Gold`);
+  }
+});
+</script>
+</body>
+</html>
