@@ -416,9 +416,13 @@ function openGame(idx) {
   document.getElementById('modal-title').textContent = g.name;
   document.getElementById('modal-desc').textContent  = g.desc;
   const btn = document.getElementById('modal-btn');
-  btn.href = g.url;
+  btn.href = g.url
+    + '?hero=' + encodeURIComponent(me.name)
+    + '&cls='  + encodeURIComponent(me.cls)
+    + '&returnTo=island-hub.html';
   btn.style.background = g.color;
   document.getElementById('gameModal').classList.add('show');
+}
 }
 function closeModal() { document.getElementById('gameModal').classList.remove('show'); }
 document.getElementById('gameModal').addEventListener('click', function(e){
