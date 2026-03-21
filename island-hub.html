@@ -100,6 +100,7 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--ocean
 .zs-vtc .zs-btn{background:linear-gradient(135deg,#1a8a50,#2ecc71)}
 .zs-synthesis .zs-btn{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
 .zs-spelling .zs-btn{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+.zs-hangout .zs-btn{background:linear-gradient(135deg,#00b4d8,#0077b6)}
 .zs-fortress .zs-btn{background:linear-gradient(135deg,#8b4513,#d4af37)}
 
 /* ── POINTS RESET BANNER ── */
@@ -207,6 +208,10 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--ocean
           <div class="zs-btn"><span>🔤</span><span class="zs-label">Spelling</span></div>
           <div class="zs-tooltip"><div class="zs-tooltip-name">🔤 Spelling</div><div class="zs-tooltip-desc">Listen & spell it!</div></div>
         </div>
+        <div class="zone-star zs-hangout" id="star6" style="left:80%;top:60%" onclick="openGame(6)">
+          <div class="zs-btn"><span>🏝️</span><span class="zs-label">Hangout</span></div>
+          <div class="zs-tooltip"><div class="zs-tooltip-name">🏝️ Island Hangout</div><div class="zs-tooltip-desc">Chat &amp; play with classmates!</div></div>
+        </div>
       </div>
     </div>
 
@@ -261,6 +266,7 @@ const GAMES = [
   { id:'synthesis', icon:'🔀',  name:'Synthesis & Transformation',desc:'Rewrite sentences in different ways while keeping the meaning the same.',                   url:'synthesis.html',        color:'linear-gradient(135deg,#7c3aed,#a78bfa)' },
   { id:'fortress',  icon:'🏰',  name:'English Fortress',            desc:'Build your fortress by answering English questions. Earn Gold, Wood & Energy — then battle classmates!', url:'english-fortress.html', color:'linear-gradient(135deg,#8b4513,#d4af37)' },
   { id:'spelling',  icon:'🔤',  name:'Spelling',                desc:'Listen to the word and spell it correctly. Every letter counts!',                             url:'spelling.html',         color:'linear-gradient(135deg,#c0392b,#e74c3c)' },
+  { id:'hangout',  icon:'🏝️',  name:'Island Hangout',           desc:'Chat with classmates, play Fruit Clash &amp; Arcade games!',                             url:'chatroom.html',         color:'linear-gradient(135deg,#00b4d8,#0077b6)' },
 ];
 
 // ══════════════════════════════════════════
