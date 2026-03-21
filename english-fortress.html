@@ -881,8 +881,14 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // ══════════════════════════════════════════
-// IDENTITY — read from localStorage (same as island-hangout)
+// IDENTITY — read URL params (from student-portal) then localStorage
 // ══════════════════════════════════════════
+const _urlP = new URLSearchParams(location.search);
+const _heroParam = _urlP.get('hero') || _urlP.get('name');
+const _clsParam  = _urlP.get('cls');
+// Store to localStorage if passed via URL
+if(_heroParam) localStorage.setItem('studentName', _heroParam);
+if(_clsParam)  localStorage.setItem('studentClass', _clsParam);
 const me = {
   name: localStorage.getItem('studentName') || 'Student_' + Math.floor(Math.random()*1000),
   cls:  localStorage.getItem('studentClass') || '4 Care'
@@ -966,24 +972,21 @@ function init(){
   av.style.background = classColor(me.cls);
 
   // Load or create player
-  playerRef.once('value', snap => {
-    if(snap.exists()){
+  function onPlayerLoaded(snap){
+    if(snap && snap.exists()){
       playerData = snap.val();
-      // Migrate: ensure cells object
       if(!playerData.cells) playerData.cells = {};
       if(!playerData.attackCooldowns) playerData.attackCooldowns = {};
     } else {
-      // New player
       playerData = {
         name: me.name, cls: me.cls,
         xp:0, gold:150, wood:80, energy:30, glory:0,
         level:1, cells:{}, lastLogin:0, streak:0,
         quests:{}, createdAt: Date.now()
       };
-      playerRef.set(playerData);
-      addActivity(`🆕 ${me.name} joined English Fortress!`);
+      try { playerRef.set(playerData); } catch(e){}
+      try { addActivity('🆕 ' + me.name + ' joined English Fortress!'); } catch(e){}
     }
-
     handleLoginStreak();
     updateUI();
     renderFortressGrid();
@@ -993,10 +996,24 @@ function init(){
     loadActivityFeed();
     loadClassWar();
     startPassiveIncome();
-
     document.getElementById('loadingScreen').style.display = 'none';
     document.getElementById('appRoot').style.display = 'grid';
-  });
+  }
+
+  // Timeout fallback: if Firebase doesn't respond in 6s, load offline
+  const _fbTimeout = setTimeout(function(){
+    console.warn('Firebase timeout — loading offline mode');
+    onPlayerLoaded(null);
+  }, 6000);
+
+  playerRef.once('value',
+    function(snap){ clearTimeout(_fbTimeout); onPlayerLoaded(snap); },
+    function(err){
+      console.error('Firebase read error:', err);
+      clearTimeout(_fbTimeout);
+      onPlayerLoaded(null);
+    }
+  );
 
   // Listen for quiz score postMessages
   window.addEventListener('message', e => {
@@ -2467,7 +2484,8 @@ function showPage(id){
 }
 
 function goBack(){
-  window.location.href = 'island-hub.html';
+  const params = '?hero='+encodeURIComponent(me.name)+'&cls='+encodeURIComponent(me.cls);
+  window.location.href = 'student-portal.html' + params;
 }
 
 // ══════════════════════════════════════════
