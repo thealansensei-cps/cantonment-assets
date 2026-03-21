@@ -100,6 +100,9 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--ocean
 .zs-vtc .zs-btn{background:linear-gradient(135deg,#1a8a50,#2ecc71)}
 .zs-synthesis .zs-btn{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
 .zs-spelling .zs-btn{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+.zs-grammar .zs-btn{background:linear-gradient(135deg,#1a73c8,#2e9ed8)}
+.zs-vtc .zs-btn{background:linear-gradient(135deg,#1a8a50,#2ecc71)}
+.zs-fruitclash .zs-btn{background:linear-gradient(135deg,#ff6b9d,#c850c0)}
 .zs-hangout .zs-btn{background:linear-gradient(135deg,#00b4d8,#0077b6)}
 .zs-fortress .zs-btn{background:linear-gradient(135deg,#8b4513,#d4af37)}
 
@@ -208,7 +211,11 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--ocean
           <div class="zs-btn"><span>🔤</span><span class="zs-label">Spelling</span></div>
           <div class="zs-tooltip"><div class="zs-tooltip-name">🔤 Spelling</div><div class="zs-tooltip-desc">Listen & spell it!</div></div>
         </div>
-        <div class="zone-star zs-hangout" id="star6" style="left:80%;top:60%" onclick="openGame(6)">
+        <div class="zone-star zs-fruitclash" id="star7" style="left:75%;top:22%" onclick="openGame(6)">
+          <div class="zs-btn"><span>🍉</span><span class="zs-label">Fruit</span></div>
+          <div class="zs-tooltip"><div class="zs-tooltip-name">🍉 Fruit Clash</div><div class="zs-tooltip-desc">Drop &amp; merge fruits!</div></div>
+        </div>
+        <div class="zone-star zs-hangout" id="star8" style="left:80%;top:60%" onclick="openGame(7)">
           <div class="zs-btn"><span>🏝️</span><span class="zs-label">Hangout</span></div>
           <div class="zs-tooltip"><div class="zs-tooltip-name">🏝️ Island Hangout</div><div class="zs-tooltip-desc">Chat &amp; play with classmates!</div></div>
         </div>
@@ -264,8 +271,9 @@ const GAMES = [
   { id:'reported',  icon:'💬',  name:'Reported Speech',         desc:'Convert between direct and indirect speech. Master the rules to climb the leaderboard!',      url:'reported-speech.html',  color:'linear-gradient(135deg,#e67e22,#f39c12)' },
   { id:'vtc',       icon:'🖼️',  name:'Visual Text Comprehension',desc:'Study images and answer comprehension questions. Look carefully — details matter!',           url:'visual-text.html',      color:'linear-gradient(135deg,#1a8a50,#2ecc71)' },
   { id:'synthesis', icon:'🔀',  name:'Synthesis & Transformation',desc:'Rewrite sentences in different ways while keeping the meaning the same.',                   url:'synthesis.html',        color:'linear-gradient(135deg,#7c3aed,#a78bfa)' },
-  { id:'fortress',  icon:'🏰',  name:'English Fortress',            desc:'Build your fortress by answering English questions. Earn Gold, Wood & Energy — then battle classmates!', url:'english-fortress.html', color:'linear-gradient(135deg,#8b4513,#d4af37)' },
   { id:'spelling',  icon:'🔤',  name:'Spelling',                desc:'Listen to the word and spell it correctly. Every letter counts!',                             url:'spelling.html',         color:'linear-gradient(135deg,#c0392b,#e74c3c)' },
+  { id:'fortress',  icon:'🏰',  name:'English Fortress',            desc:'Build your fortress by answering English questions. Earn Gold, Wood & Energy — then battle classmates!', url:'english-fortress.html', color:'linear-gradient(135deg,#8b4513,#d4af37)' },
+  { id:'fruitclash',icon:'🍉', name:'Fruit Clash',              desc:'Drop and merge fruits — reach the mighty Watermelon! Post your score in chat!',          url:'fruit-clash.html',      color:'linear-gradient(135deg,#ff6b9d,#c850c0)' },
   { id:'hangout',  icon:'🏝️',  name:'Island Hangout',           desc:'Chat with classmates, play Fruit Clash &amp; Arcade games!',                             url:'chatroom.html',         color:'linear-gradient(135deg,#00b4d8,#0077b6)' },
 ];
 
