@@ -274,8 +274,35 @@ function sendMessage() {
   var inp=document.getElementById('chatInput'), text=inp.value.trim();
   if (!text) return;
   if (bannedUsers[safeKey(me.name)]) { showToast('You have been removed.'); return; }
-  msgsRef.push({type:'chat',sender:me.name,senderCls:me.cls,text:text,ts:Date.now()});
+  var ts = Date.now();
+  var msg = {type:'chat', sender:me.name, senderCls:me.cls, text:text, ts:ts};
+  // Show immediately in DOM (optimistic update)
+  appendMessage(msg);
+  // Push to Firebase
+  msgsRef.push(msg, function(err){
+    if (err) showToast('Send failed: ' + err.message);
+  });
   inp.value=''; closeEmoji(); closeGif();
+}
+
+function appendMessage(m) {
+  var el = document.getElementById('messages');
+  if (!el) return;
+  var isMine = m.sender === me.name;
+  var col = clsColor(m.senderCls);
+  var content = m.gif ? '<img src="'+m.gif+'" alt="gif" loading="lazy">' : esc(m.text||'');
+  var div = document.createElement('div');
+  div.className = 'msg-row' + (isMine?' mine':'');
+  div.innerHTML =
+    (!isMine?'<div class="msg-av" style="background:'+col+'">'+initials(m.sender)+'</div>':'')+
+    '<div class="msg-body">'+
+      '<div class="msg-meta"><span class="msg-sender" style="color:'+col+'">'+shortName(m.sender)+'</span>'+
+      '<span class="msg-time">'+fmtTime(m.ts)+'</span></div>'+
+      '<div class="bubble">'+content+'</div>'+
+    '</div>'+
+    (isMine?'<div class="msg-av" style="background:'+col+'">'+initials(m.sender)+'</div>':'');
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
 }
 function sendGif(url) {
   msgsRef.push({type:'chat',sender:me.name,senderCls:me.cls,gif:url,text:'',ts:Date.now()});
@@ -375,6 +402,7 @@ setTimeout(function(){
 
 
 // Expose to global scope
+window.appendMessage = appendMessage;
 window.safeKey = safeKey;
 window.shortName = shortName;
 window.initials = initials;
