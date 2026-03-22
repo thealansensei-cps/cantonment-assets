@@ -200,7 +200,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 
 
 
+
+
+
+
 <script>
+
 
 
 
@@ -216,8 +221,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 
 
 
+
 </script>
 <script>
+
 
 
 
@@ -227,8 +234,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 
 
 
+
 </script>
 <script>
+
 
 
 
@@ -250,8 +259,15 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 var db;
 try {
   db = firebase.database();
-  document.getElementById('dbStatus').textContent = '✅ Firebase connected';
+  document.getElementById('dbStatus').textContent = '✅ Firebase connected - loading...';
   document.getElementById('dbStatus').style.color = '#3ddc84';
+  // Test read
+  db.ref('hangout_messages').limitToLast(1).once('value', function(snap){
+    document.getElementById('dbStatus').textContent = '✅ DB ok — ' + (snap.numChildren() > 0 ? 'has messages' : 'no messages yet') + ' in hangout_messages';
+  }, function(err){
+    document.getElementById('dbStatus').textContent = '❌ DB read failed: ' + err.message;
+    document.getElementById('dbStatus').style.color = '#ff6b7a';
+  });
 } catch(e) {
   document.getElementById('dbStatus').textContent = '❌ Firebase error: ' + e.message;
   document.getElementById('dbStatus').style.color = '#ff6b7a';
@@ -502,21 +518,27 @@ function doGif()   { var q=document.getElementById('gSrch').value.trim(); if(q) 
 function loadGifs(q) {
   var st=document.getElementById('gStatus'), gr=document.getElementById('gGrid');
   st.textContent='Searching...'; st.style.display='block'; gr.innerHTML='';
-  fetch('https://api.giphy.com/v1/gifs/search?api_key=SjZwwCn1e3CQSR1L4KCuhmkzmFgCbgM6&q='+encodeURIComponent(q)+'&limit=8&rating=g')
+  fetch('https://tenor.googleapis.com/v2/search?q='+encodeURIComponent(q)+'&key=AIzaSyAyimkuYQYF_y7VMHBmH7DcFMmRMYYE2Us&limit=8&media_filter=gif&contentfilter=high')
     .then(function(r){return r.json();})
     .then(function(d){
       st.style.display='none';
-      if(!d.data||!d.data.length){st.textContent='No GIFs found';st.style.display='block';return;}
+      var results = d.results || d.data || [];
+      if(!results.length){st.textContent='No GIFs found';st.style.display='block';return;}
       gr.innerHTML='';
-      d.data.forEach(function(g){
+      results.forEach(function(g){
+        // Handle both Tenor v2 and Giphy formats
+        var fullUrl = (g.media_formats&&g.media_formats.gif) ? g.media_formats.gif.url :
+                      (g.images&&g.images.original) ? g.images.original.url : '';
+        var prevUrl = (g.media_formats&&g.media_formats.tinygif) ? g.media_formats.tinygif.url :
+                      (g.images&&g.images.fixed_height_small) ? g.images.fixed_height_small.url : fullUrl;
+        if(!fullUrl) return;
         var div=document.createElement('div');
         div.className='gi';
         var img=document.createElement('img');
-        img.src=g.images.fixed_height_small.url;
+        img.src=prevUrl;
         img.loading='lazy';
         div.appendChild(img);
-        var url=g.images.original.url;
-        div.addEventListener('click',function(){sendGif(url);});
+        div.addEventListener('click',(function(u){return function(){sendGif(u);};})(fullUrl));
         gr.appendChild(div);
       });
     })
@@ -588,6 +610,7 @@ if(me.name && me.name!=='Guest'){
   fbPush('/hangout_messages',{type:'system',text:'👋 '+sn(me.name)+' joined the hangout!',ts:Date.now()});
 }
 startPolling();
+
 
 
 
