@@ -306,12 +306,14 @@ function startPolling() {
 }
 
 function loadMessages() {
-  fbGet(chatPath() + '?orderBy="$key"&limitToLast=100').then(function(data) {
-    if (!data) { renderMessages([]); return; }
-    var msgs = Object.entries(data).map(function(e){ return Object.assign({key:e[0]}, e[1]); });
-    msgs.sort(function(a,b){ return a.ts - b.ts; });
-    renderMessages(msgs);
-  }).catch(function(e){ console.warn('Poll error:', e); });
+  fetch(DB + chatPath() + '.json?limitToLast=100')
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (!data || typeof data !== 'object') { renderMessages([]); return; }
+      var msgs = Object.entries(data).map(function(e){ return Object.assign({key:e[0]}, e[1]); });
+      msgs.sort(function(a,b){ return (a.ts||0) - (b.ts||0); });
+      renderMessages(msgs);
+    }).catch(function(e){ console.warn('Poll error:', e); });
 }
 
 function renderMessages(msgs) {
@@ -436,20 +438,31 @@ function closeEmoji() { emojiOpen=false; document.getElementById('emojiP').class
 // ═══════════════════════════════════════════════
 // GIF (Giphy)
 // ═══════════════════════════════════════════════
-function togGif() { gifOpen=!gifOpen; emojiOpen=false; document.getElementById('gifP').classList.toggle('on',gifOpen); document.getElementById('emojiP').classList.remove('on'); if(gifOpen&&!document.getElementById('gGrid').children.length)loadGifs('happy'); }
+function togGif() { gifOpen=!gifOpen; emojiOpen=false; document.getElementById('gifP').classList.toggle('on',gifOpen); document.getElementById('emojiP').classList.remove('on'); if(gifOpen&&!document.getElementById('gGrid').children.length)loadGifs('fun'); }
 function closeGif() { gifOpen=false; document.getElementById('gifP').classList.remove('on'); }
 function doGif()   { var q=document.getElementById('gSrch').value.trim(); if(q) loadGifs(q); }
 function loadGifs(q) {
   var st=document.getElementById('gStatus'), gr=document.getElementById('gGrid');
-  st.textContent='Searching... 🔍'; st.style.display='block'; gr.innerHTML='';
+  st.textContent='Searching...'; st.style.display='block'; gr.innerHTML='';
   fetch('https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q='+encodeURIComponent(q)+'&limit=8&rating=g')
     .then(function(r){return r.json();})
     .then(function(d){
       st.style.display='none';
       if(!d.data||!d.data.length){st.textContent='No GIFs found';st.style.display='block';return;}
-      gr.innerHTML=d.data.map(function(g){ return '<div class="gi" onclick="sendGif(\''+g.images.original.url+'\')"><img src="'+g.images.fixed_height_small.url+'" loading="lazy"></div>'; }).join('');
+      gr.innerHTML='';
+      d.data.forEach(function(g){
+        var div=document.createElement('div');
+        div.className='gi';
+        var img=document.createElement('img');
+        img.src=g.images.fixed_height_small.url;
+        img.loading='lazy';
+        div.appendChild(img);
+        var url=g.images.original.url;
+        div.addEventListener('click',function(){sendGif(url);});
+        gr.appendChild(div);
+      });
     })
-    .catch(function(){st.textContent='Could not load GIFs';st.style.display='block';});
+    .catch(function(){st.textContent='Could not load GIFs - check connection';st.style.display='block';});
 }
 
 // ═══════════════════════════════════════════════
