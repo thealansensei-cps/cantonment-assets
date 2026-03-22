@@ -760,8 +760,11 @@ window.addEventListener('message', function(e) {
 // MISC
 // ══════════════════════════════════════════
 function goBack(){
-  presenceRef.remove();
-  window.location.href=me.returnTo+'?hero='+encodeURIComponent(me.name)+'&cls='+encodeURIComponent(me.cls);
+  try{ if(typeof presenceRef !== 'undefined') presenceRef.remove(); }catch(e){}
+  const dest = (me && me.returnTo) ? me.returnTo : 'student-portal.html';
+  const hero = (me && me.name)     ? me.name     : '';
+  const cls  = (me && me.cls)      ? me.cls      : '';
+  window.location.href = dest + '?hero=' + encodeURIComponent(hero) + '&cls=' + encodeURIComponent(cls);
 }
 function showToast(msg){
   const t=document.createElement('div');
