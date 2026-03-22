@@ -204,7 +204,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 
 
 
+
+
+
+
 <script>
+
 
 
 
@@ -222,8 +227,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 
 
 
+
 </script>
 <script>
+
 
 
 
@@ -235,8 +242,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 
 
 
+
 </script>
 <script>
+
 
 
 
@@ -261,13 +270,7 @@ try {
   db = firebase.database();
   document.getElementById('dbStatus').textContent = '✅ Firebase connected - loading...';
   document.getElementById('dbStatus').style.color = '#3ddc84';
-  // Test read
-  db.ref('hangout_messages').limitToLast(1).once('value', function(snap){
-    document.getElementById('dbStatus').textContent = '✅ DB ok — ' + (snap.numChildren() > 0 ? 'has messages' : 'no messages yet') + ' in hangout_messages';
-  }, function(err){
-    document.getElementById('dbStatus').textContent = '❌ DB read failed: ' + err.message;
-    document.getElementById('dbStatus').style.color = '#ff6b7a';
-  });
+
 } catch(e) {
   document.getElementById('dbStatus').textContent = '❌ Firebase error: ' + e.message;
   document.getElementById('dbStatus').style.color = '#ff6b7a';
@@ -384,22 +387,31 @@ function startPolling() {
 }
 
 function loadMessages() {
-  // Detach ALL previous listeners on chat paths
-  db.ref('/hangout_messages').off();
-  db.ref('/hangout_class_' + sk(me.cls)).off();
-  // Attach realtime listener to current tab path
-  db.ref(chatPath()).limitToLast(100).on('value', function(snap) {
-    var msgs = [];
-    snap.forEach(function(c){
-      var v = c.val();
-      if (v) msgs.push(Object.assign({key:c.key}, v));
+  var path = chatPath();
+  var st = document.getElementById('dbStatus');
+  st.textContent = 'Loading ' + path + '...';
+  // Detach previous listeners
+  try { db.ref('/hangout_messages').off(); } catch(e){}
+  try { db.ref('/hangout_class_' + sk(me.cls)).off(); } catch(e){}
+  // Use .once() first to diagnose, then switch to realtime
+  db.ref(path).limitToLast(100).once('value')
+    .then(function(snap) {
+      var msgs = [];
+      snap.forEach(function(c){ var v=c.val(); if(v) msgs.push(Object.assign({key:c.key},v)); });
+      st.textContent = '✅ ' + msgs.length + ' msgs from ' + path;
+      renderMessages(msgs);
+      // Now attach realtime listener
+      db.ref(path).limitToLast(100).on('value', function(snap2) {
+        var msgs2 = [];
+        snap2.forEach(function(c){ var v=c.val(); if(v) msgs2.push(Object.assign({key:c.key},v)); });
+        st.textContent = '✅ Live — ' + msgs2.length + ' msgs';
+        renderMessages(msgs2);
+      });
+    })
+    .catch(function(err) {
+      st.textContent = '❌ Read failed: ' + err.message + ' | code: ' + err.code;
+      st.style.color = '#ff6b7a';
     });
-    document.getElementById('dbStatus').textContent = '✅ Connected — ' + msgs.length + ' messages loaded';
-    renderMessages(msgs);
-  }, function(err){
-    document.getElementById('dbStatus').textContent = '❌ Listener error: ' + err.message;
-    document.getElementById('dbStatus').style.color = '#ff6b7a';
-  });
 }
 
 function renderMessages(msgs) {
@@ -610,6 +622,7 @@ if(me.name && me.name!=='Guest'){
   fbPush('/hangout_messages',{type:'system',text:'👋 '+sn(me.name)+' joined the hangout!',ts:Date.now()});
 }
 startPolling();
+
 
 
 
