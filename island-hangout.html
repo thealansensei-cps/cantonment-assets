@@ -26,7 +26,8 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 #tbName { font-weight:800;font-size:14px; }
 #tbCls  { font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase; }
 .tb-logo { font-family:'Fredoka One',cursive;font-size:17px;color:var(--teal);margin-right:4px; }
-.tb-right { margin-left:auto;display:flex;align-items:center;gap:6px; }
+.tb-right { margin-left:auto;display:flex;align-items:center;gap:5px;flex-shrink:0; }
+@media(max-width:420px){ .tb-btn{padding:4px 7px;font-size:10px} .tb-logo{font-size:14px} #tbName{font-size:12px} }
 .online-pill { display:flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.25);border-radius:20px;font-size:11px;font-weight:800;color:var(--green); }
 .online-dot { width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2s infinite; }
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
@@ -38,8 +39,9 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   position: fixed; top: 52px; left: 0; right: 0; bottom: 60px;
   overflow-y: auto; padding: 12px 12px 8px;
   display: flex; flex-direction: column; gap: 4px;
+  color: #ddeeff; z-index: 1;
 }
-.sys-msg { text-align:center;font-size:11px;color:var(--muted);padding:4px 0;font-style:italic; }
+.sys-msg { text-align:center;font-size:11px;color:rgba(180,210,255,.6);padding:6px 0;font-style:italic;font-weight:600; }
 .msg-row { display:flex;gap:8px;align-items:flex-end; }
 .msg-row.mine { flex-direction:row-reverse; }
 .msg-av { width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:10px;color:#fff; }
@@ -47,9 +49,9 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .msg-meta { display:flex;gap:5px;align-items:baseline;margin-bottom:2px;font-size:10px; }
 .msg-row.mine .msg-meta { flex-direction:row-reverse; }
 .msg-sender { font-weight:800; }
-.msg-time { color:rgba(255,255,255,.25);font-size:9px; }
-.bubble { padding:7px 11px;border-radius:14px 14px 14px 3px;background:var(--surface2);border:1px solid var(--border);font-size:13px;line-height:1.4;word-break:break-word; }
-.msg-row.mine .bubble { border-radius:14px 14px 3px 14px;background:#1a4a8a;border-color:rgba(100,180,255,.2); }
+.msg-time { color:rgba(255,255,255,.35);font-size:9px; }
+.bubble { padding:7px 11px;border-radius:14px 14px 14px 3px;background:#162640;border:1px solid rgba(100,180,255,.2);font-size:13px;line-height:1.4;word-break:break-word;color:#ddeeff; }
+.msg-row.mine .bubble { border-radius:14px 14px 3px 14px;background:#1a4a8a;border-color:rgba(100,180,255,.2);color:#fff; }
 .bubble img { max-width:180px;max-height:140px;border-radius:8px;display:block;margin-top:3px; }
 
 /* INPUT BAR */
@@ -57,6 +59,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
   background: rgba(7,17,31,.97); border-top: 1px solid var(--border);
   display: flex; align-items: center; gap: 6px; padding: 0 10px;
+  z-index: 50;
 }
 .ib-btn { width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Nunito',sans-serif;font-weight:700; }
 #chatInput { flex:1;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;padding:0 12px;outline:none; }
@@ -364,6 +367,11 @@ document.addEventListener('click',function(e){
 if(me.name&&me.name!=='Guest'){
   msgsRef.push({type:'system',text:'👋 '+shortName(me.name)+' joined the hangout!',ts:Date.now()});
 }
+// Scroll messages to bottom on load
+setTimeout(function(){
+  var el=document.getElementById('messages');
+  if(el) el.scrollTop=el.scrollHeight;
+},500);
 
 
 // Expose to global scope
