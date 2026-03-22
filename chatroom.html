@@ -395,7 +395,9 @@ const firebaseConfig = {
   appId: "1:892743482834:web:6705bc3e3bc832cf749c0b",
   databaseURL: "https://english-island-cps-default-rtdb.firebaseio.com"
 };
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps || !firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 
 // ══════════════════════════════════════════
@@ -771,6 +773,33 @@ function showToast(msg){
 
 // Join message
 if(me.name&&me.name!=='Guest') msgsRef.push({type:'system',text:`👋 ${shortName(me.name)} joined the hangout!`,ts:Date.now()});
+
+
+// Expose to global scope for HTML onclick handlers
+window.sendMessage = sendMessage;
+window.handleKey = handleKey;
+window.goBack = goBack;
+window.autoResize = autoResize;
+window.toggleEmoji = toggleEmoji;
+window.closeEmoji = closeEmoji;
+window.insertEmoji = insertEmoji;
+window.openTeacherLogin = openTeacherLogin;
+window.closeTeacherLogin = closeTeacherLogin;
+window.doTeacherLogin = doTeacherLogin;
+window.toggleMute = toggleMute;
+window.addReaction = addReaction;
+window.sendReactionToLast = sendReactionToLast;
+window.switchTab = switchTab;
+window.switchLbTab = switchLbTab;
+window.refreshLeaderboards = refreshLeaderboards;
+window.launchFruitClash = launchFruitClash;
+window.shareScore = shareScore;
+window.startWordScramble = startWordScramble;
+window.checkScramble = checkScramble;
+window.nextScramble = nextScramble;
+window.closeGame = closeGame;
+window.startTrivia = startTrivia;
+window.closeTrivia = closeTrivia;
 
 }); // end window load
 </script>
