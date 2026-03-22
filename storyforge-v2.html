@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StoryForge v2 — AI Composition Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0f1117;
+  --surface: #191c26;
+  --surface2: #21263a;
+  --border: #2a2f45;
+  --border2: #363c57;
+  --text: #e8eaf5;
+  --text2: #8b90b0;
+  --text3: #555c80;
+  --gold: #f5c842;
+  --gold2: #fde98a;
+  --teal: #3ecfb2;
+  --teal2: #1a6b5d;
+  --coral: #ff6b6b;
+  --coral2: #5c2222;
+  --violet: #a78bfa;
+  --violet2: #3d2d7a;
+  --sky: #60a5fa;
+  --sky2: #1e3a5f;
+  --green: #4ade80;
+  --green2: #1a4a2a;
+  --orange: #fb923c;
+  --orange2: #4a2210;
+  /* Highlight colors for inline analysis */
+  --hl-long: rgba(251,146,60,0.22);
+  --hl-long-b: #fb923c;
+  --hl-passive: rgba(96,165,250,0.20);
+  --hl-passive-b: #60a5fa;
+  --hl-repeat: rgba(167,139,250,0.20);
+  --hl-repeat-b: #a78bfa;
+  --hl-weak: rgba(248,113,113,0.20);
+  --hl-weak-b: #f87171;
+  --hl-good: rgba(74,222,128,0.12);
+  --hl-good-b: #4ade80;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex; flex-direction: column;
+}
+
+/* ── HEADER ── */
+.app-header {
+  height: 52px; flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 16px;
+  z-index: 100;
+}
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem; font-weight: 900;
+  color: var(--gold);
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+.logo span { color: var(--text); font-weight: 700; }
+
+.nav-tabs { display: flex; gap: 2px; flex: 1; }
+.nav-tab {
+  padding: 6px 16px; border-radius: 6px;
+  font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; border: none;
+  background: transparent; color: var(--text2);
+  transition: all 0.15s; letter-spacing: 0.02em;
+}
+.nav-tab:hover { background: var(--surface2); color: var(--text); }
+.nav-tab.active { background: var(--gold); color: #0f1117; }
+
+.header-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+.mode-btn {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 0.75rem; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border2);
+  background: transparent; color: var(--text2);
+  transition: all 0.15s;
+}
+.mode-btn:hover { border-color: var(--teal); color: var(--teal); }
+.mode-btn.on { background: var(--teal2); border-color: var(--teal); color: var(--teal); }
+
+/* ── SCREENS ── */
+.screen { display: none; flex: 1; overflow: hidden; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ══ TEACHER SETUP ══ */
+#screen-teacher { overflow-y: auto; padding: 32px; }
+.setup-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; max-width: 1300px; margin: 0 auto; }
+.setup-grid.wide { grid-template-columns: 1fr 2fr; }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+.panel-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  color: var(--text); margin-bottom: 4px;
+}
+.panel-sub { font-size: 0.78rem; color: var(--text2); margin-bottom: 18px; }
+
+.upload-zone {
+  border: 2px dashed var(--border2);
+  border-radius: 10px; padding: 28px 16px;
+  text-align: center; cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.02);
+}
+.upload-zone:hover { border-color: var(--teal); background: rgba(62,207,178,0.05); }
+.upload-zone .u-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.upload-zone p { font-size: 0.80rem; color: var(--text2); }
+.upload-zone strong { color: var(--teal); }
+
+.file-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.file-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(62,207,178,0.12);
+  border: 1px solid rgba(62,207,178,0.3);
+  color: var(--teal); border-radius: 20px;
+  padding: 4px 12px; font-size: 0.75rem; font-weight: 600;
+}
+.file-pill button { background: none; border: none; cursor: pointer; color: var(--teal); font-size: 0.9rem; }
+
+.dark-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.dark-input:focus { border-color: var(--gold); }
+textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+.btn {
+  padding: 9px 20px; border-radius: 8px; border: none;
+  cursor: pointer; font-family: 'Outfit', sans-serif;
+  font-weight: 600; font-size: 0.82rem;
+  transition: all 0.15s; letter-spacing: 0.02em;
+}
+.btn-gold { background: var(--gold); color: #0f1117; }
+.btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
+.btn-teal { background: var(--teal2); color: var(--teal); border: 1px solid var(--teal); }
+.btn-teal:hover { background: rgba(62,207,178,0.25); }
+.btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+.btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+.btn-sm { padding: 6px 14px; font-size: 0.76rem; }
+
+.comp-cards { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; margin-top: 12px; }
+.comp-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--violet);
+  border-radius: 8px; padding: 12px;
+}
+.comp-card-title { font-size: 0.82rem; font-weight: 700; color: var(--violet); margin-bottom: 4px; }
+.comp-card-preview { font-size: 0.75rem; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.topic-row { display: flex; gap: 8px; margin-bottom: 16px; }
+
+.ws-manual { margin-top: 14px; }
+.ws-page-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; }
+.ws-page-num-inp {
+  width: 64px; flex-shrink: 0;
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 8px; color: var(--text);
+  font-family: 'Outfit', sans-serif; font-size: 0.85rem;
+  text-align: center; outline: none;
+}
+.ws-page-num-inp:focus { border-color: var(--teal); }
+.del-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 1rem; margin-top: 8px; }
+.del-btn:hover { color: var(--coral); }
+
+.section-label {
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text3); margin-bottom: 8px;
+}
+
+/* ══ PLANNING ══ */
+#screen-planning { overflow-y: auto; }
+.plan-wrap { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
+.plan-hero {
+  background: linear-gradient(135deg, #1a1040 0%, var(--surface2) 100%);
+  border: 1px solid var(--border2);
+  border-radius: 18px; padding: 32px 36px;
+  margin-bottom: 28px; position: relative; overflow: hidden;
+}
+.plan-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 80% 50%, rgba(245,200,66,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.plan-topic-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(245,200,66,0.12);
+  border: 1px solid rgba(245,200,66,0.3);
+  color: var(--gold); border-radius: 20px;
+  padding: 4px 14px; font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+.plan-hero h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem; color: var(--text); margin-bottom: 6px;
+}
+.plan-hero p { font-size: 0.85rem; color: var(--text2); }
+
+.w-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+.w-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+  transition: border-color 0.2s;
+}
+.w-card:focus-within { border-color: var(--gold); }
+.w-card.full { grid-column: 1/-1; }
+.w-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text2); margin-bottom: 10px;
+}
+.w-icon {
+  width: 26px; height: 26px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem; font-weight: 900;
+  font-family: 'Playfair Display', serif;
+}
+.w-icon.who { background: rgba(167,139,250,0.2); color: var(--violet); }
+.w-icon.when { background: rgba(245,200,66,0.2); color: var(--gold); }
+.w-icon.where { background: rgba(62,207,178,0.2); color: var(--teal); }
+.w-icon.what { background: rgba(255,107,107,0.2); color: var(--coral); }
+.w-icon.why { background: rgba(96,165,250,0.2); color: var(--sky); }
+.w-icon.how { background: rgba(74,222,128,0.2); color: var(--green); }
+
+.w-textarea {
+  width: 100%; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; color: var(--text);
+  font-family: 'Outfit', sans-serif; font-size: 0.85rem;
+  line-height: 1.6; resize: vertical; min-height: 72px;
+  outline: none; transition: border-color 0.2s;
+}
+.w-textarea:focus { border-color: var(--gold); }
+.w-textarea::placeholder { color: var(--text3); }
+
+.plan-footer { display: flex; justify-content: space-between; align-items: center; }
+.plan-progress { font-size: 0.80rem; color: var(--text2); }
+.plan-progress span { color: var(--gold); font-weight: 700; }
+
+/* ══ WRITING STUDIO ══ */
+#screen-writing { flex-direction: row; overflow: hidden; }
+
+/* Left: Editor column */
+.editor-col {
+  flex: 1; display: flex; flex-direction: column;
+  border-right: 1px solid var(--border);
+  min-width: 0;
+}
+
+.editor-topbar {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.editor-topic {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem; color: var(--text);
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.stats-row { display: flex; gap: 12px; align-items: center; flex-shrink: 0; }
+.stat-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--surface2); border-radius: 20px;
+  padding: 4px 10px; font-size: 0.73rem;
+  font-weight: 600; color: var(--text2);
+}
+.stat-chip .val { color: var(--text); }
+
+/* Score dials */
+.score-bar {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 20px;
+  display: flex; gap: 16px; align-items: center;
+  overflow-x: auto;
+}
+.score-dial {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.dial-ring {
+  position: relative; width: 36px; height: 36px;
+}
+.dial-ring svg { transform: rotate(-90deg); }
+.dial-ring .dial-val {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.62rem; font-weight: 700;
+}
+.score-label { font-size: 0.70rem; color: var(--text2); line-height: 1.3; }
+.score-label strong { display: block; font-size: 0.80rem; color: var(--text); }
+
+.score-divider { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
+
+/* Story Arc */
+.arc-track {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.arc-label { font-size: 0.70rem; color: var(--text2); font-weight: 600; flex-shrink: 0; }
+.arc-segments { display: flex; gap: 4px; flex: 1; }
+.arc-seg {
+  flex: 1; height: 8px; border-radius: 4px;
+  background: var(--border2);
+  transition: background 0.4s, box-shadow 0.4s;
+  position: relative; cursor: default;
+}
+.arc-seg.filled { box-shadow: 0 0 8px currentColor; }
+.arc-seg.s-begin { color: var(--teal); }
+.arc-seg.s-rising { color: var(--sky); }
+.arc-seg.s-climax { color: var(--coral); }
+.arc-seg.s-resolution { color: var(--green); }
+.arc-seg.filled.s-begin { background: var(--teal); }
+.arc-seg.filled.s-rising { background: var(--sky); }
+.arc-seg.filled.s-climax { background: var(--coral); }
+.arc-seg.filled.s-resolution { background: var(--green); }
+.arc-tip { font-size: 0.70rem; color: var(--text2); flex-shrink: 0; }
+
+/* Plan strip */
+.plan-strip {
+  flex-shrink: 0;
+  background: rgba(245,200,66,0.06);
+  border-bottom: 1px solid rgba(245,200,66,0.15);
+  padding: 6px 20px;
+  display: flex; gap: 20px; flex-wrap: wrap;
+  cursor: pointer;
+}
+.plan-item { font-size: 0.73rem; color: #aa8c2a; }
+.plan-item strong { color: var(--gold); font-weight: 600; }
+
+/* Editor area */
+.editor-area {
+  flex: 1; overflow-y: auto;
+  padding: 28px 36px;
+  position: relative;
+}
+
+/* The contenteditable editor */
+#prose-editor {
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.05rem;
+  line-height: 2.0;
+  color: var(--text);
+  min-height: 100%;
+  caret-color: var(--gold);
+}
+#prose-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text3);
+  pointer-events: none;
+}
+/* Highlight styles */
+#prose-editor .hl-long { background: var(--hl-long); border-bottom: 2px solid var(--hl-long-b); border-radius: 3px; cursor: help; }
+#prose-editor .hl-passive { background: var(--hl-passive); border-bottom: 2px solid var(--hl-passive-b); border-radius: 3px; cursor: help; }
+#prose-editor .hl-repeat { background: var(--hl-repeat); border-bottom: 2px solid var(--hl-repeat-b); border-radius: 3px; cursor: help; }
+#prose-editor .hl-weak { background: var(--hl-weak); border-bottom: 2px solid var(--hl-weak-b); border-radius: 3px; cursor: help; }
+#prose-editor .hl-good { background: var(--hl-good); border-radius: 3px; }
+#prose-editor p { margin-bottom: 0.8em; }
+
+/* Highlight legend */
+.hl-legend {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 7px 20px;
+  display: flex; gap: 14px; align-items: center;
+  flex-wrap: wrap;
+}
+.hl-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.70rem; color: var(--text2);
+  cursor: pointer; transition: color 0.15s;
+}
+.hl-item:hover { color: var(--text); }
+.hl-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.hl-toggle { display: flex; align-items: center; gap: 5px; margin-left: auto; }
+.toggle-switch {
+  width: 32px; height: 17px; border-radius: 9px;
+  background: var(--border2); cursor: pointer;
+  position: relative; transition: background 0.2s;
+  border: none;
+}
+.toggle-switch.on { background: var(--teal); }
+.toggle-switch::after {
+  content: ''; position: absolute;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: white; top: 3px; left: 3px;
+  transition: left 0.2s;
+}
+.toggle-switch.on::after { left: 18px; }
+
+.editor-footer {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* XP/Stars milestones */
+.xp-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.xp-bar { width: 120px; height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+.xp-fill { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.5s; }
+.xp-label { font-size: 0.72rem; color: var(--text2); }
+.star-badge {
+  display: none; align-items: center; gap: 4px;
+  background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.4);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 0.72rem; color: var(--gold); font-weight: 700;
+}
+.star-badge.show { display: flex; }
+
+/* Right: Coach panel */
+.coach-col {
+  width: 370px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  background: var(--surface);
+}
+
+.coach-header {
+  flex-shrink: 0;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.coach-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.9rem; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.coach-status {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+.coach-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.coach-tab {
+  flex: 1; padding: 9px;
+  font-size: 0.73rem; font-weight: 600;
+  cursor: pointer; border: none; background: transparent;
+  color: var(--text2); border-bottom: 2px solid transparent;
+  transition: all 0.15s; text-align: center;
+}
+.coach-tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.coach-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* Coach panels */
+.coach-pane { display: none; flex: 1; overflow-y: auto; }
+.coach-pane.active { display: flex; flex-direction: column; }
+
+/* Chat pane */
+.chat-msgs { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+
+.msg { display: flex; gap: 8px; animation: msgIn 0.25s ease; }
+@keyframes msgIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.msg-av {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700;
+}
+.msg.ai .msg-av { background: rgba(245,200,66,0.2); color: var(--gold); }
+.msg.student .msg-av { background: rgba(62,207,178,0.2); color: var(--teal); }
+.msg-body { max-width: 100%; }
+.msg-bubble {
+  padding: 10px 12px;
+  font-size: 0.80rem; line-height: 1.65;
+  border-radius: 10px;
+}
+.msg.ai .msg-bubble { background: var(--surface2); border: 1px solid var(--border); }
+.msg.student .msg-bubble { background: rgba(62,207,178,0.1); border: 1px solid rgba(62,207,178,0.25); }
+.msg-time { font-size: 0.65rem; color: var(--text3); margin-top: 4px; padding-left: 2px; }
+
+.fb-type-tag {
+  display: inline-block; font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 2px 7px; border-radius: 4px; margin-bottom: 5px;
+}
+.t-vocab { background: rgba(167,139,250,0.2); color: var(--violet); }
+.t-structure { background: rgba(62,207,178,0.2); color: var(--teal); }
+.t-ideas { background: rgba(245,200,66,0.15); color: var(--gold); }
+.t-grammar { background: rgba(96,165,250,0.2); color: var(--sky); }
+.t-planning { background: rgba(255,107,107,0.2); color: var(--coral); }
+.t-praise { background: rgba(74,222,128,0.2); color: var(--green); }
+
+.page-ref {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: rgba(245,200,66,0.15);
+  border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold); border-radius: 4px;
+  padding: 1px 6px; font-size: 0.68rem; font-weight: 700;
+  cursor: pointer; margin-left: 3px; text-decoration: none;
+}
+.page-ref:hover { background: rgba(245,200,66,0.3); }
+
+.chat-input-zone {
+  flex-shrink: 0; padding: 12px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.quick-prompts { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+.qp-btn {
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text2); border-radius: 20px;
+  padding: 4px 10px; font-size: 0.70rem;
+  cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 500;
+  transition: all 0.15s;
+}
+.qp-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(245,200,66,0.08); }
+.chat-row { display: flex; gap: 6px; }
+.chat-textarea {
+  flex: 1; background: var(--bg); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 8px 12px;
+  color: var(--text); font-family: 'Outfit', sans-serif;
+  font-size: 0.80rem; resize: none; min-height: 38px; max-height: 90px;
+  outline: none; line-height: 1.5; transition: border-color 0.2s;
+}
+.chat-textarea:focus { border-color: var(--gold); }
+.send-btn {
+  width: 38px; height: 38px; flex-shrink: 0;
+  background: var(--gold); border: none; border-radius: 8px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; color: #0f1117;
+  transition: all 0.15s;
+}
+.send-btn:hover { background: var(--gold2); transform: scale(1.05); }
+.send-btn:disabled { background: var(--border2); cursor: not-allowed; transform: none; }
+
+/* Vocab pane */
+.vocab-pane-inner { padding: 16px; flex: 1; }
+.vocab-title { font-size: 0.78rem; font-weight: 600; color: var(--text); margin-bottom: 14px; }
+.repeat-words { display: flex; flex-direction: column; gap: 8px; }
+.rw-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.rw-word { font-size: 0.85rem; font-weight: 700; color: var(--violet); }
+.rw-count {
+  font-size: 0.72rem; color: var(--text2);
+  background: rgba(167,139,250,0.15); padding: 2px 8px; border-radius: 10px;
+}
+.rw-prompt { font-size: 0.73rem; color: var(--text2); margin-top: 4px; }
+.rw-coach-btn {
+  background: none; border: 1px solid var(--border2);
+  color: var(--text2); border-radius: 6px; padding: 4px 10px;
+  font-size: 0.70rem; cursor: pointer; font-family: 'Outfit', sans-serif;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.rw-coach-btn:hover { border-color: var(--violet); color: var(--violet); }
+
+.vocab-empty { text-align: center; padding: 32px 16px; color: var(--text2); font-size: 0.82rem; }
+
+/* Plan pane */
+.plan-pane-inner { padding: 16px; flex: 1; }
+.plan-review-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; margin-bottom: 10px;
+}
+.plan-review-key {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text2); margin-bottom: 6px;
+}
+.plan-review-val { font-size: 0.82rem; color: var(--text); line-height: 1.6; }
+.plan-review-val.empty { color: var(--text3); font-style: italic; }
+
+/* Paragraph coach tooltip */
+.para-coach-btn {
+  display: none; position: absolute; right: -44px; top: 0;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text2); cursor: pointer; font-size: 0.75rem;
+  align-items: center; justify-content: center;
+  transition: all 0.15s; z-index: 10;
+}
+.para-coach-btn:hover { background: var(--gold); color: #0f1117; border-color: var(--gold); }
+
+/* Celebration overlay */
+.celebrate-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(15,17,23,0.85);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.celebrate-overlay.show { opacity: 1; pointer-events: auto; }
+.celebrate-card {
+  background: var(--surface);
+  border: 1px solid rgba(245,200,66,0.4);
+  border-radius: 20px; padding: 40px 48px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(245,200,66,0.2);
+  animation: celebIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+@keyframes celebIn { from { transform: scale(0.7); opacity:0; } to { transform: scale(1); opacity:1; } }
+.celebrate-emoji { font-size: 3.5rem; margin-bottom: 12px; }
+.celebrate-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem; color: var(--gold); margin-bottom: 8px;
+}
+.celebrate-msg { font-size: 0.88rem; color: var(--text2); margin-bottom: 20px; }
+
+/* Worksheet drawer */
+.ws-drawer {
+  position: fixed; right: 370px; top: 52px;
+  width: 320px; height: calc(100vh - 52px);
+  background: var(--surface2);
+  border-left: 1px solid var(--border);
+  transform: translateX(100%); transition: transform 0.3s;
+  z-index: 90; display: flex; flex-direction: column;
+  box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+}
+.ws-drawer.open { transform: translateX(0); }
+.ws-drawer-header {
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.ws-drawer-title { font-size: 0.85rem; font-weight: 600; }
+.ws-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1.1rem; }
+.ws-drawer-body { flex: 1; overflow-y: auto; padding: 16px; }
+.ws-pg {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; margin-bottom: 10px;
+}
+.ws-pg.highlight { border-color: var(--gold); box-shadow: 0 0 10px rgba(245,200,66,0.2); }
+.ws-pg-num { font-size: 0.68rem; font-weight: 700; color: var(--gold); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+.ws-pg-text { font-size: 0.78rem; color: var(--text2); line-height: 1.7; }
+
+/* Loading */
+.typing-dots { display: flex; gap: 3px; padding: 4px 2px; }
+.td { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: td 1.2s infinite; }
+.td:nth-child(2) { animation-delay:0.2s; } .td:nth-child(3) { animation-delay:0.4s; }
+@keyframes td { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(12px);
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text); border-radius: 24px; padding: 9px 22px;
+  font-size: 0.80rem; font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  opacity: 0; transition: all 0.25s; z-index: 500; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ══ TEACHER DASHBOARD ══ */
+#screen-dashboard { overflow-y: auto; padding: 32px; }
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; max-width: 1200px; margin: 0 auto 24px; }
+.dash-stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+  text-align: center;
+}
+.dash-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem; font-weight: 900; color: var(--gold);
+  margin-bottom: 4px;
+}
+.dash-stat-label { font-size: 0.78rem; color: var(--text2); }
+
+.student-table { width: 100%; max-width: 1200px; margin: 0 auto; }
+.student-table table { width: 100%; border-collapse: collapse; }
+.student-table th {
+  text-align: left; padding: 10px 16px;
+  font-size: 0.70rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+.student-table td {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+.student-table tr:hover td { background: rgba(255,255,255,0.02); }
+.score-pill {
+  display: inline-block; padding: 2px 10px; border-radius: 10px;
+  font-size: 0.73rem; font-weight: 700;
+}
+.sp-high { background: rgba(74,222,128,0.15); color: var(--green); }
+.sp-mid { background: rgba(245,200,66,0.15); color: var(--gold); }
+.sp-low { background: rgba(255,107,107,0.15); color: var(--coral); }
+
+.mini-arc { display: flex; gap: 2px; align-items: center; }
+.ma-seg { width: 12px; height: 6px; border-radius: 2px; background: var(--border2); }
+.ma-seg.on { background: var(--teal); }
+
+/* Responsive adjustments for small screens */
+@media (max-width: 1000px) {
+  .coach-col { width: 300px; }
+  .ws-drawer { right: 300px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="app-header">
+  <div class="logo">Story<span>Forge</span></div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="goTo('teacher',this)">⚙ Setup</button>
+    <button class="nav-tab" onclick="goTo('planning',this)">📋 Plan</button>
+    <button class="nav-tab" onclick="goTo('writing',this)">✏ Write</button>
+    <button class="nav-tab" onclick="goTo('dashboard',this)">📊 Dashboard</button>
+  </nav>
+  <div class="header-right">
+    <div id="student-badge" style="display:none;align-items:center;gap:6px;background:rgba(62,207,178,0.1);border:1px solid rgba(62,207,178,0.3);border-radius:20px;padding:4px 12px;font-size:0.73rem;color:#3ecfb2;font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">👤 </div>
+    <button class="mode-btn" id="hl-toggle-btn" onclick="toggleHighlights()">✦ Highlights ON</button>
+    <button class="mode-btn" id="focus-btn" onclick="toggleFocus()">⤢ Focus Mode</button>
+    <button class="btn btn-gold btn-sm" onclick="getFeedback()">Get Feedback</button>
+    <button class="mode-btn" onclick="returnToIsland()" title="Back to English Island" style="font-size:0.9rem;">🏝️ Island</button>
+  </div>
+</div>
+
+<!-- ══ TEACHER SETUP ══ -->
+<div id="screen-teacher" class="screen active" style="flex-direction:column;">
+  <div style="padding:32px;overflow-y:auto;flex:1;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:24px;">
+        <h1 style="font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--text);">Teacher Setup</h1>
+        <span style="font-size:0.80rem;color:var(--text2);">Configure worksheets, model compositions & essay topic</span>
+      </div>
+
+      <!-- Row 1 -->
+      <div class="setup-grid" style="margin-bottom:20px;">
+
+        <!-- Worksheets upload -->
+        <div class="panel">
+          <div class="panel-title">📄 Worksheets</div>
+          <div class="panel-sub">Upload files or add pages manually. AI will cite page numbers in feedback.</div>
+          <label for="ws-file-inp">
+            <div class="upload-zone">
+              <div class="u-icon">📁</div>
+              <p><strong>Click to upload</strong> or drag & drop</p>
+              <p style="margin-top:3px;font-size:0.72rem;">PDF · PNG · JPG</p>
+            </div>
+          </label>
+          <input type="file" id="ws-file-inp" multiple accept=".pdf,.png,.jpg,.jpeg" style="display:none;" onchange="handleWsUpload(this)">
+          <div class="file-pills" id="ws-file-pills"></div>
+          <div style="margin-top:16px;">
+            <div class="section-label">Manual Pages</div>
+            <div id="ws-manual-rows"></div>
+            <button class="btn btn-ghost btn-sm" onclick="addManualPage()" style="margin-top:6px;">+ Add Page</button>
+          </div>
+        </div>
+
+        <!-- Model compositions -->
+        <div class="panel">
+          <div class="panel-title">🏆 Model Compositions</div>
+          <div class="panel-sub">Add exemplar texts. AI uses these as reference for guiding students.</div>
+          <div class="topic-row">
+            <input type="text" class="dark-input" id="comp-title-inp" placeholder="Title / topic…" style="flex:1;">
+            <button class="btn btn-teal btn-sm" onclick="addComp()">Add</button>
+          </div>
+          <textarea class="dark-input" id="comp-body-inp" placeholder="Paste model composition text here…" style="min-height:120px;"></textarea>
+          <div class="comp-cards" id="comp-list">
+            <div style="text-align:center;padding:20px;color:var(--text3);font-size:0.80rem;">No model compositions yet</div>
+          </div>
+        </div>
+
+        <!-- Essay topic + level -->
+        <div class="panel">
+          <div class="panel-title">🎯 Essay Topic & Settings</div>
+          <div class="panel-sub">Set the writing prompt and configure coaching parameters.</div>
+
+          <div class="section-label" style="margin-bottom:8px;">Essay Topic</div>
+          <input type="text" class="dark-input" id="topic-inp" placeholder="e.g. A Day I Will Never Forget…" style="margin-bottom:14px;">
+
+          <div class="section-label" style="margin-bottom:8px;">Target Word Count</div>
+          <input type="number" class="dark-input" id="target-words" value="200" min="100" max="600" style="margin-bottom:14px;">
+
+          <div class="section-label" style="margin-bottom:8px;">Coaching Focus</div>
+          <div id="focus-checks" style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.80rem;color:var(--text2);cursor:pointer;">
+              <input type="checkbox" id="cf-vocab" checked> Vocabulary enrichment
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.80rem;color:var(--text2);cursor:pointer;">
+              <input type="checkbox" id="cf-structure" checked> Sentence variety & structure
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.80rem;color:var(--text2);cursor:pointer;">
+              <input type="checkbox" id="cf-senses" checked> Show don't tell / sensory details
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.80rem;color:var(--text2);cursor:pointer;">
+              <input type="checkbox" id="cf-grammar" checked> Grammar & punctuation
+            </label>
+          </div>
+
+          <button class="btn btn-gold" style="width:100%;" onclick="saveSetup()">Save & Go to Planning →</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLANNING ══ -->
+<div id="screen-planning" class="screen">
+  <div class="plan-wrap">
+    <div class="plan-hero">
+      <div class="plan-topic-chip">✦ <span id="hero-topic">Set topic in Setup</span></div>
+      <h2>Plan Your Story First</h2>
+      <p>Strong compositions start with strong plans. Map out your story using the 5W 1H framework before you write a single word.</p>
+    </div>
+
+    <div class="w-grid">
+      <div class="w-card">
+        <div class="w-label"><span class="w-icon who">W</span>Who is in the story?</div>
+        <textarea class="w-textarea" id="p-who" placeholder="Name your characters. Who is the main character? Describe them briefly."></textarea>
+      </div>
+      <div class="w-card">
+        <div class="w-label"><span class="w-icon when">W</span>When does it happen?</div>
+        <textarea class="w-textarea" id="p-when" placeholder="Time of day, season, or period. How does the timing affect the story?"></textarea>
+      </div>
+      <div class="w-card">
+        <div class="w-label"><span class="w-icon where">W</span>Where does it take place?</div>
+        <textarea class="w-textarea" id="p-where" placeholder="Describe the setting in detail — sights, sounds, smells."></textarea>
+      </div>
+      <div class="w-card">
+        <div class="w-label"><span class="w-icon what">W</span>What happens?</div>
+        <textarea class="w-textarea" id="p-what" placeholder="Outline the key events: opening → build-up → problem → climax → resolution."></textarea>
+      </div>
+      <div class="w-card">
+        <div class="w-label"><span class="w-icon why">W</span>Why does it happen?</div>
+        <textarea class="w-textarea" id="p-why" placeholder="What causes the main event? What motivates the characters?"></textarea>
+      </div>
+      <div class="w-card">
+        <div class="w-label"><span class="w-icon how">H</span>How does it unfold?</div>
+        <textarea class="w-textarea" id="p-how" placeholder="How do characters react? How is the problem eventually resolved?"></textarea>
+      </div>
+    </div>
+
+    <div class="plan-footer">
+      <div class="plan-progress">Fields filled: <span id="plan-fill-count">0</span>/6</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="clearPlan()">Clear</button>
+        <button class="btn btn-gold" onclick="startWriting()">Start Writing →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WRITING STUDIO ══ -->
+<div id="screen-writing" class="screen">
+
+  <!-- Editor column -->
+  <div class="editor-col">
+    <!-- Top bar -->
+    <div class="editor-topbar">
+      <div class="editor-topic" id="editor-topic">My Composition</div>
+      <div class="stats-row">
+        <div class="stat-chip"><span id="wc-val" class="val">0</span> words</div>
+        <div class="stat-chip"><span id="pc-val" class="val">0</span> para</div>
+        <div class="stat-chip"><span id="sc-val" class="val">0</span> sent</div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleWsDrawer()">📄 Worksheets</button>
+      </div>
+    </div>
+
+    <!-- Live score dials -->
+    <div class="score-bar" id="score-bar">
+      <div class="score-dial">
+        <div class="dial-ring">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="14" fill="none" stroke="#2a2f45" stroke-width="4"/>
+            <circle id="d-vocab" cx="18" cy="18" r="14" fill="none" stroke="#a78bfa" stroke-width="4" stroke-dasharray="0 88" stroke-linecap="round"/>
+          </svg>
+          <div class="dial-val" style="color:var(--violet);" id="dv-vocab">0</div>
+        </div>
+        <div class="score-label"><strong>Vocabulary</strong>Word variety</div>
+      </div>
+      <div class="score-divider"></div>
+      <div class="score-dial">
+        <div class="dial-ring">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="14" fill="none" stroke="#2a2f45" stroke-width="4"/>
+            <circle id="d-variety" cx="18" cy="18" r="14" fill="none" stroke="#60a5fa" stroke-width="4" stroke-dasharray="0 88" stroke-linecap="round"/>
+          </svg>
+          <div class="dial-val" style="color:var(--sky);" id="dv-variety">0</div>
+        </div>
+        <div class="score-label"><strong>Variety</strong>Sentence mix</div>
+      </div>
+      <div class="score-divider"></div>
+      <div class="score-dial">
+        <div class="dial-ring">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="14" fill="none" stroke="#2a2f45" stroke-width="4"/>
+            <circle id="d-flow" cx="18" cy="18" r="14" fill="none" stroke="#4ade80" stroke-width="4" stroke-dasharray="0 88" stroke-linecap="round"/>
+          </svg>
+          <div class="dial-val" style="color:var(--green);" id="dv-flow">0</div>
+        </div>
+        <div class="score-label"><strong>Flow</strong>Readability</div>
+      </div>
+      <div class="score-divider"></div>
+      <div class="score-dial">
+        <div class="dial-ring">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="14" fill="none" stroke="#2a2f45" stroke-width="4"/>
+            <circle id="d-overall" cx="18" cy="18" r="14" fill="none" stroke="#f5c842" stroke-width="4" stroke-dasharray="0 88" stroke-linecap="round"/>
+          </svg>
+          <div class="dial-val" style="color:var(--gold);" id="dv-overall">0</div>
+        </div>
+        <div class="score-label"><strong>Overall</strong>Composition</div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <div class="star-badge" id="star-badge">⭐ <span id="star-text">50 words!</span></div>
+      </div>
+    </div>
+
+    <!-- Story arc -->
+    <div class="arc-track">
+      <div class="arc-label">Story Arc</div>
+      <div class="arc-segments">
+        <div class="arc-seg s-begin" id="arc-begin" title="Beginning"></div>
+        <div class="arc-seg s-rising" id="arc-rising" title="Rising Action"></div>
+        <div class="arc-seg s-rising" id="arc-rising2"></div>
+        <div class="arc-seg s-climax" id="arc-climax" title="Climax"></div>
+        <div class="arc-seg s-resolution" id="arc-res" title="Resolution"></div>
+      </div>
+      <div class="arc-tip" id="arc-tip">Begin your story</div>
+    </div>
+
+    <!-- Plan strip -->
+    <div class="plan-strip" id="plan-strip" onclick="goTo('planning',document.querySelectorAll('.nav-tab')[1])">
+      <span style="font-size:0.70rem;color:var(--text3);font-weight:600;">PLAN ▸</span>
+    </div>
+
+    <!-- Editor -->
+    <div class="editor-area" id="editor-area">
+      <div id="prose-editor" contenteditable="true"
+        data-placeholder="Begin your story here… A strong opening grabs the reader immediately. Try starting with action, dialogue, or a vivid sensory detail."
+        oninput="onEditorInput()" onkeydown="handleEditorKey(event)"></div>
+    </div>
+
+    <!-- Highlight legend -->
+    <div class="hl-legend" id="hl-legend">
+      <div class="hl-item" title="Long or complex sentence — consider splitting"><div class="hl-dot" style="background:var(--hl-long-b);"></div>Long sentence</div>
+      <div class="hl-item" title="Passive voice detected"><div class="hl-dot" style="background:var(--hl-passive-b);"></div>Passive voice</div>
+      <div class="hl-item" title="Repeated word"><div class="hl-dot" style="background:var(--hl-repeat-b);"></div>Repeated word</div>
+      <div class="hl-item" title="Weak opener (e.g. 'It was', 'There was')"><div class="hl-dot" style="background:var(--hl-weak-b);"></div>Weak opener</div>
+      <div class="hl-item" title="Well-structured sentence!"><div class="hl-dot" style="background:var(--hl-good-b);"></div>Strong ✓</div>
+      <div class="hl-toggle">
+        <span style="font-size:0.70rem;color:var(--text2);">Highlights</span>
+        <button class="toggle-switch on" id="hl-switch" onclick="toggleHighlights()"></button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="editor-footer">
+      <div class="xp-bar-wrap">
+        <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+        <div class="xp-label" id="xp-label">0 / <span id="xp-target">200</span> words</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="clearEditor()">Clear</button>
+        <button class="btn btn-gold btn-sm" onclick="submitComp()">✓ Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coach column -->
+  <div class="coach-col">
+    <div class="coach-header">
+      <div class="coach-title"><div class="coach-status"></div>AI Writing Coach</div>
+    </div>
+
+    <div class="coach-tabs">
+      <button class="coach-tab active" onclick="switchCoachTab('chat',this)">💬 Coach</button>
+      <button class="coach-tab" onclick="switchCoachTab('vocab',this)">📚 Vocab</button>
+      <button class="coach-tab" onclick="switchCoachTab('plan',this)">📋 My Plan</button>
+    </div>
+
+    <!-- Chat pane -->
+    <div class="coach-pane active" id="pane-chat">
+      <div class="chat-msgs" id="chat-msgs">
+        <div class="msg ai">
+          <div class="msg-av">AI</div>
+          <div class="msg-body">
+            <div class="msg-bubble">
+              <div class="fb-type-tag t-ideas">Welcome</div><br>
+              Hello, writer! 👋 I'm your personal writing coach.<br><br>
+              I can see your story plan and I'll watch your composition as you write. When you want feedback, click <strong>Get Feedback</strong> or ask me anything below.<br><br>
+              Remember — I'll ask questions to help <em>you</em> find the best words. I won't write for you, but I'll make you a better writer. Let's begin! ✍️
+            </div>
+            <div class="msg-time">Now</div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-zone">
+        <div class="quick-prompts">
+          <button class="qp-btn" onclick="quickSend('Review my opening paragraph')">🔍 Opening</button>
+          <button class="qp-btn" onclick="quickSend('How can I make my vocabulary stronger?')">📚 Vocab</button>
+          <button class="qp-btn" onclick="quickSend('Is my story structure clear?')">🏗 Structure</button>
+          <button class="qp-btn" onclick="quickSend('Check my grammar and punctuation')">✅ Grammar</button>
+          <button class="qp-btn" onclick="quickSend('How can I show emotions better?')">❤ Emotions</button>
+        </div>
+        <div class="chat-row">
+          <textarea class="chat-textarea" id="chat-inp" placeholder="Ask your coach…"
+            onkeydown="chatKeyDown(event)" oninput="autoGrow(this)" rows="1"></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendChat()" title="Send">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vocab pane -->
+    <div class="coach-pane" id="pane-vocab">
+      <div class="vocab-pane-inner">
+        <div class="vocab-title">🔁 Overused & Weak Words</div>
+        <div id="repeat-words-list">
+          <div class="vocab-empty">Start writing — I'll track your word choices here and suggest improvements.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan pane -->
+    <div class="coach-pane" id="pane-plan">
+      <div class="plan-pane-inner" id="plan-review-content">
+        <div style="font-size:0.80rem;color:var(--text2);margin-bottom:14px;">Your story plan at a glance</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="screen-dashboard" class="screen" style="flex-direction:column;">
+  <div style="padding:32px;overflow-y:auto;flex:1;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:24px;">
+        <h1 style="font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--text);">Teacher Dashboard</h1>
+        <span style="font-size:0.80rem;color:var(--text2);">Live student progress overview</span>
+      </div>
+      <div class="dash-grid" style="margin-bottom:28px;">
+        <div class="dash-stat">
+          <div class="dash-stat-num" id="db-students">0</div>
+          <div class="dash-stat-label">Students writing</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat-num" id="db-avg-words">0</div>
+          <div class="dash-stat-label">Avg. word count</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat-num" id="db-avg-score">—</div>
+          <div class="dash-stat-label">Avg. overall score</div>
+        </div>
+      </div>
+      <div class="panel student-table">
+        <div class="panel-title" style="margin-bottom:16px;">Student Compositions</div>
+        <table id="student-tbl">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Words</th>
+              <th>Vocab</th>
+              <th>Variety</th>
+              <th>Flow</th>
+              <th>Overall</th>
+              <th>Story Arc</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="student-tbody"></tbody>
+        </table>
+        <div id="no-students" style="text-align:center;padding:32px;color:var(--text2);font-size:0.82rem;">
+          No students have started writing yet. Share the link and ask them to begin!
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Worksheet Drawer -->
+<div class="ws-drawer" id="ws-drawer">
+  <div class="ws-drawer-header">
+    <div class="ws-drawer-title">📄 Worksheet Reference</div>
+    <button class="ws-close" onclick="toggleWsDrawer()">✕</button>
+  </div>
+  <div class="ws-drawer-body" id="ws-drawer-body">
+    <div style="text-align:center;padding:32px;color:var(--text2);font-size:0.80rem;">
+      No worksheets uploaded yet. Add them in Setup.
+    </div>
+  </div>
+</div>
+
+<!-- Celebrate overlay -->
+<div class="celebrate-overlay" id="celebrate" onclick="document.getElementById('celebrate').classList.remove('show')">
+  <div class="celebrate-card">
+    <div class="celebrate-emoji" id="celeb-emoji">🌟</div>
+    <div class="celebrate-title" id="celeb-title">Amazing!</div>
+    <div class="celebrate-msg" id="celeb-msg">You've reached 50 words!</div>
+    <button class="btn btn-gold" onclick="document.getElementById('celebrate').classList.remove('show')">Keep Writing!</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ════════════ JAVASCRIPT ════════════ -->
+<script>
+// ─── STATE ───
+const S = {
+  topic: '',
+  targetWords: 200,
+  plan: {who:'',when:'',where:'',what:'',why:'',how:''},
+  worksheets: [
+    { title:'P4 Composition Writing Guide', pages:[
+      { num:2, content:'SHOW DON\'T TELL: Instead of stating emotions, describe physical reactions. "John was scared" → "His heart hammered; his palms turned cold and clammy."' },
+      { num:3, content:'STRONG OPENINGS: Avoid "One day" or "It was a…". Start with action, dialogue, or a vivid sensory detail that throws the reader into the moment.' },
+      { num:5, content:'SENTENCE VARIETY: Mix short punchy sentences with longer descriptive ones. A single short sentence after a long one creates powerful impact.' },
+      { num:7, content:'VOCABULARY UPGRADE: Replace common words. "Said" → whispered, exclaimed, retorted, muttered. "Walk" → strode, trudged, crept, sauntered, stumbled.' },
+      { num:9, content:'CLIMAX & RESOLUTION: Every story needs a turning point — the moment of highest tension. Ask yourself: what is the worst thing that could happen? Then show how it resolves.' },
+      { num:11, content:'PARAGRAPH STRUCTURE: One main idea per paragraph. Topic sentence → development with details → link to next paragraph.' },
+    ]}
+  ],
+  modelComps: [],
+  coachFocus: { vocab:true, structure:true, senses:true, grammar:true },
+  chatHistory: [],
+  highlightsOn: true,
+  isLoading: false,
+  wordMilestones: [50,100,150,200,250,300],
+  reachedMilestones: new Set(),
+  students: [
+    { name:'Ahmad Faris', words:187, vocab:72, variety:65, flow:78, overall:72, arc:[1,1,1,0,0], status:'Writing' },
+    { name:'Priya Nair', words:231, vocab:85, variety:80, flow:88, overall:84, arc:[1,1,1,1,1], status:'Completed' },
+    { name:'Ethan Lim', words:94, vocab:55, variety:50, flow:60, overall:55, arc:[1,1,0,0,0], status:'Writing' },
+    { name:'Sofia Chan', words:156, vocab:68, variety:74, flow:70, overall:70, arc:[1,1,1,1,0], status:'Writing' },
+  ],
+};
+
+// Pre-fill topic
+S.topic = 'A Day I Will Never Forget';
+
+// ─── NAVIGATION ───
+function goTo(id, tabEl) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`screen-${id}`).classList.add('active');
+  if (tabEl) tabEl.classList.add('active');
+  if (id === 'planning') { renderPlanHero(); updatePlanCount(); renderPlanReview(); }
+  if (id === 'writing') { renderWritingSetup(); renderPlanReview(); }
+  if (id === 'dashboard') renderDashboard();
+}
+
+// ─── SETUP ───
+let manualPageIdx = 0;
+function addManualPage() {
+  manualPageIdx++;
+  const row = document.createElement('div');
+  row.className = 'ws-page-row';
+  const i = manualPageIdx;
+  row.innerHTML = `
+    <input type="number" class="ws-page-num-inp" value="${i}" min="1" id="mp-n-${i}">
+    <textarea class="dark-input" id="mp-c-${i}" placeholder="Worksheet content for this page…" style="min-height:60px;flex:1;"></textarea>
+    <button class="del-btn" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('ws-manual-rows').appendChild(row);
+}
+
+function handleWsUpload(inp) {
+  Array.from(inp.files).forEach(f => {
+    const pills = document.getElementById('ws-file-pills');
+    const pill = document.createElement('div');
+    pill.className = 'file-pill';
+    pill.innerHTML = `📄 ${f.name} <button onclick="this.parentElement.remove()">✕</button>`;
+    pills.appendChild(pill);
+  });
+  toast(`${inp.files.length} worksheet(s) added`);
+}
+
+function addComp() {
+  const t = document.getElementById('comp-title-inp').value.trim();
+  const b = document.getElementById('comp-body-inp').value.trim();
+  if (!t || !b) { toast('Enter both a title and composition text'); return; }
+  S.modelComps.push({title:t, body:b});
+  const list = document.getElementById('comp-list');
+  if (list.querySelector('div:not(.comp-card)')) list.innerHTML = '';
+  const card = document.createElement('div');
+  card.className = 'comp-card';
+  card.innerHTML = `<div class="comp-card-title">📝 ${t}</div><div class="comp-card-preview">${b.substring(0,110)}…</div>`;
+  list.appendChild(card);
+  document.getElementById('comp-title-inp').value = '';
+  document.getElementById('comp-body-inp').value = '';
+  toast(`"${t}" added`);
+}
+
+function saveSetup() {
+  S.topic = document.getElementById('topic-inp').value.trim() || 'My Composition';
+  S.targetWords = parseInt(document.getElementById('target-words').value) || 200;
+  S.coachFocus = {
+    vocab: document.getElementById('cf-vocab').checked,
+    structure: document.getElementById('cf-structure').checked,
+    senses: document.getElementById('cf-senses').checked,
+    grammar: document.getElementById('cf-grammar').checked,
+  };
+  // collect manual pages
+  const rows = document.getElementById('ws-manual-rows').querySelectorAll('.ws-page-row');
+  const pages = [];
+  rows.forEach((r, i) => {
+    const n = r.querySelector('input[type=number]');
+    const c = r.querySelector('textarea');
+    if (n && c && c.value.trim()) pages.push({num: parseInt(n.value)||i+1, content: c.value.trim()});
+  });
+  if (pages.length) {
+    S.worksheets.push({ title:'Custom Worksheet', pages });
+  }
+  toast(`Setup saved! Topic: "${S.topic}"`);
+  document.querySelectorAll('.nav-tab')[1].click();
+}
+
+// ─── PLANNING ───
+function renderPlanHero() {
+  document.getElementById('hero-topic').textContent = S.topic || 'Set topic in Setup';
+}
+
+const planIds = ['who','when','where','what','why','how'];
+function updatePlanCount() {
+  const count = planIds.filter(k => document.getElementById(`p-${k}`)?.value.trim()).length;
+  document.getElementById('plan-fill-count').textContent = count;
+}
+planIds.forEach(k => {
+  document.getElementById(`p-${k}`).addEventListener('input', updatePlanCount);
+});
+
+function clearPlan() {
+  planIds.forEach(k => { document.getElementById(`p-${k}`).value = ''; S.plan[k] = ''; });
+  updatePlanCount();
+}
+
+function startWriting() {
+  planIds.forEach(k => { S.plan[k] = document.getElementById(`p-${k}`).value.trim(); });
+  const filled = planIds.filter(k => S.plan[k]).length;
+  if (filled < 3) { toast('Please fill in at least 3 fields before writing'); return; }
+  document.querySelectorAll('.nav-tab')[2].click();
+  // Greet with plan-based opener
+  const starter = S.plan.what || 'an exciting event';
+  addAIMsg(`Great plan! I can see your story is about <em>${starter}</em>${S.plan.who ? ` with <em>${S.plan.who}</em>` : ''}.<br><br>Now let's write! Start with your <strong>opening paragraph</strong>. Think: what is the very first thing the reader should see, hear, or feel? Can you drop them right into the action?`, 'ideas');
+}
+
+// ─── WRITING SETUP ───
+function renderWritingSetup() {
+  document.getElementById('editor-topic').textContent = S.topic || 'My Composition';
+  document.getElementById('xp-target').textContent = S.targetWords;
+  renderPlanStrip();
+  renderWsDrawer();
+}
+
+function renderPlanStrip() {
+  const strip = document.getElementById('plan-strip');
+  const items = planIds.filter(k => S.plan[k]).map(k =>
+    `<span class="plan-item"><strong>${k.charAt(0).toUpperCase()+k.slice(1)}:</strong> ${S.plan[k].substring(0,35)}${S.plan[k].length>35?'…':''}</span>`
+  );
+  strip.innerHTML = `<span style="font-size:0.70rem;color:var(--text3);font-weight:600;">PLAN ▸</span>` + (items.join('') || '<span style="font-size:0.73rem;color:var(--text3);">No plan yet — click here to add one</span>');
+}
+
+function renderPlanReview() {
+  const cont = document.getElementById('plan-review-content');
+  cont.innerHTML = '<div style="font-size:0.80rem;color:var(--text2);margin-bottom:14px;">Your story plan at a glance — click any field to edit</div>';
+  const icons = {who:'👤',when:'🕐',where:'📍',what:'⚡',why:'💡',how:'🔄'};
+  planIds.forEach(k => {
+    const div = document.createElement('div');
+    div.className = 'plan-review-card';
+    div.innerHTML = `<div class="plan-review-key">${icons[k]} ${k.charAt(0).toUpperCase()+k.slice(1)}</div><div class="plan-review-val ${S.plan[k]?'':'empty'}">${S.plan[k] || 'Not filled in'}</div>`;
+    div.addEventListener('click', () => document.querySelectorAll('.nav-tab')[1].click());
+    cont.appendChild(div);
+  });
+}
+
+// ─── EDITOR LOGIC ───
+let highlightTimer = null;
+let lastText = '';
+
+function onEditorInput() {
+  const text = getPlainText();
+  updateEditorStats(text);
+  updateScores(text);
+  updateArcFromText(text);
+  updateXP(text);
+  checkMilestones(text);
+  updateVocabPane(text);
+  if (highlightTimer) clearTimeout(highlightTimer);
+  if (S.highlightsOn) highlightTimer = setTimeout(() => applyHighlights(), 600);
+  lastText = text;
+}
+
+function getPlainText() {
+  return document.getElementById('prose-editor').innerText || '';
+}
+
+function handleEditorKey(e) {
+  if (e.key === 'Enter') {
+    // Allow default — just keep tracking
+  }
+}
+
+function updateEditorStats(text) {
+  const words = text.trim().split(/\s+/).filter(w=>w).length;
+  const paras = text.split(/\n\s*\n/).filter(p=>p.trim()).length || (text.trim() ? 1 : 0);
+  const sents = (text.match(/[.!?]+/g)||[]).length;
+  document.getElementById('wc-val').textContent = words;
+  document.getElementById('pc-val').textContent = paras;
+  document.getElementById('sc-val').textContent = sents;
+}
+
+// ─── SCORES ───
+function updateScores(text) {
+  if (!text.trim()) { setDials(0,0,0,0); return; }
+  const words = text.trim().split(/\s+/).filter(w=>w);
+  const unique = new Set(words.map(w => w.toLowerCase().replace(/[^a-z]/g,'')));
+  const vocabScore = Math.min(100, Math.round((unique.size / Math.max(words.length,1)) * 180));
+  const sents = text.split(/[.!?]+/).filter(s=>s.trim().length>4);
+  const lengths = sents.map(s => s.trim().split(/\s+/).length);
+  const avgLen = lengths.length ? lengths.reduce((a,b)=>a+b,0)/lengths.length : 0;
+  const sdLen = lengths.length > 1 ? Math.sqrt(lengths.map(l=>(l-avgLen)**2).reduce((a,b)=>a+b,0)/lengths.length) : 0;
+  const varietyScore = Math.min(100, Math.round(sdLen * 12 + Math.min(30, words.length/3)));
+  const longSents = lengths.filter(l=>l>20).length;
+  const flowScore = Math.min(100, Math.max(0, 100 - longSents * 12 - (avgLen>18 ? 15 : 0)));
+  const overall = Math.round((vocabScore*0.35 + varietyScore*0.35 + flowScore*0.3));
+  setDials(vocabScore, varietyScore, flowScore, overall);
+}
+
+function setDials(v, va, f, o) {
+  setDial('vocab', v, '#a78bfa');
+  setDial('variety', va, '#60a5fa');
+  setDial('flow', f, '#4ade80');
+  setDial('overall', o, '#f5c842');
+}
+function setDial(id, score, color) {
+  const circ = document.getElementById(`d-${id}`);
+  const val = document.getElementById(`dv-${id}`);
+  const pct = score / 100;
+  const circ_len = 2 * Math.PI * 14;
+  circ.style.strokeDasharray = `${pct * circ_len} ${circ_len}`;
+  val.textContent = score;
+}
+
+// ─── STORY ARC ───
+function updateArcFromText(text) {
+  const wc = text.trim().split(/\s+/).filter(w=>w).length;
+  const arcs = ['arc-begin','arc-rising','arc-rising2','arc-climax','arc-res'];
+  const tips = ['Write your beginning','Build the action','Continue rising action','Reach the climax!','Add your resolution'];
+  const thresholds = [10, 40, 90, 140, 180];
+  let filled = 0;
+  arcs.forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (wc >= thresholds[i]) { el.classList.add('filled'); filled = i+1; }
+    else el.classList.remove('filled');
+  });
+  const tip = tips[Math.min(filled, tips.length-1)];
+  document.getElementById('arc-tip').textContent = tip;
+}
+
+// ─── XP BAR ───
+function updateXP(text) {
+  const wc = text.trim().split(/\s+/).filter(w=>w).length;
+  const pct = Math.min(100, Math.round(wc / S.targetWords * 100));
+  document.getElementById('xp-fill').style.width = pct + '%';
+  document.getElementById('xp-label').textContent = `${wc} / ${S.targetWords} words`;
+}
+
+function checkMilestones(text) {
+  const wc = text.trim().split(/\s+/).filter(w=>w).length;
+  const milestones = [50,100,150,200,250,300].filter(m => m <= S.targetWords + 50);
+  milestones.forEach(m => {
+    if (wc >= m && !S.reachedMilestones.has(m)) {
+      S.reachedMilestones.add(m);
+      celebrate(m);
+    }
+  });
+  // Update star badge
+  const lastM = [...S.reachedMilestones].sort((a,b)=>b-a)[0];
+  const badge = document.getElementById('star-badge');
+  if (lastM) {
+    badge.classList.add('show');
+    document.getElementById('star-text').textContent = `${lastM} words! ⭐`;
+  }
+}
+
+function celebrate(words) {
+  const msgs = {
+    50:  ['🌱','Great start!','You\'ve written 50 words! Keep going!'],
+    100: ['⭐','100 Words!','Halfway to your goal. Excellent focus!'],
+    150: ['🔥','On Fire!','150 words! Your story is taking shape.'],
+    200: ['🏆','Target Reached!','You\'ve hit your word count goal! Amazing!'],
+    250: ['💎','Going Beyond!','250 words — you\'re exceeding expectations!'],
+    300: ['🚀','Story Master!','300 words! You\'re a storytelling star!'],
+  };
+  const [emoji,title,msg] = msgs[words] || ['🌟','Milestone!',`${words} words reached!`];
+  document.getElementById('celeb-emoji').textContent = emoji;
+  document.getElementById('celeb-title').textContent = title;
+  document.getElementById('celeb-msg').textContent = msg;
+  document.getElementById('celebrate').classList.add('show');
+}
+
+// ─── HIGHLIGHTS ───
+function toggleHighlights() {
+  S.highlightsOn = !S.highlightsOn;
+  const sw = document.getElementById('hl-switch');
+  const btn = document.getElementById('hl-toggle-btn');
+  if (S.highlightsOn) {
+    sw.classList.add('on');
+    btn.classList.add('on');
+    btn.textContent = '✦ Highlights ON';
+    applyHighlights();
+  } else {
+    sw.classList.remove('on');
+    btn.classList.remove('on');
+    btn.textContent = '✦ Highlights OFF';
+    removeHighlights();
+  }
+}
+
+const WEAK_OPENERS = /^(it was|there was|there were|it is|he was|she was|they were|i was|one day|once upon|on that day)/i;
+const PASSIVE = /\b(was|were|is|are|been|be|being)\s+\w+ed\b/gi;
+
+function applyHighlights() {
+  const editor = document.getElementById('prose-editor');
+  const sel = window.getSelection();
+  const range = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
+
+  // Work paragraph by paragraph using childNodes
+  const paras = Array.from(editor.childNodes);
+  const wordFreq = {};
+  const allText = editor.innerText;
+  allText.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(w=>w.length>3).forEach(w => {
+    wordFreq[w] = (wordFreq[w]||0)+1;
+  });
+  const repeated = new Set(Object.keys(wordFreq).filter(w => wordFreq[w] >= 3 && !stopWords.has(w)));
+
+  paras.forEach(node => {
+    if (node.nodeType !== 1 && node.nodeType !== 3) return;
+    const el = node.nodeType === 3 ? wrapTextNode(node) : node;
+    if (!el || !el.textContent) return;
+
+    const txt = el.textContent;
+    const wordCount = txt.trim().split(/\s+/).length;
+    const isLong = wordCount > 22;
+    const isPassive = PASSIVE.test(txt);
+    const isWeak = WEAK_OPENERS.test(txt.trim());
+    const hasRepeat = repeated.size > 0 && [...repeated].some(w => new RegExp(`\\b${w}\\b`,'i').test(txt));
+    const isGood = wordCount >= 8 && wordCount <= 18 && !isPassive && !isWeak;
+
+    PASSIVE.lastIndex = 0;
+    if (isLong) el.classList.add('hl-long'); else el.classList.remove('hl-long');
+    if (isPassive) el.classList.add('hl-passive'); else el.classList.remove('hl-passive');
+    if (isWeak) el.classList.add('hl-weak'); else el.classList.remove('hl-weak');
+    if (hasRepeat && !isLong && !isPassive && !isWeak) el.classList.add('hl-repeat'); else el.classList.remove('hl-repeat');
+    if (isGood) el.classList.add('hl-good'); else el.classList.remove('hl-good');
+  });
+}
+
+function wrapTextNode(textNode) {
+  const p = document.createElement('p');
+  textNode.parentNode.insertBefore(p, textNode);
+  p.appendChild(textNode);
+  return p;
+}
+
+function removeHighlights() {
+  document.querySelectorAll('#prose-editor .hl-long, #prose-editor .hl-passive, #prose-editor .hl-repeat, #prose-editor .hl-weak, #prose-editor .hl-good').forEach(el => {
+    el.classList.remove('hl-long','hl-passive','hl-repeat','hl-weak','hl-good');
+  });
+}
+
+const stopWords = new Set(['the','and','was','were','has','have','had','that','this','with','for','from','they','their','there','then','when','what','which','will','would','could','should','been','being','about','into','over','after','before','during','through','while','said','like','just','very','also','more','some','such','each','both','many','same','than','well','even','back','come','here','long','much','still','tell','upon','away','down','look','know','make','take','come','good','hand','into','only','over','year','your','also','been','dear','does','done','each','else','ever','eyes','face','feel','find','four','from','give','goes','gone','grow','hard','have','help','high','home','hope','keep','kind','knew','know','last','late','left','less','life','like','live','long','love','made','make','many','mind','mine','miss','more','most','move','much','must','name','near','need','next','nine','none','note','once','open','over','part','past','path','plan','play','read','real','rest','rich','road','role','room','said','same','save','seen','self','send','sent','show','side','sign','six','size','slow','some','soon','stay','step','stop','such','sure','take','tell','them','then','they','this','thus','time','told','took','town','tree','true','turn','type','used','very','view','wait','walk','want','warm','ways','week','went','were','what','when','whom','wide','will','wish','with','word','work','year','your','just','also','only','have']);
+
+// ─── VOCAB PANE ───
+function updateVocabPane(text) {
+  const words = text.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(w => w.length > 3 && !stopWords.has(w));
+  const freq = {};
+  words.forEach(w => freq[w] = (freq[w]||0)+1);
+  const overused = Object.entries(freq).filter(([,c])=>c>=3).sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+  const cont = document.getElementById('repeat-words-list');
+  if (!overused.length) {
+    cont.innerHTML = '<div class="vocab-empty">Great! No heavily repeated words yet. Keep writing.</div>';
+    return;
+  }
+  cont.innerHTML = '';
+  overused.forEach(([word, count]) => {
+    const item = document.createElement('div');
+    item.className = 'rw-item';
+    item.style = 'flex-direction:column;align-items:flex-start;';
+    item.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:5px;">
+        <span class="rw-word">"${word}"</span>
+        <span class="rw-count">used ${count}×</span>
+      </div>
+      <div class="rw-prompt">Can you find a more vivid synonym, or restructure to use it less?</div>
+      <button class="rw-coach-btn" style="margin-top:7px;" onclick="quickSend('I keep using the word \\'${word}\\' too much. What are some alternatives I could use in my composition?')">Ask coach →</button>`;
+    cont.appendChild(item);
+  });
+}
+
+// ─── WORKSHEET DRAWER ───
+function renderWsDrawer() {
+  const body = document.getElementById('ws-drawer-body');
+  if (!S.worksheets.length) return;
+  body.innerHTML = '';
+  S.worksheets.forEach(ws => {
+    const h = document.createElement('div');
+    h.style = 'font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:10px;';
+    h.textContent = ws.title;
+    body.appendChild(h);
+    ws.pages.forEach(pg => {
+      const d = document.createElement('div');
+      d.className = 'ws-pg';
+      d.id = `wsp-${pg.num}`;
+      d.innerHTML = `<div class="ws-pg-num">📄 Page ${pg.num}</div><div class="ws-pg-text">${pg.content}</div>`;
+      body.appendChild(d);
+    });
+  });
+}
+
+function toggleWsDrawer() {
+  document.getElementById('ws-drawer').classList.toggle('open');
+}
+
+function scrollToWsPage(num) {
+  const drawer = document.getElementById('ws-drawer');
+  drawer.classList.add('open');
+  setTimeout(() => {
+    const el = document.getElementById(`wsp-${num}`);
+    if (el) {
+      document.querySelectorAll('.ws-pg').forEach(p => p.classList.remove('highlight'));
+      el.classList.add('highlight');
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  }, 150);
+}
+
+function toggleFocus() {
+  const btn = document.getElementById('focus-btn');
+  const coachCol = document.querySelector('.coach-col');
+  const header = document.querySelector('.app-header');
+  if (btn.classList.toggle('on')) {
+    coachCol.style.display = 'none';
+    btn.textContent = '⤢ Exit Focus';
+  } else {
+    coachCol.style.display = '';
+    btn.textContent = '⤢ Focus Mode';
+  }
+}
+
+// ─── COACH TABS ───
+function switchCoachTab(id, btn) {
+  document.querySelectorAll('.coach-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.coach-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`pane-${id}`).classList.add('active');
+}
+
+// ─── CHAT ───
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+}
+function chatKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+function quickSend(msg) {
+  document.getElementById('chat-inp').value = msg;
+  sendChat();
+  switchCoachTab('chat', document.querySelector('.coach-tab'));
+}
+
+function sendChat() {
+  const inp = document.getElementById('chat-inp');
+  const msg = inp.value.trim();
+  if (!msg || S.isLoading) return;
+  inp.value = ''; inp.style.height = 'auto';
+  addStudentMsg(msg);
+  callAI(msg);
+}
+
+function getFeedback() {
+  const text = getPlainText().trim();
+  if (!text) { addAIMsg("You haven't written anything yet! Start your story and I'll give you feedback.", 'ideas'); return; }
+  callAI('general_feedback');
+}
+
+function addStudentMsg(text) {
+  const msgs = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'msg student';
+  const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  d.innerHTML = `<div class="msg-av">S</div><div class="msg-body"><div class="msg-bubble">${escHtml(text)}</div><div class="msg-time">${t}</div></div>`;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+  S.chatHistory.push({role:'student',content:text});
+}
+
+function addAIMsg(html, type='ideas', pageRefs=[]) {
+  const msgs = document.getElementById('chat-msgs');
+  const typeMap = {
+    vocab: 't-vocab', structure: 't-structure', ideas: 't-ideas',
+    grammar: 't-grammar', planning: 't-planning', praise: 't-praise'
+  };
+  const typeLabels = {
+    vocab:'Vocabulary', structure:'Structure', ideas:'Ideas',
+    grammar:'Grammar', planning:'Planning', praise:'Well done!'
+  };
+  const cls = typeMap[type] || 't-ideas';
+  const label = typeLabels[type] || type;
+  const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  let refsHtml = '';
+  if (pageRefs.length) {
+    refsHtml = `<div style="margin-top:8px;">${pageRefs.map(p=>`<a class="page-ref" href="#" onclick="scrollToWsPage(${p});return false;">📄 p.${p}</a>`).join(' ')}</div>`;
+  }
+  const d = document.createElement('div');
+  d.className = 'msg ai';
+  d.innerHTML = `<div class="msg-av">AI</div><div class="msg-body"><div class="msg-bubble"><div class="fb-type-tag ${cls}">${label}</div><br>${html}${refsHtml}</div><div class="msg-time">${t}</div></div>`;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+  S.chatHistory.push({role:'ai',content:html});
+}
+
+function addLoadingMsg() {
+  const msgs = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'msg ai'; d.id = 'loading-msg';
+  d.innerHTML = `<div class="msg-av">AI</div><div class="msg-body"><div class="msg-bubble"><div class="typing-dots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>`;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeLoadingMsg() {
+  const el = document.getElementById('loading-msg');
+  if (el) el.remove();
+}
+
+// ─── AI CALL ───
+async function callAI(userMsg) {
+  if (S.isLoading) return;
+  S.isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  addLoadingMsg();
+
+  const story = getPlainText().trim();
+  const wsCtx = S.worksheets.map(ws => `Worksheet: "${ws.title}"\n` + ws.pages.map(p=>`Page ${p.num}: ${p.content}`).join('\n')).join('\n\n');
+  const modelCtx = S.modelComps.map(c=>`Model composition "${c.title}":\n${c.body}`).join('\n\n');
+  const planCtx = planIds.filter(k=>S.plan[k]).map(k=>`${k}: ${S.plan[k]}`).join('\n');
+  const focusList = Object.entries(S.coachFocus).filter(([,v])=>v).map(([k])=>k).join(', ');
+  const wc = story.split(/\s+/).filter(w=>w).length;
+
+  const system = `You are an encouraging, Socratic P4 English composition writing coach for Singapore primary school students (age 9-10).
+
+CORE RULE: NEVER write model sentences or passages for students. Your job is to ask guiding questions that help them discover improvements on their own.
+
+Coaching technique:
+- Ask specific questions: "What does that moment feel/look/smell like?" / "Could you describe the character's face instead of just their emotion?"
+- Reference their own words: quote back words they used when discussing them
+- Be warm, specific, and age-appropriate
+- Focus on ONE or TWO things per response — not everything at once
+- When relevant, cite worksheet pages as [see p.X] — these become clickable buttons
+- Identify your feedback type at the START using exactly one: [vocab] [structure] [ideas] [grammar] [planning] [praise]
+
+Teacher's coaching focus areas: ${focusList}
+
+Worksheet pages:
+${wsCtx || 'None uploaded'}
+
+Model compositions for reference:
+${modelCtx || 'None added'}
+
+Student story plan:
+${planCtx || 'Not provided'}
+
+Essay topic: ${S.topic}
+Current word count: ${wc}
+
+CRITICAL: Keep responses under 180 words. Ask questions, don't write sentences for them.`;
+
+  const history = S.chatHistory.slice(-8).map(m => ({
+    role: m.role === 'student' ? 'user' : 'assistant',
+    content: m.content
+  }));
+
+  const userContent = userMsg === 'general_feedback'
+    ? `Please give me focused feedback on my composition so far.\n\nMy story:\n${story || '(not started yet)'}`
+    : `${userMsg}\n\nMy story so far:\n${story || '(not started yet)'}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system,
+        messages: [...history, {role:'user', content:userContent}]
+      })
+    });
+    const data = await res.json();
+    removeLoadingMsg();
+    if (data.content?.[0]?.text) {
+      let text = data.content[0].text;
+      // Extract type tag
+      let type = 'ideas';
+      const m = text.match(/^\[(vocab|structure|ideas|grammar|planning|praise)\]/i);
+      if (m) { type = m[1].toLowerCase(); text = text.slice(m[0].length).trim(); }
+      // Extract page refs
+      const pageRefs = [];
+      text = text.replace(/\[see p\.(\d+)\]/gi, (_,pg)=>{ const n=parseInt(pg); if(!pageRefs.includes(n))pageRefs.push(n); return `<a class="page-ref" href="#" onclick="scrollToWsPage(${n});return false;">📄 p.${n}</a>`; });
+      // Format
+      text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+      addAIMsg(text, type, []);
+    } else {
+      addAIMsg("I'm having trouble connecting. Please try again in a moment.", 'ideas');
+    }
+  } catch(err) {
+    removeLoadingMsg();
+    addAIMsg("Connection issue. Please check your internet and try again.", 'ideas');
+  }
+  S.isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+// ─── DASHBOARD ───
+function renderDashboard() {
+  document.getElementById('db-students').textContent = S.students.length;
+  const avgW = Math.round(S.students.reduce((a,s)=>a+s.words,0)/S.students.length);
+  const avgO = Math.round(S.students.reduce((a,s)=>a+s.overall,0)/S.students.length);
+  document.getElementById('db-avg-words').textContent = avgW;
+  document.getElementById('db-avg-score').textContent = avgO + '%';
+
+  const tbody = document.getElementById('student-tbody');
+  tbody.innerHTML = '';
+  document.getElementById('no-students').style.display = S.students.length ? 'none' : 'block';
+
+  S.students.forEach(s => {
+    const tr = document.createElement('tr');
+    const scorePill = (v) => {
+      const cls = v >= 75 ? 'sp-high' : v >= 55 ? 'sp-mid' : 'sp-low';
+      return `<span class="score-pill ${cls}">${v}%</span>`;
+    };
+    const arc = s.arc.map((a,i)=>`<div class="ma-seg ${a?'on':''}"></div>`).join('');
+    const statusColor = s.status==='Completed' ? 'var(--green)' : 'var(--gold)';
+    tr.innerHTML = `
+      <td style="font-weight:600;">${s.name}</td>
+      <td>${s.words}</td>
+      <td>${scorePill(s.vocab)}</td>
+      <td>${scorePill(s.variety)}</td>
+      <td>${scorePill(s.flow)}</td>
+      <td>${scorePill(s.overall)}</td>
+      <td><div class="mini-arc">${arc}</div></td>
+      <td><span style="color:${statusColor};font-size:0.78rem;font-weight:600;">${s.status}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── MISC ───
+function clearEditor() {
+  if (confirm('Clear your composition? This cannot be undone.')) {
+    document.getElementById('prose-editor').innerHTML = '';
+    S.reachedMilestones.clear();
+    document.getElementById('star-badge').classList.remove('show');
+    onEditorInput();
+  }
+}
+
+function submitComp() {
+  const text = getPlainText().trim();
+  if (!text) { toast('Write something first!'); return; }
+  const wc = text.split(/\s+/).filter(w=>w).length;
+  addAIMsg(`🎉 Excellent work submitting your composition! You wrote <strong>${wc} words</strong>.<br><br>Before your teacher reviews it, do a quick check:<br>• Read it aloud — does every sentence make sense?<br>• Does your opening grab attention?<br>• Have you shown emotions through actions, not just stated them?<br>• Is there a clear beginning, middle, and end?<br><br>Well done for completing this today! 🌟`, 'praise');
+  toast('Composition submitted! ✓');
+  // Add to student list for dashboard
+  const scores = calcScores(text);
+  S.students.unshift({name:'You (Student)', words:wc, ...scores, arc:[1,1,wc>60?1:0,wc>120?1:0,wc>180?1:0], status:'Completed'});
+}
+
+function calcScores(text) {
+  const words = text.trim().split(/\s+/).filter(w=>w);
+  const unique = new Set(words.map(w=>w.toLowerCase().replace(/[^a-z]/g,'')));
+  const vocab = Math.min(100,Math.round(unique.size/Math.max(words.length,1)*180));
+  const sents = text.split(/[.!?]+/).filter(s=>s.trim().length>4);
+  const lens = sents.map(s=>s.trim().split(/\s+/).length);
+  const avg = lens.length ? lens.reduce((a,b)=>a+b,0)/lens.length : 0;
+  const sd = lens.length>1 ? Math.sqrt(lens.map(l=>(l-avg)**2).reduce((a,b)=>a+b,0)/lens.length) : 0;
+  const variety = Math.min(100,Math.round(sd*12+Math.min(30,words.length/3)));
+  const long = lens.filter(l=>l>20).length;
+  const flow = Math.min(100,Math.max(0,100-long*12-(avg>18?15:0)));
+  const overall = Math.round(vocab*0.35+variety*0.35+flow*0.3);
+  return {vocab,variety,flow,overall};
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ════════════════════════════════════════
+// STUDENT IDENTITY — reads from portal login
+// ════════════════════════════════════════
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE'; // ← paste your GAS URL here
+const FIREBASE_DB_URL = 'https://english-island-cps-default-rtdb.firebaseio.com';
+
+let currentStudent = null; // { name, cls, loginTime }
+
+function loadStudentIdentity() {
+  const params = new URLSearchParams(window.location.search);
+  const urlName  = params.get('name');
+  const urlCls   = params.get('cls');
+  const urlTopic = params.get('topic');
+  // Override topic from island URL
+  if (urlTopic) S.topic = decodeURIComponent(urlTopic);
+  // 1. URL params (island passes ?name=...&cls=...)
+  if (urlName) {
+    currentStudent = { name: decodeURIComponent(urlName), cls: decodeURIComponent(urlCls || ''), loginTime: Date.now() };
+    localStorage.setItem('p4_student', JSON.stringify(currentStudent));
+    return true;
+  }
+  // 2. localStorage (already logged in via portal)
+  try {
+    const stored = localStorage.getItem('p4_student');
+    if (stored) { currentStudent = JSON.parse(stored); return true; }
+  } catch(e) {}
+  return false;
+}
+
+function showSplash() {
+  document.getElementById('sf-splash').style.display = 'flex';
+}
+function hideSplash() {
+  const splash = document.getElementById('sf-splash');
+  splash.style.opacity = '0';
+  setTimeout(() => splash.style.display = 'none', 400);
+}
+
+function enterAsGuest() {
+  const name = document.getElementById('guest-name-inp').value.trim();
+  const cls  = document.getElementById('guest-cls-inp').value.trim();
+  if (!name) { document.getElementById('splash-err').textContent = 'Please enter your name.'; return; }
+  currentStudent = { name, cls: cls || 'Unknown', loginTime: Date.now() };
+  localStorage.setItem('p4_student', JSON.stringify(currentStudent));
+  hideSplash();
+  afterIdentityLoaded();
+}
+
+function returnToIsland() {
+  window.location.href = 'student-portal.html';
+}
+
+function afterIdentityLoaded() {
+  // Personalise the app
+  const first = currentStudent.name.split(' ')[0];
+  // Update header
+  document.getElementById('student-badge').textContent = `${currentStudent.name} · ${currentStudent.cls}`;
+  document.getElementById('student-badge').style.display = 'flex';
+  // Greet in chat
+  const msgs = document.getElementById('chat-msgs');
+  if (msgs.children.length <= 1) {
+    addAIMsg(`Hi <strong>${first}</strong>! 👋 I'm your writing coach for today. I can see you're from <strong>${currentStudent.cls}</strong>.<br><br>Your topic is: <em>"${S.topic}"</em><br><br>Let's start with your <strong>Story Plan</strong>. Head to the Plan tab and fill in your 5W 1H before you begin writing!`, 'ideas');
+  }
+}
+
+// ── FIREBASE SCORE SUBMISSION ──
+async function submitScoreToFirebase(scoreData) {
+  if (!currentStudent) return;
+  const safeName = currentStudent.name.replace(/[.#$\[\]]/g, '_');
+  const path = `scores/${currentStudent.cls}/${safeName}/storyforge`;
+  const url = `${FIREBASE_DB_URL}/${path}.json`;
+  try {
+    await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...scoreData,
+        name: currentStudent.name,
+        cls: currentStudent.cls,
+        topic: S.topic,
+        timestamp: Date.now(),
+        component: 'SF'
+      })
+    });
+    toast('✓ Score saved to teacher dashboard');
+  } catch(e) {
+    console.warn('Firebase save failed:', e);
+  }
+}
+
+// ── OVERRIDE submitComp to include real student name and Firebase save ──
+const _origSubmitComp = submitComp;
+function submitComp() {
+  const text = getPlainText().trim();
+  if (!text) { toast('Write something first!'); return; }
+  const wc = text.split(/\s+/).filter(w=>w).length;
+  const scores = calcScores(text);
+  const name = currentStudent ? currentStudent.name : 'Student';
+  const first = name.split(' ')[0];
+
+  addAIMsg(`🎉 Well done, <strong>${first}</strong>! You wrote <strong>${wc} words</strong>.<br><br>Before submitting, do a final check:<br>• Read it aloud — does every sentence make sense?<br>• Does your opening grab attention?<br>• Have you shown emotions through actions, not just stating them?<br>• Is there a clear beginning, middle, and end?<br><br>Your score has been sent to your teacher. Great effort today! 🌟`, 'praise');
+  toast('Composition submitted! ✓');
+
+  // Save real student data
+  S.students = S.students.filter(s => s.name !== name);
+  S.students.unshift({
+    name,
+    words: wc, ...scores,
+    arc: [1,1,wc>60?1:0,wc>120?1:0,wc>180?1:0],
+    status: 'Completed'
+  });
+
+  submitScoreToFirebase({ ...scores, words: wc, status: 'Completed' });
+  // Mark done for island pin
+  localStorage.setItem('sf_submitted', JSON.stringify({ status: 'Completed', words: wc, ...scores, ts: Date.now() }));
+}
+
+// ─── INIT ───
+document.getElementById('topic-inp').value = S.topic;
+renderDashboard();
+
+planIds.forEach(k => {
+  const el = document.getElementById(`p-${k}`);
+  if (el) el.addEventListener('input', updatePlanCount);
+});
+
+// ── BOOT: check identity ──
+(function boot() {
+  const known = loadStudentIdentity();
+  if (known) {
+    afterIdentityLoaded();
+  } else {
+    showSplash();
+  }
+})();
+</script>
+
+<!-- ════════════════════════════════
+     WELCOME SPLASH (shown if not logged in)
+═════════════════════════════════ -->
+<div id="sf-splash" style="
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:rgba(10,12,20,0.97);
+  align-items:center; justify-content:center;
+  flex-direction:column;
+  font-family:'Outfit',sans-serif;
+  animation: fadeIn 0.3s ease;
+">
+  <style>
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .splash-card {
+    background:#191c26; border:1px solid #363c57;
+    border-radius:20px; padding:40px 44px;
+    max-width:440px; width:90%; text-align:center;
+    box-shadow:0 24px 80px rgba(0,0,0,0.6);
+    position:relative;
+  }
+  .splash-island-icon {
+    font-size:3.2rem; margin-bottom:16px;
+    animation: bob 2.5s ease-in-out infinite;
+  }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .splash-title {
+    font-family:'Playfair Display',serif;
+    font-size:1.7rem; color:#f5c842; margin-bottom:6px;
+  }
+  .splash-sub { font-size:0.88rem; color:#8b90b0; margin-bottom:28px; line-height:1.5; }
+  .splash-identity-card {
+    background:#0f1117; border:1px solid #3ecfb2;
+    border-radius:12px; padding:18px 20px;
+    margin-bottom:20px; text-align:left;
+  }
+  .splash-name { font-size:1.1rem; font-weight:700; color:#e8eaf5; }
+  .splash-cls { font-size:0.80rem; color:#3ecfb2; margin-top:3px; }
+  .splash-divider {
+    display:flex; align-items:center; gap:10px;
+    margin:20px 0; color:#555c80; font-size:0.75rem;
+  }
+  .splash-divider::before, .splash-divider::after {
+    content:''; flex:1; height:1px; background:#2a2f45;
+  }
+  .splash-input {
+    width:100%; background:#0f1117; border:1px solid #363c57;
+    border-radius:8px; padding:10px 14px; color:#e8eaf5;
+    font-family:'Outfit',sans-serif; font-size:0.88rem;
+    outline:none; margin-bottom:10px; transition:border-color 0.2s;
+  }
+  .splash-input:focus { border-color:#f5c842; }
+  .splash-btn {
+    width:100%; padding:12px; border-radius:10px; border:none;
+    font-family:'Outfit',sans-serif; font-weight:700; font-size:0.92rem;
+    cursor:pointer; transition:all 0.15s; margin-bottom:8px;
+  }
+  .splash-btn-primary { background:#f5c842; color:#0f1117; }
+  .splash-btn-primary:hover { background:#fde98a; transform:translateY(-1px); }
+  .splash-btn-ghost { background:transparent; border:1px solid #363c57; color:#8b90b0; }
+  .splash-btn-ghost:hover { border-color:#8b90b0; color:#e8eaf5; }
+  .splash-err { color:#ff6b6b; font-size:0.78rem; margin-top:4px; min-height:18px; }
+  .splash-back { font-size:0.75rem; color:#555c80; margin-top:14px; cursor:pointer; }
+  .splash-back:hover { color:#8b90b0; }
+  </style>
+
+  <div class="splash-card" id="splash-main">
+    <div class="splash-island-icon">🏝️</div>
+    <div class="splash-title">StoryForge</div>
+    <div class="splash-sub">Your AI Writing Studio — part of the English Island portal.<br>Loading your identity…</div>
+
+    <!-- Shown if student IS identified from portal -->
+    <div id="splash-known" style="display:none;">
+      <div class="splash-identity-card">
+        <div class="splash-name" id="splash-known-name"></div>
+        <div class="splash-cls" id="splash-known-cls"></div>
+      </div>
+      <button class="splash-btn splash-btn-primary" onclick="hideSplash();afterIdentityLoaded();">
+        ✍️ Enter StoryForge
+      </button>
+      <button class="splash-btn splash-btn-ghost" onclick="returnToIsland()">
+        ← Back to Island
+      </button>
+    </div>
+
+    <!-- Shown if student is NOT logged in -->
+    <div id="splash-guest" style="display:none;">
+      <div class="splash-sub" style="margin-bottom:16px;color:#ff6b6b;font-size:0.82rem;">
+        ⚠️ You're not logged in via the English Portal.<br>Please log in through the island, or enter your details below.
+      </div>
+      <input class="splash-input" id="guest-name-inp" placeholder="Your full name…" autocomplete="name">
+      <input class="splash-input" id="guest-cls-inp" placeholder="Your class (e.g. 4 Integrity)">
+      <div class="splash-err" id="splash-err"></div>
+      <button class="splash-btn splash-btn-primary" onclick="enterAsGuest()">Enter StoryForge →</button>
+      <button class="splash-btn splash-btn-ghost" onclick="returnToIsland()">← Back to Island</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Splash display logic ──
+(function initSplash() {
+  const splash = document.getElementById('sf-splash');
+  const known = document.getElementById('splash-known');
+  const guest = document.getElementById('splash-guest');
+
+  if (currentStudent) {
+    // Identity already loaded before splash shows — but splash visible means not yet confirmed
+    document.getElementById('splash-known-name').textContent = currentStudent.name;
+    document.getElementById('splash-known-cls').textContent = currentStudent.cls + ' · Cantonment Primary';
+    known.style.display = 'block';
+    guest.style.display = 'none';
+  } else {
+    known.style.display = 'none';
+    guest.style.display = 'block';
+  }
+})();
+</script>
+
+</body>
+</html>
