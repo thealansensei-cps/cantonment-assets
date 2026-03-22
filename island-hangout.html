@@ -221,9 +221,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 
 
 
+
+
+
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script>
+
 
 window.onload = function() {
 
@@ -514,31 +518,51 @@ function doGif()   { var q=document.getElementById('gSrch').value.trim(); if(q) 
 function loadGifs(q) {
   var st=document.getElementById('gStatus'), gr=document.getElementById('gGrid');
   st.textContent='Searching...'; st.style.display='block'; gr.innerHTML='';
-  fetch('https://tenor.googleapis.com/v2/search?q='+encodeURIComponent(q)+'&key=AIzaSyAyimkuYQYF_y7VMHBmH7DcFMmRMYYE2Us&limit=8&media_filter=gif&contentfilter=high')
-    .then(function(r){return r.json();})
+  // Tenor v1 - no API key needed
+  var url = 'https://tenor.com/v1/search?q=' + encodeURIComponent(q) + '&limit=8&contentfilter=high&locale=en_US&anon_id=abcde12345';
+  fetch(url)
+    .then(function(r){ return r.json(); })
     .then(function(d){
-      st.style.display='none';
-      var results = d.results || d.data || [];
-      if(!results.length){st.textContent='No GIFs found';st.style.display='block';return;}
-      gr.innerHTML='';
-      results.forEach(function(g){
-        // Handle both Tenor v2 and Giphy formats
-        var fullUrl = (g.media_formats&&g.media_formats.gif) ? g.media_formats.gif.url :
-                      (g.images&&g.images.original) ? g.images.original.url : '';
-        var prevUrl = (g.media_formats&&g.media_formats.tinygif) ? g.media_formats.tinygif.url :
-                      (g.images&&g.images.fixed_height_small) ? g.images.fixed_height_small.url : fullUrl;
-        if(!fullUrl) return;
-        var div=document.createElement('div');
-        div.className='gi';
-        var img=document.createElement('img');
-        img.src=prevUrl;
-        img.loading='lazy';
+      var results = d.results || [];
+      if (!results.length) { st.textContent='No GIFs found'; st.style.display='block'; return; }
+      st.style.display='none'; gr.innerHTML='';
+      results.forEach(function(g) {
+        var media = g.media && g.media[0];
+        if (!media) return;
+        var fullUrl = media.gif ? media.gif.url : '';
+        var prevUrl = media.tinygif ? media.tinygif.url : (media.nanogif ? media.nanogif.url : fullUrl);
+        if (!fullUrl) return;
+        var div = document.createElement('div');
+        div.className = 'gi';
+        var img = document.createElement('img');
+        img.src = prevUrl; img.loading = 'lazy';
         div.appendChild(img);
-        div.addEventListener('click',(function(u){return function(){sendGif(u);};})(fullUrl));
+        div.addEventListener('click', (function(u){ return function(){ window.sendGif(u); }; })(fullUrl));
         gr.appendChild(div);
       });
     })
-    .catch(function(){st.textContent='Could not load GIFs - check connection';st.style.display='block';});
+    .catch(function(e) {
+      // Fallback: Giphy with public key
+      fetch('https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q='+encodeURIComponent(q)+'&limit=8&rating=g')
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          var results = d.data || [];
+          if (!results.length) { st.textContent='No GIFs found'; st.style.display='block'; return; }
+          st.style.display='none'; gr.innerHTML='';
+          results.forEach(function(g) {
+            var fullUrl = g.images.original.url;
+            var prevUrl = g.images.fixed_height_small.url;
+            var div = document.createElement('div');
+            div.className = 'gi';
+            var img = document.createElement('img');
+            img.src = prevUrl; img.loading = 'lazy';
+            div.appendChild(img);
+            div.addEventListener('click', (function(u){ return function(){ window.sendGif(u); }; })(fullUrl));
+            gr.appendChild(div);
+          });
+        })
+        .catch(function(){ st.textContent='Could not load GIFs'; st.style.display='block'; });
+    });
 }
 
 // ═══════════════════════════════════════════════
@@ -691,6 +715,7 @@ window.toast = toast;
 window.testWrite = testWrite;
 
 };
+
 
 
 </script>
