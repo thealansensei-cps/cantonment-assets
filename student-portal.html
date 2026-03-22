@@ -139,6 +139,7 @@ select:disabled{opacity:.4;cursor:not-allowed}
 .map-pin:nth-child(3) .pin-head{animation-delay:1s}
 .map-pin:nth-child(4) .pin-head{animation-delay:1.5s}
 .map-pin:nth-child(5) .pin-head{animation-delay:2s}
+.map-pin:nth-child(9) .pin-head{animation-delay:2.5s}
 @keyframes pinBob{0%,100%{box-shadow:0 4px 14px rgba(0,0,0,.4),0 0 0 0 rgba(255,255,255,.25)}50%{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 0 7px rgba(255,255,255,0)}}
 .pin-done .pin-head{border-color:var(--gold)!important;box-shadow:0 4px 14px rgba(255,204,0,.4)!important}
 .pin-done .pin-head::after{content:'✓';position:absolute;bottom:-4px;right:-4px;background:var(--gold);color:#000;font-size:9px;font-weight:900;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(45deg)}
@@ -153,6 +154,7 @@ select:disabled{opacity:.4;cursor:not-allowed}
 .pin-chat    .pin-head{background:linear-gradient(135deg,#0d9488,#00d4be)}
 .pin-fortress .pin-head{background:linear-gradient(135deg,#8b4513,#d4af37)}
 .pin-fruitclash .pin-head{background:linear-gradient(135deg,#ff6b9d,#c850c0)}
+.pin-storyforge .pin-head{background:linear-gradient(135deg,#7c2d12,#f5c842)}
 
 /* lock badge */
 .lock-badge{position:absolute;top:-6px;right:-6px;background:#ff6b6b;color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(45deg);z-index:2}
@@ -400,6 +402,11 @@ select:disabled{opacity:.4;cursor:not-allowed}
                 <div class="map-pin pin-chat" id="pin-chat" style="left:76%;top:58%" onclick="handlePinClick('chat')">
           <div class="pin-tooltip"><div class="pin-tooltip-name">💬 Island Hangout</div><div class="pin-tooltip-sub">Chat &amp; play with friends!</div></div>
           <div class="pin-head"><span class="pin-head-inner">💬</span></div>
+          <div class="pin-shadow"></div>
+        </div>
+        <div class="map-pin pin-storyforge" id="pin-storyforge" style="left:58%;top:62%" onclick="handlePinClick('storyforge')">
+          <div class="pin-tooltip"><div class="pin-tooltip-name">✍️ StoryForge</div><div class="pin-tooltip-sub">Write your composition!</div></div>
+          <div class="pin-head"><span class="pin-head-inner">✍️</span></div>
           <div class="pin-shadow"></div>
         </div>
       </div>
@@ -659,11 +666,12 @@ const GAMES = {
   spelling:  { file:'spelling.html', icon:'🔤', name:'Spelling', zone:'sp', lockable:false },
   fortress:  { file:'english-fortress.html', icon:'🏰', name:'English Fortress', zone:'', lockable:false },
   fruitclash:{ file:'fruit-clash.html',      icon:'🍉', name:'Fruit Clash',       zone:'', lockable:false },
-  chat:      { file:'island-hangout.html', icon:'💬', name:'Hangout',  zone:'',   lockable:false }
+  chat:      { file:'island-hangout.html', icon:'💬', name:'Hangout',  zone:'',   lockable:false },
+  storyforge:{ file:'storyforge-v2.html',   icon:'✍️', name:'StoryForge', zone:'sf', lockable:false }
 };
 
 const COMP_LIST = ['grammar','reported','vtc','synthesis','spelling'];
-const ALL_PINS  = ['grammar','reported','vtc','synthesis','spelling','chat'];
+const ALL_PINS  = ['grammar','reported','vtc','synthesis','spelling','chat','storyforge'];
 const CLASSES   = ['4 Care','4 Graciousness','4 Resilience','4 Respect','4 Integrity','Family'];
 
 // Demo accounts — excluded from leaderboards, rewards and dashboards
@@ -875,7 +883,11 @@ function showLockedMsg(game) {
 
 function goToGame(game) {
   const { name, cls } = student;
-  const params = '?hero='+encodeURIComponent(name)+'&cls='+encodeURIComponent(cls)+'&returnTo=student-portal.html';
+  let params = '?hero='+encodeURIComponent(name)+'&cls='+encodeURIComponent(cls)+'&returnTo=student-portal.html';
+  if(game === 'storyforge') {
+    const topic = 'A Day I Will Never Forget'; // ← update each term
+    params += '&name='+encodeURIComponent(name)+'&topic='+encodeURIComponent(topic);
+  }
   window.location.href = GAMES[game].file + params;
 }
 
