@@ -121,6 +121,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 
 
 
+
+
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
@@ -226,7 +228,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 
 
 
+
 <script>
+
 
 
 
@@ -679,22 +683,17 @@ function searchGifs(q) {
   var st = el("gifStatus"), gr = el("gifGrid");
   st.textContent = "Searching..."; st.style.display = "block"; gr.innerHTML = "";
 
-  // Try Tenor v2 first (most reliable, no CORS issues)
-  var tenorUrl = "https://tenor.googleapis.com/v2/search"
-    + "?q=" + encodeURIComponent(q)
-    + "&key=AIzaSyC6MvRz2XERGVrxHSDBYJqFoRxmYX3WC4I"
-    + "&limit=8&media_filter=gif&contentfilter=high&locale=en_US";
-
-  fetch(tenorUrl)
+  // Tenor v1 - no API key required
+  fetch("https://tenor.com/v1/search?q=" + encodeURIComponent(q) + "&limit=8&contentfilter=high&locale=en_US&anon_id=cps2026island")
     .then(function(r) { return r.json(); })
     .then(function(d) {
       var results = d.results || [];
-      if (!results.length) throw new Error("no results");
+      if (!results.length) { st.textContent = "No GIFs found"; st.style.display = "block"; return; }
       st.style.display = "none"; gr.innerHTML = "";
       results.forEach(function(g) {
-        var media = g.media_formats || {};
-        var full  = (media.gif      && media.gif.url)      || "";
-        var prev  = (media.tinygif  && media.tinygif.url)  || full;
+        var media = (g.media && g.media[0]) || {};
+        var full  = (media.gif     && media.gif.url)     || "";
+        var prev  = (media.tinygif && media.tinygif.url) || full;
         if (!full) return;
         var div = document.createElement("div");
         div.className = "gitem";
@@ -706,35 +705,8 @@ function searchGifs(q) {
       });
     })
     .catch(function() {
-      // Fallback: Tenor v1 (no key needed)
-      var v1Url = "https://tenor.com/v1/search"
-        + "?q=" + encodeURIComponent(q)
-        + "&limit=8&contentfilter=high&locale=en_US"
-        + "&anon_id=cps2026island";
-      fetch(v1Url)
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-          var results = d.results || [];
-          if (!results.length) { st.textContent = "No GIFs found"; st.style.display = "block"; return; }
-          st.style.display = "none"; gr.innerHTML = "";
-          results.forEach(function(g) {
-            var media = (g.media && g.media[0]) || {};
-            var full  = (media.gif     && media.gif.url)     || "";
-            var prev  = (media.tinygif && media.tinygif.url) || full;
-            if (!full) return;
-            var div = document.createElement("div");
-            div.className = "gitem";
-            var img = document.createElement("img");
-            img.src = prev; img.loading = "lazy";
-            div.appendChild(img);
-            div.addEventListener("click", (function(u){ return function(){ sendGif(u); }; })(full));
-            gr.appendChild(div);
-          });
-        })
-        .catch(function() {
-          st.textContent = "GIFs unavailable — check connection";
-          st.style.display = "block";
-        });
+      st.textContent = "Could not load GIFs — check connection";
+      st.style.display = "block";
     });
 }
 
@@ -910,6 +882,7 @@ function stopRecording() {
 
 // ── START ──
 initFirebase();
+
 
 
 
