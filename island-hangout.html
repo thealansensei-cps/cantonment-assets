@@ -86,6 +86,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 </style>
 
 
+
+
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
@@ -161,7 +163,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 </div>
 
 
+
 <script>
+
 
 
 // ═══════════════════════════════════════════════════════════
@@ -233,9 +237,9 @@ function initFirebase() {
   try {
     if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     db = firebase.database();
-    el("statusBar").textContent = "✅ Connected";
+    el("statusBar").textContent = "✅ Connected | class: " + (ME.cls || "NONE");
     el("statusBar").style.color = "#3ddc84";
-    setTimeout(function(){ el("statusBar").style.display="none"; }, 3000);
+    setTimeout(function(){ el("statusBar").style.display="none"; }, 5000);
     startApp();
   } catch(e) {
     el("statusBar").textContent = "❌ Firebase error: " + e.message;
@@ -309,10 +313,11 @@ function loadMessages() {
   _msgOff = ref.on("value", function(snap) {
     var msgs = [];
     snap.forEach(function(c) { msgs.push(Object.assign({key:c.key}, c.val())); });
-    // For My Class tab, only show messages from same class (hide system msgs)
-    if (currentTab === "mine") {
+    // For My Class tab, only show messages from same class
+    if (currentTab === "mine" && ME.cls) {
+      var myCls = ME.cls.trim().toLowerCase();
       msgs = msgs.filter(function(m) {
-        return m.senderCls === ME.cls;
+        return m.senderCls && m.senderCls.trim().toLowerCase() === myCls;
       });
     }
     renderMessages(msgs);
@@ -580,6 +585,7 @@ document.addEventListener("click", function(e) {
 
 // ── START ──
 initFirebase();
+
 
 
 
