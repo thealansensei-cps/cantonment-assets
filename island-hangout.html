@@ -88,6 +88,10 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 
 
 
+
+
+
+
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
@@ -164,7 +168,11 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 
 
 
+
+
 <script>
+
+
 
 
 
@@ -280,15 +288,14 @@ function startApp() {
   // Load messages
   loadMessages();
 
-  // Join message - only once per 5 minutes to avoid spam
+  // Join message - throttled to once per 30 minutes
   if (ME.name && ME.name !== "Guest") {
     var joinKey = "lastJoin_" + sk(ME.name);
     var lastJoin = parseInt(localStorage.getItem(joinKey) || "0");
-    if (Date.now() - lastJoin > 5 * 60 * 1000) {
+    if (Date.now() - lastJoin > 30 * 60 * 1000) {
       localStorage.setItem(joinKey, Date.now());
-      db.ref("hangout_messages").push({
-        type:"system", text:"👋 " + sn(ME.name) + " joined the hangout!", ts:Date.now()
-      });
+      var joinMsg = {type:"system", text:"👋 " + sn(ME.name) + " joined the hangout!", ts:Date.now()};
+      db.ref("hangout_messages").push(joinMsg);
     }
   }
 
@@ -298,8 +305,9 @@ function startApp() {
 
 // ── Chat path ──
 function chatPath() {
-  // Both tabs read from hangout_messages - My Class filters on display
-  return "hangout_messages";
+  if (currentTab === "all") return "hangout_messages";
+  // My Class uses a dedicated path per class
+  return "hangout_class_" + sk(ME.cls || "unknown");
 }
 
 // ── Load messages (realtime) ──
@@ -313,13 +321,7 @@ function loadMessages() {
   _msgOff = ref.on("value", function(snap) {
     var msgs = [];
     snap.forEach(function(c) { msgs.push(Object.assign({key:c.key}, c.val())); });
-    // For My Class tab, only show messages from same class
-    if (currentTab === "mine" && ME.cls) {
-      var myCls = ME.cls.trim().toLowerCase();
-      msgs = msgs.filter(function(m) {
-        return m.senderCls && m.senderCls.trim().toLowerCase() === myCls;
-      });
-    }
+    // My Class tab uses separate Firebase path - no filter needed
     renderMessages(msgs);
   }, function(err) {
     el("statusBar").textContent = "❌ " + err.message;
@@ -333,9 +335,13 @@ function renderMessages(msgs) {
   var container = el("msgs");
   var atBot = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
   var html = "";
+  var now = Date.now();
   msgs.forEach(function(m) {
+    // Only show system msgs posted in last 10 minutes (avoids join spam from old sessions)
     if (m.type === "system") {
-      html += '<div class="sysmsg">' + esc(m.text) + "</div>";
+      if (now - m.ts < 10 * 60 * 1000) {
+        html += '<div class="sysmsg">' + esc(m.text) + "</div>";
+      }
       return;
     }
     var mine = m.sender === ME.name;
@@ -408,17 +414,36 @@ function applyTopic(data) {
 
 function openTopicModal() {
   if (!isTeacher) { showToast("Teacher access required"); return; }
-  var t = prompt("Set today's discussion topic (blank to clear):");
-  if (t === null) return;
-  if (t.trim()) {
-    db.ref("hangout_topic").set({
-      text: t.trim(),
-      scope: currentTab === "mine" ? ME.cls : "all",
-      ts: Date.now()
-    });
-  } else {
+  var choice = prompt("1 = Set topic\n2 = Clear topic\n3 = Clear join messages\n\nEnter 1, 2 or 3:");
+  if (choice === "1") {
+    var t = prompt("Type today's discussion topic:");
+    if (t && t.trim()) {
+      db.ref("hangout_topic").set({
+        text: t.trim(),
+        scope: currentTab === "mine" ? ME.cls : "all",
+        ts: Date.now()
+      });
+    }
+  } else if (choice === "2") {
     clearTopic();
+  } else if (choice === "3") {
+    clearJoinMessages();
   }
+}
+
+function clearJoinMessages() {
+  if (!isTeacher || !db) return;
+  db.ref("hangout_messages").once("value", function(snap) {
+    var updates = {};
+    snap.forEach(function(c) {
+      if (c.val() && c.val().type === "system") {
+        updates[c.key] = null;
+      }
+    });
+    db.ref("hangout_messages").update(updates, function() {
+      showToast("Join messages cleared ✅");
+    });
+  });
 }
 
 function clearTopic() {
@@ -585,6 +610,8 @@ document.addEventListener("click", function(e) {
 
 // ── START ──
 initFirebase();
+
+
 
 
 
