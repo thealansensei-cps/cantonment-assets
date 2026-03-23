@@ -152,6 +152,7 @@ select:disabled{opacity:.4;cursor:not-allowed}
 .pin-spelling .pin-head{background:linear-gradient(135deg,#c0392b,#e74c3c)}
 .pin-chat    .pin-head{background:linear-gradient(135deg,#0d9488,#00d4be)}
 .pin-fortress .pin-head{background:linear-gradient(135deg,#8b4513,#d4af37)}
+.pin-storyforge .pin-head{background:linear-gradient(135deg,#7c2d12,#f5c842)}
 .pin-fruitclash .pin-head{background:linear-gradient(135deg,#ff6b9d,#c850c0)}
 
 /* lock badge */
@@ -401,6 +402,13 @@ select:disabled{opacity:.4;cursor:not-allowed}
           <div class="pin-tooltip"><div class="pin-tooltip-name">💬 Island Hangout</div><div class="pin-tooltip-sub">Chat &amp; play with friends!</div></div>
           <div class="pin-head"><span class="pin-head-inner">💬</span></div>
           <div class="pin-shadow"></div>
+        </div>
+          <div class="map-pin pin-storyforge" id="pin-storyforge" style="left:58%;top:65%" onclick="handlePinClick('storyforge')">
+          <div class="pin-tooltip"><div class="pin-tooltip-name">✍️ Story Forge</div><div class="pin-tooltip-sub">Write &amp; get AI feedback!</div></div>
+          <div class="pin-head">
+            <div class="pin-icon">✍️</div>
+            <div class="pin-label">Story Forge</div>
+          </div>
         </div>
       </div>
       <div class="tap-hint">👆 Tap a pin to enter that zone</div>
@@ -659,7 +667,8 @@ const GAMES = {
   spelling:  { file:'spelling.html', icon:'🔤', name:'Spelling', zone:'sp', lockable:false },
   fortress:  { file:'english-fortress.html', icon:'🏰', name:'English Fortress', zone:'', lockable:false },
   fruitclash:{ file:'fruit-clash.html',      icon:'🍉', name:'Fruit Clash',       zone:'', lockable:false },
-  chat:      { file:'island-hangout.html', icon:'💬', name:'Hangout',  zone:'',   lockable:false }
+  chat:      { file:'island-hangout.html',   icon:'💬', name:'Hangout',     zone:'',   lockable:false },
+  storyforge:{ file:'storyforge-v2.html',   icon:'✍️', name:'Story Forge',  zone:'sf', lockable:false }
 };
 
 const COMP_LIST = ['grammar','reported','vtc','synthesis','spelling'];
@@ -875,6 +884,12 @@ function showLockedMsg(game) {
 
 function goToGame(game) {
   const { name, cls } = student;
+  if (game === 'storyforge') {
+    const topic = 'A Day I Will Never Forget';
+    const params = '?name='+encodeURIComponent(name)+'&cls='+encodeURIComponent(cls)+'&topic='+encodeURIComponent(topic)+'&returnTo=student-portal.html';
+    window.location.href = GAMES[game].file + params;
+    return;
+  }
   const params = '?hero='+encodeURIComponent(name)+'&cls='+encodeURIComponent(cls)+'&returnTo=student-portal.html';
   window.location.href = GAMES[game].file + params;
 }
@@ -993,7 +1008,7 @@ function doLogin(){
   const cls=$('sel-class').value, name=$('sel-name').value, pin=getPin();
   if(!cls||!name){showErr('Please select your class and name.');return}
   if(pin.length<4){showErr('Please enter all 4 PIN digits.');return}
-  const correct=ROSTER[cls]?.[name];
+  const correct=ROSTER[cls] ? ROSTER[cls][name] : undefined;
   if(!correct){showErr('Student not found.');return}
   if(pin!==correct){showErr('Wrong PIN — check the hint!');shakePin();clearPin();$(pinIds[0]).focus();return}
   student={name,cls};
@@ -1165,7 +1180,7 @@ function renderDash(cls){
 
   // Top students bar chart (top 8)
   const top8 = rows.slice(0,8);
-  const maxPts = top8[0]?.total || 1;
+  const maxPts = (top8[0] && top8[0].total) || 1;
   $('prog-chart').innerHTML = top8.map(r=>{
     const pct = Math.round(r.total/maxPts*100);
     const col = CLASS_COLORS[r.cls] || '#2e7dd4';
