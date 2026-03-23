@@ -2,721 +2,563 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Island Hangout 🏝️</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#07111f;--surface:#0e1d30;--surface2:#162640;
-  --border:rgba(100,180,255,.15);--text:#ddeeff;--muted:rgba(180,210,255,.5);
-  --teal:#00d4be;--gold:#ffc94a;--coral:#ff6b7a;--green:#3ddc84;
-}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;overflow:hidden}
-
-/* TOPBAR */
-#topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:100;background:rgba(7,17,31,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 10px}
-#tbAvatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:13px;color:#fff}
-#tbName{font-weight:800;font-size:13px}
-#tbCls{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase}
-.tb-logo{font-family:'Fredoka One',cursive;font-size:16px;color:var(--teal);flex-shrink:0}
-.tb-r{margin-left:auto;display:flex;align-items:center;gap:5px;flex-shrink:0}
-.online-pill{display:flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.25);border-radius:16px;font-size:10px;font-weight:800;color:var(--green)}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:bl 2s infinite}
+:root{--bg:#07111f;--sur:#0e1d30;--sur2:#162640;--bdr:rgba(100,180,255,.15);--bdr2:rgba(100,180,255,.25);--txt:#ddeeff;--mut:rgba(180,210,255,.5);--teal:#00d4be;--gold:#ffc94a;--red:#ff6b7a;--grn:#3ddc84}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito",sans-serif;overflow:hidden}
+#topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:100;background:rgba(7,17,31,.97);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;padding:0 10px}
+#tbAv{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:"Fredoka One",cursive;font-size:13px;color:#fff}
+#tbName{font-weight:800;font-size:13px;line-height:1.2}
+#tbCls{font-size:10px;color:var(--mut);font-weight:700;text-transform:uppercase}
+.logo{font-family:"Fredoka One",cursive;font-size:16px;color:var(--teal);flex-shrink:0}
+.tbr{margin-left:auto;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.pill{display:flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.25);border-radius:16px;font-size:10px;font-weight:800;color:var(--grn)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:bl 2s infinite}
 @keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
-.tb-btn{padding:4px 9px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:11px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap}
-.tb-btn.teal{border-color:rgba(0,212,190,.3);color:var(--teal);background:rgba(0,212,190,.07)}
-.tb-btn.gold{border-color:rgba(255,201,74,.3);color:var(--gold);background:rgba(255,201,74,.07)}
-
-/* TABS */
-#tabs{position:fixed;top:52px;left:0;right:0;z-index:90;display:flex;background:rgba(7,17,31,.97);border-bottom:1px solid var(--border);padding:0 12px}
-.tab{padding:7px 14px;font-size:12px;font-weight:800;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font-family:'Nunito',sans-serif;transition:all .15s}
+.tbtn{padding:4px 9px;border-radius:8px;border:1px solid var(--bdr);background:rgba(255,255,255,.05);color:var(--txt);font-size:11px;font-weight:700;cursor:pointer;font-family:"Nunito",sans-serif;white-space:nowrap}
+.tbtn.teal{border-color:rgba(0,212,190,.3);color:var(--teal);background:rgba(0,212,190,.07)}
+.tbtn.gold{border-color:rgba(255,201,74,.3);color:var(--gold);background:rgba(255,201,74,.07)}
+#tabs{position:fixed;top:52px;left:0;right:0;z-index:90;display:flex;background:rgba(7,17,31,.97);border-bottom:1px solid var(--bdr);padding:0 10px}
+.tab{padding:7px 14px;font-size:12px;font-weight:800;border:none;background:transparent;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;font-family:"Nunito",sans-serif;transition:all .15s}
 .tab.on{color:var(--teal);border-bottom-color:var(--teal)}
-
-/* TOPIC BANNER */
-#topicBar{position:fixed;top:88px;left:0;right:0;z-index:89;background:linear-gradient(135deg,rgba(0,180,140,.12),rgba(0,130,200,.12));border-bottom:1px solid rgba(0,212,190,.2);padding:5px 14px;display:none;align-items:center;gap:8px}
+#topicBar{position:fixed;top:88px;left:0;right:0;z-index:89;background:linear-gradient(135deg,rgba(0,180,140,.12),rgba(0,130,200,.12));border-bottom:1px solid rgba(0,212,190,.2);padding:5px 12px;display:none;align-items:center;gap:8px}
 #topicBar.show{display:flex}
-.topic-lbl{font-size:10px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
-#topicTxt{font-size:12px;font-weight:700;color:var(--text);flex:1}
-#topicX{font-size:13px;color:var(--muted);cursor:pointer;display:none;padding:2px 6px}
-
-/* MESSAGES */
-#messages{position:fixed;top:88px;left:0;right:0;bottom:60px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
-#messages.topic-on{top:118px}
-.sys{text-align:center;font-size:11px;color:var(--muted);padding:3px 0;font-style:italic}
-.row{display:flex;gap:7px;align-items:flex-end}
-.row.me{flex-direction:row-reverse}
-.av{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:10px;color:#fff}
-.bd{max-width:78%}
-.mt{display:flex;gap:5px;align-items:baseline;margin-bottom:2px;font-size:10px}
-.row.me .mt{flex-direction:row-reverse}
-.sn{font-weight:800}
-.ts{color:rgba(255,255,255,.2);font-size:9px}
-.bub{padding:7px 11px;border-radius:14px 14px 14px 3px;background:var(--surface2);border:1px solid var(--border);font-size:13px;line-height:1.4;word-break:break-word}
-.row.me .bub{border-radius:14px 14px 3px 14px;background:#1a4a8a;border-color:rgba(100,180,255,.2)}
-.bub img{max-width:180px;max-height:140px;border-radius:8px;display:block;margin-top:3px}
-
-/* INPUT BAR */
-#inputbar{position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(7,17,31,.97);border-top:1px solid var(--border);display:flex;align-items:center;gap:5px;padding:0 10px;z-index:80}
-.ib{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Nunito',sans-serif;font-weight:800}
-#chatInput{flex:1;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;padding:0 12px;outline:none}
-#chatInput::placeholder{color:var(--muted)}
+.tlbl{font-size:10px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+#topicTxt{font-size:12px;font-weight:700;color:var(--txt);flex:1}
+#topicX{font-size:13px;color:var(--mut);cursor:pointer;display:none;padding:0 4px}
+#statusBar{position:fixed;top:88px;left:0;right:0;z-index:88;background:rgba(0,0,0,.5);color:var(--gold);font-size:11px;font-weight:700;padding:3px 12px;text-align:center}
+#msgs{position:fixed;top:108px;left:0;right:0;bottom:60px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+#msgs.topic-on{top:134px}
+#statusBar.topic-on{top:114px}
+.sysmsg{text-align:center;font-size:11px;color:var(--mut);padding:3px 0;font-style:italic}
+.mrow{display:flex;gap:7px;align-items:flex-end;animation:fadeUp .2s ease-out}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.mrow.mine{flex-direction:row-reverse}
+.mav{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:"Fredoka One",cursive;font-size:10px;color:#fff}
+.mbody{max-width:78%}
+.mmeta{display:flex;gap:5px;align-items:baseline;margin-bottom:2px;font-size:10px}
+.mrow.mine .mmeta{flex-direction:row-reverse}
+.mname{font-weight:800}
+.mtime{color:rgba(255,255,255,.2);font-size:9px}
+.mbub{padding:7px 11px;border-radius:14px 14px 14px 3px;background:var(--sur2);border:1px solid var(--bdr);font-size:13px;line-height:1.4;word-break:break-word}
+.mrow.mine .mbub{border-radius:14px 14px 3px 14px;background:#1a4a8a;border-color:rgba(100,180,255,.2)}
+.mbub img{max-width:180px;max-height:140px;border-radius:8px;display:block;margin-top:3px}
+#inputbar{position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(7,17,31,.97);border-top:1px solid var(--bdr);display:flex;align-items:center;gap:5px;padding:0 10px;z-index:80}
+.ibtn{width:34px;height:34px;border-radius:9px;border:1px solid var(--bdr);background:var(--sur2);color:var(--txt);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:"Nunito",sans-serif;font-weight:800}
+#chatInput{flex:1;height:36px;border-radius:10px;border:1px solid var(--bdr);background:var(--sur2);color:var(--txt);font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;padding:0 12px;outline:none}
+#chatInput::placeholder{color:var(--mut)}
 #sendBtn{width:36px;height:36px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a73c8,#0091ea);color:#fff;font-size:16px;cursor:pointer;flex-shrink:0}
-
-/* EMOJI */
-#emojiP{position:fixed;bottom:65px;left:10px;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;width:272px;box-shadow:0 8px 28px rgba(0,0,0,.6);display:none}
-#emojiP.on{display:block}
-#eSrch{width:100%;padding:5px 9px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;margin-bottom:7px;font-family:'Nunito',sans-serif;outline:none}
-#eGrid{display:grid;grid-template-columns:repeat(8,1fr);gap:1px;max-height:155px;overflow-y:auto}
-.eb{aspect-ratio:1;border:none;background:transparent;font-size:17px;cursor:pointer;border-radius:4px}
-.eb:hover{background:rgba(255,255,255,.1)}
-
-/* GIF */
-#gifP{position:fixed;bottom:65px;left:52px;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;width:280px;box-shadow:0 8px 28px rgba(0,0,0,.6);display:none}
-#gifP.on{display:block}
-.gRow{display:flex;gap:5px;margin-bottom:8px}
-#gSrch{flex:1;padding:5px 9px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-family:'Nunito',sans-serif;outline:none}
-.gGo{padding:5px 10px;border-radius:7px;border:none;background:var(--teal);color:#000;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;font-size:12px}
-#gGrid{display:grid;grid-template-columns:1fr 1fr;gap:3px;max-height:190px;overflow-y:auto}
-.gi{border-radius:7px;overflow:hidden;cursor:pointer}
-.gi img{width:100%;height:76px;object-fit:cover;display:block}
-#gStatus{text-align:center;color:var(--muted);font-size:12px;padding:18px 0}
-
-/* TOAST */
-#toast{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:7px 16px;font-size:12px;font-weight:700;z-index:300;display:none;white-space:nowrap}
-
-/* MODALS */
+#emojiPanel{position:fixed;bottom:65px;left:10px;z-index:200;background:var(--sur);border:1px solid var(--bdr2);border-radius:14px;padding:10px;width:272px;box-shadow:0 8px 28px rgba(0,0,0,.6);display:none}
+#emojiPanel.show{display:block}
+#emojiSearch{width:100%;padding:5px 9px;border-radius:7px;border:1px solid var(--bdr);background:var(--sur2);color:var(--txt);font-size:12px;margin-bottom:7px;font-family:"Nunito",sans-serif;outline:none}
+#emojiGrid{display:grid;grid-template-columns:repeat(8,1fr);gap:1px;max-height:155px;overflow-y:auto}
+.ebtn{aspect-ratio:1;border:none;background:transparent;font-size:17px;cursor:pointer;border-radius:4px}
+.ebtn:hover{background:rgba(255,255,255,.1)}
+#gifPanel{position:fixed;bottom:65px;left:52px;z-index:200;background:var(--sur);border:1px solid var(--bdr2);border-radius:14px;padding:10px;width:280px;box-shadow:0 8px 28px rgba(0,0,0,.6);display:none}
+#gifPanel.show{display:block}
+.gifrow{display:flex;gap:5px;margin-bottom:8px}
+#gifSearch{flex:1;padding:5px 9px;border-radius:7px;border:1px solid var(--bdr);background:var(--sur2);color:var(--txt);font-size:12px;font-family:"Nunito",sans-serif;outline:none}
+.gifgo{padding:5px 10px;border-radius:7px;border:none;background:var(--teal);color:#000;font-weight:800;cursor:pointer;font-family:"Nunito",sans-serif;font-size:12px}
+#gifGrid{display:grid;grid-template-columns:1fr 1fr;gap:3px;max-height:190px;overflow-y:auto}
+.gitem{border-radius:7px;overflow:hidden;cursor:pointer}
+.gitem img{width:100%;height:76px;object-fit:cover;display:block}
+#gifStatus{text-align:center;color:var(--mut);font-size:12px;padding:18px 0}
+#toast{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);background:var(--sur);border:1px solid var(--bdr2);border-radius:9px;padding:7px 16px;font-size:12px;font-weight:700;z-index:300;display:none;white-space:nowrap}
 .ov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:20px}
-.ov.on{display:flex}
-.mo{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:22px;width:100%;max-width:310px}
-.mo h2{font-family:'Fredoka One',cursive;color:var(--gold);margin-bottom:5px;font-size:19px}
-.mo p{color:var(--muted);font-size:12px;margin-bottom:14px}
-.mo input{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-family:'Nunito',sans-serif;outline:none;margin-bottom:7px;display:block}
-.merr{color:var(--coral);font-size:11px;font-weight:700;margin-bottom:9px;display:none}
+.ov.show{display:flex}
+.modal{background:var(--sur);border:1px solid var(--bdr2);border-radius:15px;padding:22px;width:100%;max-width:310px}
+.modal h2{font-family:"Fredoka One",cursive;color:var(--gold);margin-bottom:5px;font-size:19px}
+.modal p{color:var(--mut);font-size:12px;margin-bottom:14px}
+.modal input{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--bdr);background:var(--sur2);color:var(--txt);font-size:13px;font-family:"Nunito",sans-serif;outline:none;margin-bottom:7px;display:block}
+.merr{color:var(--red);font-size:11px;font-weight:700;margin-bottom:9px;display:none}
 .mbtns{display:flex;gap:7px;margin-top:3px}
-.bok{flex:1;padding:9px;border:none;border-radius:9px;background:var(--teal);color:#000;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px}
-.bno{padding:9px 13px;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px}
-.bban{flex:1;padding:9px;border:none;border-radius:9px;background:var(--coral);color:#fff;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px}
-.bav{width:46px;height:46px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:18px;color:#fff}
-
-/* BANNED */
-#banned{position:fixed;inset:0;z-index:500;background:#07111f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px}
-#banned.on{display:flex}
+.bok{flex:1;padding:9px;border:none;border-radius:9px;background:var(--teal);color:#000;font-weight:800;cursor:pointer;font-family:"Nunito",sans-serif;font-size:13px}
+.bno{padding:9px 13px;border:1px solid var(--bdr);border-radius:9px;background:transparent;color:var(--mut);font-weight:700;cursor:pointer;font-family:"Nunito",sans-serif;font-size:13px}
+.bban{flex:1;padding:9px;border:none;border-radius:9px;background:var(--red);color:#fff;font-weight:800;cursor:pointer;font-family:"Nunito",sans-serif;font-size:13px}
+.banav{width:46px;height:46px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-family:"Fredoka One",cursive;font-size:18px;color:#fff}
+#bannedScreen{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+#bannedScreen.show{display:flex}
 </style>
 </head>
 <body>
-
-<div id="banned">
+<div id="bannedScreen">
   <div style="font-size:56px">🚫</div>
-  <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--coral)">You've been removed</div>
-  <div style="font-size:13px;color:var(--muted);text-align:center;max-width:260px">A teacher removed you for inappropriate behaviour.</div>
+  <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--red)">You have been removed</div>
+  <div style="font-size:13px;color:var(--mut);text-align:center;max-width:260px">A teacher removed you for inappropriate behaviour.</div>
 </div>
-
 <div id="topbar">
-  <span class="tb-logo">🏝️</span>
-  <div id="tbAvatar">?</div>
+  <span class="logo">🏝️</span>
+  <div id="tbAv">?</div>
   <div><div id="tbName">—</div><div id="tbCls">—</div></div>
-  <div class="tb-r">
-    <div class="online-pill"><div class="dot"></div><span id="onCnt">0</span></div>
-    <button id="topicBtn" class="tb-btn teal" onclick="askTopic()" style="display:none">📌 Topic</button>
-    <button class="tb-btn gold" id="tBtn" onclick="openT()">🔑</button>
-    <button class="tb-btn" onclick="goBack()">← Island</button>
+  <div class="tbr">
+    <div class="pill"><div class="dot"></div><span id="onlineCount">0</span></div>
+    <button id="topicBtn" class="tbtn teal" onclick="openTopicModal()" style="display:none">📌 Topic</button>
+    <button class="tbtn gold" id="teacherBtn" onclick="openTeacherModal()">🔑</button>
+    <button class="tbtn" onclick="goBack()">← Island</button>
   </div>
 </div>
-
 <div id="tabs">
   <button class="tab on" id="tabAll" onclick="switchTab('all')">🌍 All Classes</button>
   <button class="tab" id="tabMine" onclick="switchTab('mine')">🏠 My Class</button>
 </div>
-
 <div id="topicBar">
-  <span class="topic-lbl">📌 Topic</span>
+  <span class="tlbl">📌 Topic</span>
   <span id="topicTxt"></span>
   <span id="topicX" onclick="clearTopic()">✕</span>
 </div>
-
-<div id="dbStatus" style="position:fixed;top:88px;left:0;right:0;z-index:95;background:rgba(0,0,0,.7);color:#ffc94a;font-size:11px;font-weight:700;padding:4px 12px;text-align:center">Connecting...</div>
-<div id="messages" style="top:108px!important"></div>
-
+<div id="statusBar">Connecting...</div>
+<div id="msgs"></div>
 <div id="inputbar">
-  <button class="ib" onclick="togEmoji()">😄</button>
-  <button class="ib" onclick="togGif()">GIF</button>
-  <input id="chatInput" type="text" placeholder="Type a message..." onkeydown="if(event.key==='Enter')send()">
-  <button id="sendBtn" onclick="send()">➤</button>
+  <button class="ibtn" onclick="toggleEmoji()">😄</button>
+  <button class="ibtn" style="font-size:11px;font-weight:800" onclick="toggleGif()">GIF</button>
+  <input id="chatInput" type="text" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage()">
+  <button id="sendBtn" onclick="sendMessage()">➤</button>
 </div>
-
-<div id="emojiP">
-  <input id="eSrch" placeholder="Search..." oninput="filtEmoji(this.value)">
-  <div id="eGrid"></div>
+<div id="emojiPanel">
+  <input id="emojiSearch" placeholder="Search emoji..." oninput="filterEmoji(this.value)">
+  <div id="emojiGrid"></div>
 </div>
-
-<div id="gifP">
-  <div class="gRow">
-    <input id="gSrch" placeholder="Search GIFs..." onkeydown="if(event.key==='Enter')doGif()">
-    <button class="gGo" onclick="doGif()">Go</button>
+<div id="gifPanel">
+  <div class="gifrow">
+    <input id="gifSearch" placeholder="Search GIFs..." onkeydown="if(event.key==='Enter')searchGifs()">
+    <button class="gifgo" onclick="searchGifs()">Go</button>
   </div>
-  <div id="gStatus">Search for a GIF 🎬</div>
-  <div id="gGrid"></div>
+  <div id="gifStatus">Search for a GIF 🎬</div>
+  <div id="gifGrid"></div>
 </div>
-
 <div id="toast"></div>
-
-<div class="ov" id="tMod">
-  <div class="mo">
+<div class="ov" id="teacherModal">
+  <div class="modal">
     <h2>🔑 Teacher Access</h2>
     <p>Enter the teacher password.</p>
-    <input type="password" id="tPw" placeholder="Password" onkeydown="if(event.key==='Enter')doT()">
-    <div class="merr" id="tErr">Wrong password.</div>
+    <input type="password" id="teacherPw" placeholder="Password" onkeydown="if(event.key==='Enter')submitTeacher()">
+    <div class="merr" id="teacherErr">Wrong password.</div>
     <div class="mbtns">
-      <button class="bno" onclick="closeT()">Cancel</button>
-      <button class="bok" onclick="doT()">Enter</button>
+      <button class="bno" onclick="closeTeacherModal()">Cancel</button>
+      <button class="bok" onclick="submitTeacher()">Enter</button>
     </div>
   </div>
 </div>
-
-<div class="ov" id="banMod">
-  <div class="mo" style="text-align:center">
-    <div class="bav" id="banAv">?</div>
+<div class="ov" id="banModal">
+  <div class="modal" style="text-align:center">
+    <div class="banav" id="banAv">?</div>
     <h2 id="banTitle">Remove?</h2>
     <p id="banSub">They will be removed immediately.</p>
     <div class="mbtns" style="margin-top:14px">
-      <button class="bno" onclick="closeBan()">Cancel</button>
-      <button class="bban" onclick="doBan()">🚫 Remove</button>
+      <button class="bno" onclick="closeBanModal()">Cancel</button>
+      <button class="bban" id="banActionBtn" onclick="confirmBan()">🚫 Remove</button>
     </div>
   </div>
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script>
+// ═══════════════════════════════════════════════════════════
+// ISLAND HANGOUT — App Logic
+// Firebase CDN loaded in <head> before this script runs
+// ═══════════════════════════════════════════════════════════
 
-
-window.onload = function() {
-
-
-
-
-
-
-
-
-
-
-// ═══════════════════════════════════════════════
-// FIREBASE SDK
-// ═══════════════════════════════════════════════
-var firebaseConfig = {
-  apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",
-  authDomain:"english-island-cps.firebaseapp.com",
-  databaseURL:"https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"english-island-cps",
-  storageBucket:"english-island-cps.firebasestorage.app",
-  messagingSenderId:"892743482834",
-  appId:"1:892743482834:web:6705bc3e3bc832cf749c0b"
+// ── Config ──
+var FB_CONFIG = {
+  apiKey:            "AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",
+  authDomain:        "english-island-cps.firebaseapp.com",
+  databaseURL:       "https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "english-island-cps",
+  storageBucket:     "english-island-cps.firebasestorage.app",
+  messagingSenderId: "892743482834",
+  appId:             "1:892743482834:web:6705bc3e3bc832cf749c0b"
 };
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-var db;
-try {
-  db = firebase.database();
-  document.getElementById('dbStatus').textContent = '✅ Firebase connected - loading...';
-  document.getElementById('dbStatus').style.color = '#3ddc84';
+var TEACHER_PW = "cps2026";
+var CLASS_COLORS = {
+  "4 Care":"#ff5a3c","4 Graciousness":"#3cb8ff",
+  "4 Integrity":"#ffb83c","4 Respect":"#c97fff","4 Resilience":"#3cff8a"
+};
 
-} catch(e) {
-  document.getElementById('dbStatus').textContent = '❌ Firebase error: ' + e.message;
-  document.getElementById('dbStatus').style.color = '#ff6b7a';
-}
-
-// Wrapper helpers matching REST API interface
-function fbGet(path) {
-  return db.ref(path).once('value').then(function(s){ return s.val(); });
-}
-function fbSet(path, data) {
-  return db.ref(path).set(data);
-}
-function fbPush(path, data) {
-  return db.ref(path).push(data);
-}
-function fbRemove(path) {
-  return db.ref(path).remove();
-}
-function fbUpdate(path, data) {
-  return db.ref(path).update(data);
-}
-
-// ═══════════════════════════════════════════════
-// IDENTITY
-// ═══════════════════════════════════════════════
+// ── Identity ──
 var urlP = new URLSearchParams(location.search);
-var me = {
-  name:     urlP.get('hero') || '',
-  cls:      urlP.get('cls')  || '',
-  returnTo: urlP.get('returnTo') || 'student-portal.html'
+var ME = {
+  name:     urlP.get("hero") || "",
+  cls:      urlP.get("cls")  || "",
+  returnTo: urlP.get("returnTo") || "student-portal.html"
 };
-if (!me.name) {
+if (!ME.name) {
   try {
-    var s = JSON.parse(localStorage.getItem('student') || sessionStorage.getItem('student') || '{}');
-    me.name = s.name || 'Guest'; me.cls = s.cls || '';
-  } catch(e) { me.name = 'Guest'; }
+    var _s = JSON.parse(localStorage.getItem("student") || sessionStorage.getItem("student") || "{}");
+    ME.name = _s.name || "Guest"; ME.cls = _s.cls || "";
+  } catch(e) { ME.name = "Guest"; }
 }
 
-var CC = {'4 Care':'#ff5a3c','4 Graciousness':'#3cb8ff','4 Integrity':'#ffb83c','4 Respect':'#c97fff','4 Resilience':'#3cff8a'};
-var TPW = 'cps2026';
+// ── Helpers ──
+function sk(n)  { return (n||"").replace(/[.#$[\]\/\s]/g,"_"); }
+function sn(n)  { return (n||"").split(",")[0].trim().split(" ")[0]; }
+function av(n)  { return (n||"?").replace(/,.*/,"").trim().split(" ").slice(0,2).map(function(w){return w[0];}).join("").toUpperCase(); }
+function cc(c)  { return CLASS_COLORS[c] || "#888"; }
+function ft(ts) { var d=new Date(ts); return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
+function esc(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function el(id) { return document.getElementById(id); }
 
-function sk(n)  { return (n||'').replace(/[.#$[\]\/\s]/g,'_'); }
-function sn(n)  { return (n||'').split(',')[0].trim().split(' ')[0]; }
-function ini(n) { return (n||'?').replace(/,.*/,'').trim().split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase(); }
-function cc(c)  { return CC[c]||'#888'; }
-function ft(ts) { var d=new Date(ts); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// ── State ──
+var db           = null;
+var isTeacher    = false;
+var currentTab   = "all";
+var bannedUsers  = {};
+var pendingBan   = null;
+var emojiOpen    = false;
+var gifOpen      = false;
+var presKey      = sk(ME.name);
 
-// Topbar
-document.getElementById('tbAvatar').textContent   = ini(me.name);
-document.getElementById('tbAvatar').style.background = cc(me.cls);
-document.getElementById('tbName').textContent     = sn(me.name)||me.name||'Guest';
-document.getElementById('tbCls').textContent      = me.cls||'';
+// ── Topbar ──
+el("tbAv").textContent    = av(ME.name);
+el("tbAv").style.background = cc(ME.cls);
+el("tbName").textContent  = sn(ME.name) || ME.name || "Guest";
+el("tbCls").textContent   = ME.cls || "";
 
-// ═══════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════
-var isTeacher = false;
-var bannedUsers = {};
-var pendingBan  = null;
-var currentTab  = 'all';
-var emojiOpen   = false;
-var gifOpen     = false;
-var msgCache    = {};  // key → message data
-var pollTimer   = null;
-var lastKey     = {};  // tab → last message key for incremental poll
+// ── Firebase init with retry ──
+function initFirebase() {
+  if (typeof firebase === "undefined" || typeof firebase.database !== "function") {
+    setTimeout(initFirebase, 50);
+    return;
+  }
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    db = firebase.database();
+    el("statusBar").textContent = "✅ Connected";
+    el("statusBar").style.color = "#3ddc84";
+    setTimeout(function(){ el("statusBar").style.display="none"; }, 3000);
+    startApp();
+  } catch(e) {
+    el("statusBar").textContent = "❌ Firebase error: " + e.message;
+    el("statusBar").style.color = "#ff6b7a";
+  }
+}
 
-// ═══════════════════════════════════════════════
-// CHAT PATH
-// ═══════════════════════════════════════════════
+function startApp() {
+  // Presence
+  if (ME.name && ME.name !== "Guest") {
+    db.ref("hangout_presence/" + presKey).set({name:ME.name, cls:ME.cls, ts:Date.now()});
+    db.ref("hangout_presence/" + presKey).onDisconnect().remove();
+    setInterval(function(){
+      db.ref("hangout_presence/" + presKey).update({ts:Date.now()});
+    }, 30000);
+  }
+
+  // Online count
+  db.ref("hangout_presence").on("value", function(snap) {
+    var now=Date.now(), n=0;
+    snap.forEach(function(c){ var u=c.val(); if(u&&(now-u.ts)<90000) n++; });
+    el("onlineCount").textContent = n;
+  });
+
+  // Banned listener
+  db.ref("banned").on("value", function(snap) {
+    bannedUsers = snap.val() || {};
+    if (bannedUsers[presKey]) {
+      el("bannedScreen").classList.add("show");
+    }
+  });
+
+  // Topic listener
+  db.ref("hangout_topic").on("value", function(snap) {
+    applyTopic(snap.val());
+  });
+
+  // Load messages
+  loadMessages();
+
+  // Join message
+  if (ME.name && ME.name !== "Guest") {
+    db.ref("hangout_messages").push({
+      type:"system", text:"👋 " + sn(ME.name) + " joined the hangout!", ts:Date.now()
+    });
+  }
+
+  // Build emoji grid
+  buildEmojiGrid();
+}
+
+// ── Chat path ──
 function chatPath() {
-  return currentTab === 'all' ? '/hangout_messages' : '/hangout_class_' + sk(me.cls);
+  return currentTab === "all" ? "hangout_messages" : "hangout_class_" + sk(ME.cls);
 }
 
-// ═══════════════════════════════════════════════
-// PRESENCE (simple polling)
-// ═══════════════════════════════════════════════
-var presKey = sk(me.name);
-function updatePresence() {
-  if (me.name && me.name !== 'Guest') {
-    db.ref('/hangout_presence/' + presKey).set({name:me.name, cls:me.cls, ts:Date.now()});
-    db.ref('/hangout_presence/' + presKey).onDisconnect().remove();
-  }
+// ── Load messages (realtime) ──
+var _msgOff = null;
+function loadMessages() {
+  if (!db) return;
+  // Detach previous listener
+  if (_msgOff) { _msgOff(); _msgOff = null; }
+  el("msgs").innerHTML = "";
+  var ref = db.ref(chatPath()).limitToLast(100);
+  _msgOff = ref.on("value", function(snap) {
+    var msgs = [];
+    snap.forEach(function(c) { msgs.push(Object.assign({key:c.key}, c.val())); });
+    renderMessages(msgs);
+  }, function(err) {
+    el("statusBar").textContent = "❌ " + err.message;
+    el("statusBar").style.color = "#ff6b7a";
+    el("statusBar").style.display = "block";
+  });
 }
-updatePresence();
-setInterval(updatePresence, 30000);
-// Live presence counter
-db.ref('/hangout_presence').on('value', function(snap) {
-  var now = Date.now(), count = 0;
-  snap.forEach(function(c){ var u=c.val(); if(u&&(now-u.ts)<90000) count++; });
-  document.getElementById('onCnt').textContent = count;
-});
 
-// Remove presence on unload
-window.addEventListener('beforeunload', function(){
-  fbRemove('/hangout_presence/' + presKey);
-});
+// ── Render messages ──
+function renderMessages(msgs) {
+  var container = el("msgs");
+  var atBot = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+  var html = "";
+  msgs.forEach(function(m) {
+    if (m.type === "system") {
+      html += '<div class="sysmsg">' + esc(m.text) + "</div>";
+      return;
+    }
+    var mine = m.sender === ME.name;
+    var col  = cc(m.senderCls);
+    var content = m.gif
+      ? '<img src="' + m.gif + '" alt="gif" loading="lazy">'
+      : esc(m.text || "");
+    html += '<div class="mrow' + (mine ? " mine" : "") + '">';
+    if (!mine) html += '<div class="mav" style="background:' + col + '">' + av(m.sender) + "</div>";
+    html += '<div class="mbody">'
+      + '<div class="mmeta"><span class="mname" style="color:' + col + '">' + esc(sn(m.sender)) + "</span>"
+      + '<span class="mtime">' + ft(m.ts) + "</span></div>"
+      + '<div class="mbub">' + content + "</div>"
+      + "</div>";
+    if (mine) html += '<div class="mav" style="background:' + col + '">' + av(m.sender) + "</div>";
+    html += "</div>";
+  });
+  container.innerHTML = html;
+  if (atBot) container.scrollTop = container.scrollHeight;
+}
 
-// ═══════════════════════════════════════════════
-// BANNED CHECK
-// ═══════════════════════════════════════════════
-db.ref('/banned').on('value', function(snap) {
-  bannedUsers = snap.val() || {};
-  if (bannedUsers[presKey]) {
-    document.getElementById('banned').classList.add('on');
-  }
-});
+// ── Send message ──
+function sendMessage() {
+  var inp  = el("chatInput");
+  var text = inp.value.trim();
+  if (!text) return;
+  if (bannedUsers[presKey]) { showToast("You have been removed."); return; }
+  if (!db) { showToast("Not connected yet, please wait."); return; }
+  inp.value = "";
+  closeEmoji(); closeGif();
+  db.ref(chatPath()).push({
+    type:"chat", sender:ME.name, senderCls:ME.cls, text:text, ts:Date.now()
+  }).catch(function(e) { showToast("Send failed: " + e.message); });
+}
 
-// ═══════════════════════════════════════════════
-// MESSAGES POLLING
-// ═══════════════════════════════════════════════
-function startPolling() {
+// ── Send GIF ──
+function sendGif(url) {
+  if (!db) return;
+  closeGif();
+  db.ref(chatPath()).push({
+    type:"chat", sender:ME.name, senderCls:ME.cls, gif:url, text:"", ts:Date.now()
+  });
+}
+
+// ── Switch tab ──
+function switchTab(tab) {
+  currentTab = tab;
+  el("tabAll").classList.toggle("on", tab === "all");
+  el("tabMine").classList.toggle("on", tab === "mine");
   loadMessages();
 }
 
-function loadMessages() {
-  var path = chatPath();
-  var st = document.getElementById('dbStatus');
-  st.textContent = 'Loading ' + path + '...';
-  // Detach previous listeners
-  try { db.ref('/hangout_messages').off(); } catch(e){}
-  try { db.ref('/hangout_class_' + sk(me.cls)).off(); } catch(e){}
-  // Use .once() first to diagnose, then switch to realtime
-  db.ref(path).limitToLast(100).once('value')
-    .then(function(snap) {
-      var msgs = [];
-      snap.forEach(function(c){ var v=c.val(); if(v) msgs.push(Object.assign({key:c.key},v)); });
-      st.textContent = '✅ ' + msgs.length + ' msgs from ' + path;
-      renderMessages(msgs);
-      // Now attach realtime listener
-      db.ref(path).limitToLast(100).on('value', function(snap2) {
-        var msgs2 = [];
-        snap2.forEach(function(c){ var v=c.val(); if(v) msgs2.push(Object.assign({key:c.key},v)); });
-        st.textContent = '✅ Live — ' + msgs2.length + ' msgs';
-        renderMessages(msgs2);
-      });
-    })
-    .catch(function(err) {
-      st.textContent = '❌ Read failed: ' + err.message + ' | code: ' + err.code;
-      st.style.color = '#ff6b7a';
-    });
-}
-
-function renderMessages(msgs) {
-  var el = document.getElementById('messages');
-  var atBot = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
-  var html = '';
-  msgs.forEach(function(m) {
-    if (m.type === 'system') {
-      html += '<div class="sys">' + esc(m.text) + '</div>';
-      return;
-    }
-    var isMine = m.sender === me.name;
-    var col = cc(m.senderCls);
-    var content = m.gif
-      ? '<img src="' + m.gif + '" alt="gif" loading="lazy">'
-      : esc(m.text||'');
-    html += '<div class="row' + (isMine?' me':'') + '">' +
-      (!isMine ? '<div class="av" style="background:'+col+'">'+ini(m.sender)+'</div>' : '') +
-      '<div class="bd">' +
-        '<div class="mt"><span class="sn" style="color:'+col+'">'+sn(m.sender)+'</span>' +
-        '<span class="ts">'+ft(m.ts)+'</span></div>' +
-        '<div class="bub">'+content+'</div>' +
-      '</div>' +
-      (isMine ? '<div class="av" style="background:'+col+'">'+ini(m.sender)+'</div>' : '') +
-    '</div>';
-  });
-  el.innerHTML = html;
-  if (atBot) el.scrollTop = el.scrollHeight;
-}
-
-// ═══════════════════════════════════════════════
-// SEND MESSAGE
-// ═══════════════════════════════════════════════
-function send() {
-  var inp  = document.getElementById('chatInput');
-  var text = inp.value.trim();
-  if (!text) return;
-  if (bannedUsers[presKey]) { toast('You have been removed.'); return; }
-  inp.value = '';
-  closeEmoji(); closeGif();
-  db.ref(chatPath()).push({type:'chat', sender:me.name, senderCls:me.cls, text:text, ts:Date.now()})
-    .catch(function(e){ toast('Send failed: ' + e.message); });
-}
-
-function sendGif(url) {
-  var msg = {type:'chat', sender:me.name, senderCls:me.cls, gif:url, text:'', ts:Date.now()};
-  db.ref(chatPath()).push(msg);
-  closeGif();
-}
-
-// ═══════════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════════
-function switchTab(tab) {
-  currentTab = tab;
-  document.getElementById('tabAll').classList.toggle('on', tab==='all');
-  document.getElementById('tabMine').classList.toggle('on', tab==='mine');
-  document.getElementById('messages').innerHTML = '';
-  startPolling();
-  checkTopic();
-}
-
-// ═══════════════════════════════════════════════
-// TOPIC
-// ═══════════════════════════════════════════════
+// ── Topic ──
 function applyTopic(data) {
-  var bar = document.getElementById('topicBar');
-  var msgs = document.getElementById('messages');
-  if (data && data.text && (data.scope === 'all' || data.scope === me.cls)) {
-    document.getElementById('topicTxt').textContent = data.text;
-    bar.classList.add('show');
-    msgs.classList.add('topic-on');
+  var bar  = el("topicBar");
+  var msgs = el("msgs");
+  var stat = el("statusBar");
+  if (data && data.text && (data.scope === "all" || data.scope === ME.cls)) {
+    el("topicTxt").textContent = data.text;
+    bar.classList.add("show");
+    msgs.classList.add("topic-on");
+    stat.classList.add("topic-on");
   } else {
-    bar.classList.remove('show');
-    msgs.classList.remove('topic-on');
+    bar.classList.remove("show");
+    msgs.classList.remove("topic-on");
+    stat.classList.remove("topic-on");
   }
 }
-function checkTopic() { /* no-op, using realtime listener */ }
-db.ref('/hangout_topic').on('value', function(snap){ applyTopic(snap.val()); });
 
-function askTopic() {
-  if (!isTeacher) { toast('Teacher access required'); return; }
-  var t = prompt("Set today's discussion topic (leave blank to clear):");
+function openTopicModal() {
+  if (!isTeacher) { showToast("Teacher access required"); return; }
+  var t = prompt("Set today's discussion topic (blank to clear):");
   if (t === null) return;
   if (t.trim()) {
-    fbSet('/hangout_topic', {text:t.trim(), scope: currentTab==='mine' ? me.cls : 'all', ts:Date.now()});
-    setTimeout(checkTopic, 500);
+    db.ref("hangout_topic").set({
+      text: t.trim(),
+      scope: currentTab === "mine" ? ME.cls : "all",
+      ts: Date.now()
+    });
   } else {
     clearTopic();
   }
 }
+
 function clearTopic() {
-  fbRemove('/hangout_topic').then(function(){ checkTopic(); });
+  if (!isTeacher) return;
+  db.ref("hangout_topic").remove();
 }
 
-// ═══════════════════════════════════════════════
-// EMOJI
-// ═══════════════════════════════════════════════
-var EMOJIS = ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🥰','😍','🤩','😘','😋','😛','😜','🤪','🤑','🤗','🤔','😐','😶','😏','😒','🙄','😬','😌','😔','😢','😭','😱','😤','😡','🤬','💀','👻','🤖','💋','❤️','🧡','💛','💚','💙','💜','🖤','💯','💥','✨','🎉','🏆','🔥','⭐','🌟','🌈','☀️','🌙','⚡','❄️','🌊','🍕','🍔','🍩','🍦','🧁','🎂','☕','📚','✏️','🎵','🎶','🎸','🎮','🏀','⚽','🚀','✈️','💻','📱','🌴','🌺','🦋','🐶','🐱','🐸','🐵','👍','👎','👏','🙌','🙏','💪','✌️','🤞','👋'];
-(function(){
-  var g = document.getElementById('eGrid');
-  g.innerHTML = EMOJIS.map(function(e){ return '<button class="eb" onclick="insEmoji(\''+e+'\')">'+e+'</button>'; }).join('');
-})();
-
-function filtEmoji(q) { document.querySelectorAll('.eb').forEach(function(b){ b.style.display=(!q||b.textContent.includes(q))?'':'none'; }); }
-function insEmoji(e)  { var i=document.getElementById('chatInput'); i.value+=e; i.focus(); }
-function togEmoji()   { emojiOpen=!emojiOpen; gifOpen=false; document.getElementById('emojiP').classList.toggle('on',emojiOpen); document.getElementById('gifP').classList.remove('on'); }
-function closeEmoji() { emojiOpen=false; document.getElementById('emojiP').classList.remove('on'); }
-
-// ═══════════════════════════════════════════════
-// GIF (Giphy)
-// ═══════════════════════════════════════════════
-function togGif() { gifOpen=!gifOpen; emojiOpen=false; document.getElementById('gifP').classList.toggle('on',gifOpen); document.getElementById('emojiP').classList.remove('on'); if(gifOpen&&!document.getElementById('gGrid').children.length)loadGifs('fun'); }
-function closeGif() { gifOpen=false; document.getElementById('gifP').classList.remove('on'); }
-function doGif()   { var q=document.getElementById('gSrch').value.trim(); if(q) loadGifs(q); }
-function loadGifs(q) {
-  var st=document.getElementById('gStatus'), gr=document.getElementById('gGrid');
-  st.textContent='Searching...'; st.style.display='block'; gr.innerHTML='';
-  // Tenor v1 - no API key needed
-  var url = 'https://tenor.com/v1/search?q=' + encodeURIComponent(q) + '&limit=8&contentfilter=high&locale=en_US&anon_id=abcde12345';
-  fetch(url)
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      var results = d.results || [];
-      if (!results.length) { st.textContent='No GIFs found'; st.style.display='block'; return; }
-      st.style.display='none'; gr.innerHTML='';
-      results.forEach(function(g) {
-        var media = g.media && g.media[0];
-        if (!media) return;
-        var fullUrl = media.gif ? media.gif.url : '';
-        var prevUrl = media.tinygif ? media.tinygif.url : (media.nanogif ? media.nanogif.url : fullUrl);
-        if (!fullUrl) return;
-        var div = document.createElement('div');
-        div.className = 'gi';
-        var img = document.createElement('img');
-        img.src = prevUrl; img.loading = 'lazy';
-        div.appendChild(img);
-        div.addEventListener('click', (function(u){ return function(){ window.sendGif(u); }; })(fullUrl));
-        gr.appendChild(div);
-      });
-    })
-    .catch(function(e) {
-      // Fallback: Giphy with public key
-      fetch('https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q='+encodeURIComponent(q)+'&limit=8&rating=g')
-        .then(function(r){ return r.json(); })
-        .then(function(d){
-          var results = d.data || [];
-          if (!results.length) { st.textContent='No GIFs found'; st.style.display='block'; return; }
-          st.style.display='none'; gr.innerHTML='';
-          results.forEach(function(g) {
-            var fullUrl = g.images.original.url;
-            var prevUrl = g.images.fixed_height_small.url;
-            var div = document.createElement('div');
-            div.className = 'gi';
-            var img = document.createElement('img');
-            img.src = prevUrl; img.loading = 'lazy';
-            div.appendChild(img);
-            div.addEventListener('click', (function(u){ return function(){ window.sendGif(u); }; })(fullUrl));
-            gr.appendChild(div);
-          });
-        })
-        .catch(function(){ st.textContent='Could not load GIFs'; st.style.display='block'; });
-    });
+// ── Teacher ──
+function openTeacherModal() {
+  el("teacherModal").classList.add("show");
+  setTimeout(function(){ el("teacherPw").focus(); }, 100);
 }
-
-// ═══════════════════════════════════════════════
-// TEACHER
-// ═══════════════════════════════════════════════
-function openT()  { document.getElementById('tMod').classList.add('on'); setTimeout(function(){document.getElementById('tPw').focus();},100); }
-function closeT() { document.getElementById('tMod').classList.remove('on'); document.getElementById('tPw').value=''; document.getElementById('tErr').style.display='none'; }
-function doT() {
-  if(document.getElementById('tPw').value===TPW){
-    isTeacher=true; closeT();
-    document.getElementById('tBtn').textContent='✅';
-    document.getElementById('topicBtn').style.display='inline-flex';
-    document.getElementById('topicX').style.display='block';
-    toast('Teacher mode on 🔑');
-  } else { document.getElementById('tErr').style.display='block'; }
+function closeTeacherModal() {
+  el("teacherModal").classList.remove("show");
+  el("teacherPw").value = "";
+  el("teacherErr").style.display = "none";
 }
-
-function banUser(name, cls) {
-  if(!isTeacher){toast('Teacher access required');return;}
-  pendingBan={name:name,cls:cls};
-  var banned=bannedUsers[sk(name)];
-  var av=document.getElementById('banAv'); av.textContent=ini(name); av.style.background=cc(cls);
-  document.getElementById('banTitle').textContent=(banned?'Unban ':'Remove ')+sn(name)+'?';
-  document.getElementById('banSub').textContent=banned?'Restore their access?':'Remove from chat immediately.';
-  document.querySelector('#banMod .bban').textContent=banned?'✅ Unban':'🚫 Remove';
-  document.getElementById('banMod').classList.add('on');
-}
-function closeBan() { document.getElementById('banMod').classList.remove('on'); pendingBan=null; }
-function doBan() {
-  if(!pendingBan)return;
-  var key=sk(pendingBan.name);
-  if(bannedUsers[key]){
-    fbRemove('/banned/'+key); toast(sn(pendingBan.name)+' unbanned');
+function submitTeacher() {
+  if (el("teacherPw").value === TEACHER_PW) {
+    isTeacher = true;
+    closeTeacherModal();
+    el("teacherBtn").textContent = "✅";
+    el("topicBtn").style.display = "inline-flex";
+    el("topicX").style.display = "block";
+    showToast("Teacher mode on 🔑");
   } else {
-    fbSet('/banned/'+key,true);
-    db.ref('/hangout_messages').push({type:'system',text:'🚫 '+sn(pendingBan.name)+' was removed by a teacher.',ts:Date.now()});
-    toast(sn(pendingBan.name)+' removed');
+    el("teacherErr").style.display = "block";
   }
-  closeBan(); setTimeout(checkBanned,500);
 }
 
-// ═══════════════════════════════════════════════
-// NAV + UTILS
-// ═══════════════════════════════════════════════
-function goBack() {
-  fbRemove('/hangout_presence/'+presKey);
-  window.location.href=(me.returnTo||'student-portal.html')+'?hero='+encodeURIComponent(me.name)+'&cls='+encodeURIComponent(me.cls);
+// ── Ban ──
+function openBanModal(name, cls) {
+  if (!isTeacher) { showToast("Teacher access required"); return; }
+  pendingBan = {name:name, cls:cls};
+  var banned = bannedUsers[sk(name)];
+  el("banAv").textContent = av(name);
+  el("banAv").style.background = cc(cls);
+  el("banTitle").textContent = (banned ? "Unban " : "Remove ") + sn(name) + "?";
+  el("banSub").textContent   = banned ? "Restore their access?" : "Remove from chat immediately.";
+  el("banActionBtn").textContent = banned ? "✅ Unban" : "🚫 Remove";
+  el("banModal").classList.add("show");
+}
+function closeBanModal() {
+  el("banModal").classList.remove("show");
+  pendingBan = null;
+}
+function confirmBan() {
+  if (!pendingBan || !db) return;
+  var key    = sk(pendingBan.name);
+  var banned = bannedUsers[key];
+  if (banned) {
+    db.ref("banned/" + key).remove();
+    showToast(sn(pendingBan.name) + " unbanned");
+  } else {
+    db.ref("banned/" + key).set(true);
+    db.ref("hangout_messages").push({
+      type:"system",
+      text: "🚫 " + sn(pendingBan.name) + " was removed by a teacher.",
+      ts: Date.now()
+    });
+    showToast(sn(pendingBan.name) + " removed");
+  }
+  closeBanModal();
 }
 
-function toast(msg) {
-  var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
-  clearTimeout(toast._t); toast._t=setTimeout(function(){t.style.display='none';},2500);
+// ── Emoji ──
+var EMOJIS = ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🥰","😍","🤩","😘","😋","😛","😜","🤪","🤑","🤗","🤔","😐","😶","😏","😒","🙄","😬","😌","😔","😢","😭","😱","😤","😡","🤬","💀","👻","🤖","💋","❤️","🧡","💛","💚","💙","💜","🖤","💯","💥","✨","🎉","🏆","🔥","⭐","🌟","🌈","☀️","🌙","⚡","❄️","🌊","🍕","🍔","🍩","🍦","🧁","🎂","☕","📚","✏️","🎵","🎶","🎸","🎮","🏀","⚽","🚀","✈️","💻","📱","🌴","🌺","🦋","🐶","🐱","🐸","🐵","👍","👎","👏","🙌","🙏","💪","✌️","🤞","👋"];
+
+function buildEmojiGrid() {
+  el("emojiGrid").innerHTML = EMOJIS.map(function(e) {
+    return '<button class="ebtn" onclick="insertEmoji(\'' + e + '\')">' + e + "</button>";
+  }).join("");
 }
 
-document.addEventListener('click',function(e){
-  if(!e.target.closest('#emojiP')&&!e.target.closest('.ib'))closeEmoji();
-  if(!e.target.closest('#gifP')&&!e.target.closest('.ib'))closeGif();
-});
-
-// ═══════════════════════════════════════════════
-// START
-// ═══════════════════════════════════════════════
-function testWrite() {
-  var st = document.getElementById('dbStatus');
-  st.textContent = 'Writing test message...';
-  db.ref('/hangout_messages').push({
-    type:'system', sender:'SYSTEM', text:'🔧 Connection test', ts:Date.now()
-  }).then(function(ref) {
-    st.textContent = '✅ Write OK! Key: ' + ref.key + ' — reading back...';
-    return db.ref('/hangout_messages/' + ref.key).once('value');
-  }).then(function(snap) {
-    st.textContent = '✅ Read OK! Data: ' + JSON.stringify(snap.val()).substring(0,50);
-  }).catch(function(e) {
-    st.textContent = '❌ FAILED: ' + e.message;
-    st.style.color = '#ff6b7a';
+function filterEmoji(q) {
+  Array.from(el("emojiGrid").children).forEach(function(b) {
+    b.style.display = (!q || b.textContent.includes(q)) ? "" : "none";
   });
 }
 
-// Add test button to status bar
-setTimeout(function(){
-  var st = document.getElementById('dbStatus');
-  var btn = document.createElement('button');
-  btn.textContent = ' 🔧 Test';
-  btn.style.cssText = 'margin-left:8px;padding:2px 8px;border:1px solid #3ddc84;border-radius:6px;background:transparent;color:#3ddc84;font-size:11px;cursor:pointer;font-family:Nunito,sans-serif;font-weight:700';
-  btn.onclick = testWrite;
-  st.appendChild(btn);
-}, 1000);
-
-// Join message
-if(me.name && me.name!=='Guest'){
-  db.ref('/hangout_messages').push({type:'system',text:'👋 '+sn(me.name)+' joined the hangout!',ts:Date.now()})
-    .then(function(){ loadMessages(); })
-    .catch(function(e){ 
-      document.getElementById('dbStatus').textContent = '❌ Write failed: ' + e.message;
-      document.getElementById('dbStatus').style.color = '#ff6b7a';
-    });
-} else {
-  loadMessages();
+function insertEmoji(e) {
+  var inp = el("chatInput");
+  inp.value += e;
+  inp.focus();
 }
 
+function toggleEmoji() {
+  emojiOpen = !emojiOpen;
+  gifOpen   = false;
+  el("emojiPanel").classList.toggle("show", emojiOpen);
+  el("gifPanel").classList.remove("show");
+}
 
+function closeEmoji() {
+  emojiOpen = false;
+  el("emojiPanel").classList.remove("show");
+}
 
+// ── GIF ──
+function toggleGif() {
+  gifOpen   = !gifOpen;
+  emojiOpen = false;
+  el("gifPanel").classList.toggle("show", gifOpen);
+  el("emojiPanel").classList.remove("show");
+  if (gifOpen && !el("gifGrid").children.length) searchGifs("happy");
+}
 
+function closeGif() {
+  gifOpen = false;
+  el("gifPanel").classList.remove("show");
+}
 
+function searchGifs(q) {
+  if (typeof q !== "string") q = el("gifSearch").value.trim();
+  if (!q) return;
+  var st = el("gifStatus"), gr = el("gifGrid");
+  st.textContent = "Searching..."; st.style.display = "block"; gr.innerHTML = "";
+  // Giphy via allorigins CORS proxy
+  var api = "https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=" + encodeURIComponent(q) + "&limit=8&rating=g";
+  var url = "https://api.allorigins.win/get?url=" + encodeURIComponent(api);
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(wrap) {
+      var d = JSON.parse(wrap.contents);
+      var results = d.data || [];
+      if (!results.length) { st.textContent = "No GIFs found"; return; }
+      st.style.display = "none";
+      results.forEach(function(g) {
+        var full = g.images.original.url;
+        var prev = g.images.fixed_height_small.url;
+        var div  = document.createElement("div");
+        div.className = "gitem";
+        var img  = document.createElement("img");
+        img.src = prev; img.loading = "lazy";
+        div.appendChild(img);
+        div.addEventListener("click", (function(u){ return function(){ sendGif(u); }; })(full));
+        gr.appendChild(div);
+      });
+    })
+    .catch(function() { st.textContent = "Could not load GIFs"; st.style.display = "block"; });
+}
 
+// ── Go back ──
+function goBack() {
+  try { if (db) db.ref("hangout_presence/" + presKey).remove(); } catch(e) {}
+  window.location.href = (ME.returnTo || "student-portal.html")
+    + "?hero=" + encodeURIComponent(ME.name)
+    + "&cls="  + encodeURIComponent(ME.cls);
+}
 
+// ── Toast ──
+function showToast(msg) {
+  var t = el("toast");
+  t.textContent = msg; t.style.display = "block";
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(function(){ t.style.display = "none"; }, 2500);
+}
 
+// ── Close panels on outside click ──
+document.addEventListener("click", function(e) {
+  if (!e.target.closest("#emojiPanel") && !e.target.closest(".ibtn")) closeEmoji();
+  if (!e.target.closest("#gifPanel")   && !e.target.closest(".ibtn")) closeGif();
+});
 
-
-// Expose onclick functions globally
-window.fbGet = fbGet;
-window.fbSet = fbSet;
-window.fbPush = fbPush;
-window.fbRemove = fbRemove;
-window.fbUpdate = fbUpdate;
-window.sk = sk;
-window.sn = sn;
-window.ini = ini;
-window.cc = cc;
-window.ft = ft;
-window.esc = esc;
-window.chatPath = chatPath;
-window.updatePresence = updatePresence;
-window.startPolling = startPolling;
-window.loadMessages = loadMessages;
-window.renderMessages = renderMessages;
-window.send = send;
-window.sendGif = sendGif;
-window.switchTab = switchTab;
-window.applyTopic = applyTopic;
-window.checkTopic = checkTopic;
-window.askTopic = askTopic;
-window.clearTopic = clearTopic;
-window.filtEmoji = filtEmoji;
-window.insEmoji = insEmoji;
-window.togEmoji = togEmoji;
-window.closeEmoji = closeEmoji;
-window.togGif = togGif;
-window.closeGif = closeGif;
-window.doGif = doGif;
-window.loadGifs = loadGifs;
-window.openT = openT;
-window.closeT = closeT;
-window.doT = doT;
-window.banUser = banUser;
-window.closeBan = closeBan;
-window.doBan = doBan;
-window.goBack = goBack;
-window.toast = toast;
-window.testWrite = testWrite;
-
-};
-
-
+// ── START ──
+initFirebase();
 
 </script>
 </body>
