@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Island Hangout 🏝️</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#07111f;--sur:#0e1d30;--sur2:#162640;--bdr:rgba(100,180,255,.15);--bdr2:rgba(100,180,255,.25);--txt:#ddeeff;--mut:rgba(180,210,255,.5);--teal:#00d4be;--gold:#ffc94a;--red:#ff6b7a;--grn:#3ddc84}
@@ -84,6 +84,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 #bannedScreen{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px}
 #bannedScreen.show{display:flex}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <div id="bannedScreen">
@@ -155,7 +157,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
     </div>
   </div>
 </div>
+
 <script>
+
 // ═══════════════════════════════════════════════════════════
 // ISLAND HANGOUT — App Logic
 // Firebase CDN loaded in <head> before this script runs
@@ -281,7 +285,8 @@ function startApp() {
 
 // ── Chat path ──
 function chatPath() {
-  return currentTab === "all" ? "hangout_messages" : "hangout_class_" + sk(ME.cls);
+  // Both tabs read from hangout_messages - My Class filters on display
+  return "hangout_messages";
 }
 
 // ── Load messages (realtime) ──
@@ -295,6 +300,12 @@ function loadMessages() {
   _msgOff = ref.on("value", function(snap) {
     var msgs = [];
     snap.forEach(function(c) { msgs.push(Object.assign({key:c.key}, c.val())); });
+    // For My Class tab, filter to only show messages from same class
+    if (currentTab === "mine") {
+      msgs = msgs.filter(function(m) {
+        return m.type === "system" || m.senderCls === ME.cls;
+      });
+    }
     renderMessages(msgs);
   }, function(err) {
     el("statusBar").textContent = "❌ " + err.message;
@@ -341,6 +352,7 @@ function sendMessage() {
   if (!db) { showToast("Not connected yet, please wait."); return; }
   inp.value = "";
   closeEmoji(); closeGif();
+  setTimeout(function(){ inp.focus(); }, 50);
   db.ref(chatPath()).push({
     type:"chat", sender:ME.name, senderCls:ME.cls, text:text, ts:Date.now()
   }).catch(function(e) { showToast("Send failed: " + e.message); });
@@ -559,6 +571,7 @@ document.addEventListener("click", function(e) {
 
 // ── START ──
 initFirebase();
+
 
 </script>
 </body>
