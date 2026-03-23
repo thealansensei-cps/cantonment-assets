@@ -84,6 +84,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 #bannedScreen{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px}
 #bannedScreen.show{display:flex}
 </style>
+
+
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
@@ -158,7 +160,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
   </div>
 </div>
 
+
 <script>
+
 
 // ═══════════════════════════════════════════════════════════
 // ISLAND HANGOUT — App Logic
@@ -272,11 +276,16 @@ function startApp() {
   // Load messages
   loadMessages();
 
-  // Join message
+  // Join message - only once per 5 minutes to avoid spam
   if (ME.name && ME.name !== "Guest") {
-    db.ref("hangout_messages").push({
-      type:"system", text:"👋 " + sn(ME.name) + " joined the hangout!", ts:Date.now()
-    });
+    var joinKey = "lastJoin_" + sk(ME.name);
+    var lastJoin = parseInt(localStorage.getItem(joinKey) || "0");
+    if (Date.now() - lastJoin > 5 * 60 * 1000) {
+      localStorage.setItem(joinKey, Date.now());
+      db.ref("hangout_messages").push({
+        type:"system", text:"👋 " + sn(ME.name) + " joined the hangout!", ts:Date.now()
+      });
+    }
   }
 
   // Build emoji grid
@@ -300,10 +309,10 @@ function loadMessages() {
   _msgOff = ref.on("value", function(snap) {
     var msgs = [];
     snap.forEach(function(c) { msgs.push(Object.assign({key:c.key}, c.val())); });
-    // For My Class tab, filter to only show messages from same class
+    // For My Class tab, only show messages from same class (hide system msgs)
     if (currentTab === "mine") {
       msgs = msgs.filter(function(m) {
-        return m.type === "system" || m.senderCls === ME.cls;
+        return m.senderCls === ME.cls;
       });
     }
     renderMessages(msgs);
@@ -571,6 +580,7 @@ document.addEventListener("click", function(e) {
 
 // ── START ──
 initFirebase();
+
 
 
 </script>
