@@ -83,7 +83,28 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 .banav{width:46px;height:46px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-family:"Fredoka One",cursive;font-size:18px;color:#fff}
 #bannedScreen{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px}
 #bannedScreen.show{display:flex}
+/* Upload buttons */
+.ibtn-upload{display:none}
+.ibtn-upload.enabled{display:flex}
+/* Image in bubble */
+.mbub img.chat-img{max-width:200px;max-height:160px;border-radius:8px;display:block;cursor:pointer;margin-top:2px}
+/* Audio player */
+.chat-audio{width:180px;height:32px;border-radius:8px;margin-top:2px;accent-color:var(--teal)}
+/* Recording indicator */
+#recIndicator{display:none;align-items:center;gap:6px;padding:4px 10px;background:rgba(255,107,122,.15);border:1px solid rgba(255,107,122,.3);border-radius:8px;font-size:11px;font-weight:800;color:var(--red);position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:150}
+#recIndicator.show{display:flex}
+#recDot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:bl 1s infinite}
+/* Teacher settings panel */
+#settingsPanel{position:fixed;top:88px;left:0;right:0;z-index:95;background:rgba(14,29,48,.97);border-bottom:1px solid var(--bdr2);padding:8px 14px;display:none;align-items:center;gap:10px;flex-wrap:wrap}
+#settingsPanel.show{display:flex}
+.stg-label{font-size:11px;font-weight:800;color:var(--gold)}
+.stg-toggle{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer}
+.stg-toggle input{cursor:pointer}
 </style>
+
+
+
+
 
 
 
@@ -131,9 +152,25 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 </div>
 <div id="statusBar">Connecting...</div>
 <div id="msgs"></div>
+<!-- Recording indicator -->
+<div id="recIndicator"><div id="recDot"></div><span id="recTime">0:00</span> Recording...</div>
+
+<!-- Teacher settings panel -->
+<div id="settingsPanel">
+  <span class="stg-label">⚙️ Chat Settings:</span>
+  <label class="stg-toggle"><input type="checkbox" id="stgImages" onchange="saveSettings()"> 📷 Allow images</label>
+  <label class="stg-toggle"><input type="checkbox" id="stgAudio" onchange="saveSettings()"> 🎤 Allow voice</label>
+  <button class="bno" style="font-size:11px;padding:4px 10px" onclick="toggleSettings()">Close</button>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+
 <div id="inputbar">
   <button class="ibtn" onclick="toggleEmoji()">😄</button>
   <button class="ibtn" style="font-size:11px;font-weight:800" onclick="toggleGif()">GIF</button>
+  <button class="ibtn ibtn-upload" id="btnCamera" onclick="triggerImage()" title="Send image">📷</button>
+  <button class="ibtn ibtn-upload" id="btnMic" onclick="toggleRecording()" title="Voice message">🎤</button>
   <div style="flex:1;display:flex;flex-direction:column;gap:3px">
     <div id="sendingTo" style="font-size:11px;font-weight:800;color:var(--teal);padding:1px 6px;background:rgba(0,212,190,.1);border-radius:5px;border:1px solid rgba(0,212,190,.25)">
       📤 → 🌍 All Classes
@@ -187,7 +224,11 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Nunito"
 
 
 
+
+
 <script>
+
+
 
 
 
@@ -332,6 +373,20 @@ function startApp() {
   buildEmojiGrid();
   // Set initial indicator
   updateSendingIndicator();
+  // Load teacher settings
+  loadSettings();
+}
+
+function viewImg(src) {
+  // Full screen image preview
+  var ov = document.createElement("div");
+  ov.style.cssText = "position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:pointer";
+  var img = document.createElement("img");
+  img.src = src;
+  img.style.cssText = "max-width:95vw;max-height:90vh;border-radius:10px;object-fit:contain";
+  ov.appendChild(img);
+  ov.onclick = function(){ document.body.removeChild(ov); };
+  document.body.appendChild(ov);
 }
 
 // ── Chat path ──
@@ -376,9 +431,11 @@ function renderMessages(msgs) {
     }
     var mine = m.sender === ME.name;
     var col  = cc(m.senderCls);
-    var content = m.gif
-      ? '<img src="' + m.gif + '" alt="gif" loading="lazy">'
-      : esc(m.text || "");
+    var content;
+    if (m.gif)   content = '<img src="' + m.gif + '" alt="gif" loading="lazy">';
+    else if (m.image) content = '<img src="' + m.image + '" class="chat-img" alt="photo" onclick="viewImg(this.src)" loading="lazy">';
+    else if (m.audio) content = '<audio class="chat-audio" controls src="' + m.audio + '"></audio>';
+    else content = esc(m.text || "");
     html += '<div class="mrow' + (mine ? " mine" : "") + '">';
     if (!mine) html += '<div class="mav" style="background:' + col + '">' + av(m.sender) + "</div>";
     html += '<div class="mbody">'
@@ -461,7 +518,7 @@ function applyTopic(data) {
 
 function openTopicModal() {
   if (!isTeacher) { showToast("Teacher access required"); return; }
-  var choice = prompt("TEACHER OPTIONS\n\n1 = Set discussion topic\n2 = Clear topic\n3 = Clear join messages\n4 = Clear ALL messages (current tab)\n\nEnter 1, 2, 3 or 4:");
+  var choice = prompt("TEACHER OPTIONS\n\n1 = Set discussion topic\n2 = Clear topic\n3 = Clear join messages\n4 = Clear ALL messages (current tab)\n5 = Chat settings (images/audio)\n\nEnter 1-5:");
   if (choice === "1") {
     var t = prompt("Type today's discussion topic:");
     if (t && t.trim()) {
@@ -477,6 +534,8 @@ function openTopicModal() {
     clearJoinMessages();
   } else if (choice === "4") {
     clearAllMessages();
+  } else if (choice === "5") {
+    toggleSettings();
   }
 }
 
@@ -619,29 +678,64 @@ function searchGifs(q) {
   if (!q) return;
   var st = el("gifStatus"), gr = el("gifGrid");
   st.textContent = "Searching..."; st.style.display = "block"; gr.innerHTML = "";
-  // Giphy via allorigins CORS proxy
-  var api = "https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=" + encodeURIComponent(q) + "&limit=8&rating=g";
-  var url = "https://api.allorigins.win/get?url=" + encodeURIComponent(api);
-  fetch(url)
+
+  // Try Tenor v2 first (most reliable, no CORS issues)
+  var tenorUrl = "https://tenor.googleapis.com/v2/search"
+    + "?q=" + encodeURIComponent(q)
+    + "&key=AIzaSyC6MvRz2XERGVrxHSDBYJqFoRxmYX3WC4I"
+    + "&limit=8&media_filter=gif&contentfilter=high&locale=en_US";
+
+  fetch(tenorUrl)
     .then(function(r) { return r.json(); })
-    .then(function(wrap) {
-      var d = JSON.parse(wrap.contents);
-      var results = d.data || [];
-      if (!results.length) { st.textContent = "No GIFs found"; return; }
-      st.style.display = "none";
+    .then(function(d) {
+      var results = d.results || [];
+      if (!results.length) throw new Error("no results");
+      st.style.display = "none"; gr.innerHTML = "";
       results.forEach(function(g) {
-        var full = g.images.original.url;
-        var prev = g.images.fixed_height_small.url;
-        var div  = document.createElement("div");
+        var media = g.media_formats || {};
+        var full  = (media.gif      && media.gif.url)      || "";
+        var prev  = (media.tinygif  && media.tinygif.url)  || full;
+        if (!full) return;
+        var div = document.createElement("div");
         div.className = "gitem";
-        var img  = document.createElement("img");
+        var img = document.createElement("img");
         img.src = prev; img.loading = "lazy";
         div.appendChild(img);
         div.addEventListener("click", (function(u){ return function(){ sendGif(u); }; })(full));
         gr.appendChild(div);
       });
     })
-    .catch(function() { st.textContent = "Could not load GIFs"; st.style.display = "block"; });
+    .catch(function() {
+      // Fallback: Tenor v1 (no key needed)
+      var v1Url = "https://tenor.com/v1/search"
+        + "?q=" + encodeURIComponent(q)
+        + "&limit=8&contentfilter=high&locale=en_US"
+        + "&anon_id=cps2026island";
+      fetch(v1Url)
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          var results = d.results || [];
+          if (!results.length) { st.textContent = "No GIFs found"; st.style.display = "block"; return; }
+          st.style.display = "none"; gr.innerHTML = "";
+          results.forEach(function(g) {
+            var media = (g.media && g.media[0]) || {};
+            var full  = (media.gif     && media.gif.url)     || "";
+            var prev  = (media.tinygif && media.tinygif.url) || full;
+            if (!full) return;
+            var div = document.createElement("div");
+            div.className = "gitem";
+            var img = document.createElement("img");
+            img.src = prev; img.loading = "lazy";
+            div.appendChild(img);
+            div.addEventListener("click", (function(u){ return function(){ sendGif(u); }; })(full));
+            gr.appendChild(div);
+          });
+        })
+        .catch(function() {
+          st.textContent = "GIFs unavailable — check connection";
+          st.style.display = "block";
+        });
+    });
 }
 
 // ── Go back ──
@@ -660,14 +754,164 @@ function showToast(msg) {
   showToast._t = setTimeout(function(){ t.style.display = "none"; }, 2500);
 }
 
+window.toggleSettings = toggleSettings;
+window.saveSettings    = saveSettings;
+window.triggerImage    = triggerImage;
+window.handleImageUpload = handleImageUpload;
+window.toggleRecording = toggleRecording;
+window.viewImg         = viewImg;
+
 // ── Close panels on outside click ──
 document.addEventListener("click", function(e) {
   if (!e.target.closest("#emojiPanel") && !e.target.closest(".ibtn")) closeEmoji();
   if (!e.target.closest("#gifPanel")   && !e.target.closest(".ibtn")) closeGif();
 });
 
+// ── SETTINGS ──
+var chatSettings = { images: false, audio: false };
+
+function loadSettings() {
+  if (!db) return;
+  db.ref("hangout_settings").on("value", function(snap) {
+    chatSettings = snap.val() || { images: false, audio: false };
+    applySettings();
+  });
+}
+
+function applySettings() {
+  // Show/hide upload buttons for all users
+  var btns = document.querySelectorAll(".ibtn-upload");
+  btns.forEach(function(b) {
+    b.classList.toggle("enabled", !!(chatSettings.images || chatSettings.audio));
+  });
+  var cam = el("btnCamera");
+  var mic = el("btnMic");
+  if (cam) cam.style.display = chatSettings.images ? "flex" : "none";
+  if (mic) mic.style.display = chatSettings.audio  ? "flex" : "none";
+  // Sync teacher checkboxes
+  var stgImg = el("stgImages");
+  var stgAud = el("stgAudio");
+  if (stgImg) stgImg.checked = !!chatSettings.images;
+  if (stgAud) stgAud.checked = !!chatSettings.audio;
+}
+
+function saveSettings() {
+  if (!isTeacher || !db) return;
+  var settings = {
+    images: el("stgImages").checked,
+    audio:  el("stgAudio").checked
+  };
+  db.ref("hangout_settings").set(settings);
+}
+
+function toggleSettings() {
+  if (!isTeacher) { showToast("Teacher access required"); return; }
+  el("settingsPanel").classList.toggle("show");
+}
+
+// ── IMAGE UPLOAD ──
+function triggerImage() {
+  if (!chatSettings.images) { showToast("Images not enabled by teacher"); return; }
+  el("imgInput").click();
+}
+
+function handleImageUpload(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast("Image too large (max 5MB)"); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    // Compress image using canvas
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement("canvas");
+      var MAX = 600;
+      var w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      var b64 = canvas.toDataURL("image/jpeg", 0.7);
+      if (b64.length > 500000) {
+        showToast("Image too large after compression");
+        return;
+      }
+      db.ref(chatPath()).push({
+        type:"image", sender:ME.name, senderCls:ME.cls,
+        image: b64, ts: Date.now()
+      }).catch(function(e){ showToast("Upload failed: " + e.message); });
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = ""; // reset so same file can be re-selected
+}
+
+// ── AUDIO RECORDING ──
+var mediaRecorder = null;
+var audioChunks  = [];
+var recTimer     = null;
+var recSeconds   = 0;
+var isRecording  = false;
+
+function toggleRecording() {
+  if (!chatSettings.audio) { showToast("Voice messages not enabled by teacher"); return; }
+  if (isRecording) stopRecording();
+  else             startRecording();
+}
+
+function startRecording() {
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(function(stream) {
+      isRecording  = true;
+      audioChunks  = [];
+      recSeconds   = 0;
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = function(e) {
+        if (e.data.size > 0) audioChunks.push(e.data);
+      };
+      mediaRecorder.onstop = function() {
+        stream.getTracks().forEach(function(t){ t.stop(); });
+        var blob = new Blob(audioChunks, { type: "audio/webm" });
+        if (blob.size > 300000) { showToast("Recording too long (max ~30s)"); return; }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          db.ref(chatPath()).push({
+            type:"audio", sender:ME.name, senderCls:ME.cls,
+            audio: e.target.result, ts: Date.now()
+          }).catch(function(er){ showToast("Upload failed: " + er.message); });
+        };
+        reader.readAsDataURL(blob);
+      };
+      mediaRecorder.start();
+      el("btnMic").textContent = "⏹️";
+      el("recIndicator").classList.add("show");
+      recTimer = setInterval(function() {
+        recSeconds++;
+        var m = Math.floor(recSeconds / 60);
+        var s = recSeconds % 60;
+        el("recTime").textContent = m + ":" + (s < 10 ? "0" : "") + s;
+        if (recSeconds >= 60) stopRecording(); // max 1 min
+      }, 1000);
+    })
+    .catch(function() { showToast("Microphone access denied"); });
+}
+
+function stopRecording() {
+  if (!mediaRecorder) return;
+  isRecording = false;
+  clearInterval(recTimer);
+  mediaRecorder.stop();
+  el("btnMic").textContent = "🎤";
+  el("recIndicator").classList.remove("show");
+}
+
 // ── START ──
 initFirebase();
+
+
 
 
 
