@@ -645,29 +645,43 @@ textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 .celebrate-msg { font-size: 0.88rem; color: var(--text2); margin-bottom: 20px; }
 
 /* Worksheet drawer */
+/* ── WORKSHEET COMPACT PILL ── */
 .ws-drawer {
-  position: fixed; right: 370px; top: 52px;
-  width: 320px; height: calc(100vh - 52px);
+  position: fixed; bottom: 80px; right: 16px;
+  width: 56px; height: 56px;
   background: var(--surface2);
-  border-left: 1px solid var(--border);
-  transform: translateX(100%); transition: transform 0.3s;
-  z-index: 90; display: flex; flex-direction: column;
-  box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  z-index: 200;
+  transition: all 0.25s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  display: flex; flex-direction: column;
 }
-.ws-drawer.open { transform: translateX(0); }
+.ws-drawer.open {
+  width: 280px; height: 380px;
+  border-radius: 14px;
+  bottom: 80px; right: 16px;
+}
 .ws-drawer-header {
-  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
+  flex-shrink: 0; cursor: pointer; min-height: 56px;
 }
-.ws-drawer-title { font-size: 0.85rem; font-weight: 600; }
-.ws-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1.1rem; }
-.ws-drawer-body { flex: 1; overflow-y: auto; padding: 16px; }
+.ws-drawer:not(.open) .ws-drawer-header {
+  justify-content: center; padding: 0; border-bottom: none;
+}
+.ws-drawer:not(.open) .ws-close { display: none; }
+.ws-drawer-title { font-size: 0.78rem; font-weight: 700; white-space: nowrap; overflow: hidden; }
+.ws-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1rem; flex-shrink:0; }
+.ws-drawer-body { flex: 1; overflow-y: auto; padding: 10px 12px; }
 .ws-pg {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; padding: 12px; margin-bottom: 10px;
+  border-radius: 7px; padding: 7px 10px; margin-bottom: 7px;
+  cursor: pointer;
 }
-.ws-pg.highlight { border-color: var(--gold); box-shadow: 0 0 10px rgba(245,200,66,0.2); }
+.ws-pg:hover { border-color: var(--gold); }
+.ws-pg.highlight { border-color: var(--gold); box-shadow: 0 0 8px rgba(245,200,66,0.2); }
 .ws-pg-num { font-size: 0.68rem; font-weight: 700; color: var(--gold); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
 .ws-pg-text { font-size: 0.78rem; color: var(--text2); line-height: 1.7; }
 
@@ -899,6 +913,7 @@ textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
     </div>
 
     <!-- Live score dials -->
+    <div id="draftStatus" style="font-size:0.68rem;font-weight:700;color:rgba(255,255,255,.3);padding:2px 0;text-align:right;margin-right:8px;min-width:100px"></div>
     <div class="score-bar" id="score-bar">
       <div class="score-dial">
         <div class="dial-ring">
@@ -994,7 +1009,8 @@ textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-ghost btn-sm" onclick="clearEditor()">Clear</button>
-        <button class="btn btn-gold btn-sm" onclick="submitComp()">✓ Submit</button>
+        <button class="btn btn-sm" id="saveDraftBtn" onclick="saveDraft()" style="background:rgba(100,180,255,.12);border:1px solid rgba(100,180,255,.3);color:#7ec8ff;font-family:inherit;font-size:0.75rem;font-weight:700;padding:5px 12px;border-radius:7px;cursor:pointer">💾 Save Draft</button>
+      <button class="btn btn-gold btn-sm" onclick="finalSubmit()" id="submitBtn">📤 Submit</button>
       </div>
     </div>
   </div>
@@ -1112,10 +1128,16 @@ textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 
 <!-- Worksheet Drawer -->
 <div class="ws-drawer" id="ws-drawer">
-  <div class="ws-drawer-header">
-    <div class="ws-drawer-title">📄 Worksheet Reference</div>
-    <button class="ws-close" onclick="toggleWsDrawer()">✕</button>
+  <div class="ws-drawer-header" onclick="toggleWsDrawer()">
+    <div class="ws-drawer-title" id="ws-pill-label" style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--gold);letter-spacing:0.5px">TB</div>
+    <button class="ws-close" onclick="event.stopPropagation();toggleWsDrawer()">✕</button>
   </div>
+  <div class="ws-drawer-body" id="ws-drawer-body">
+    <div style="text-align:center;padding:24px 8px;color:var(--text2);font-size:0.78rem;">
+      No worksheets uploaded yet.
+    </div>
+  </div>
+</div>
   <div class="ws-drawer-body" id="ws-drawer-body">
     <div style="text-align:center;padding:32px;color:var(--text2);font-size:0.80rem;">
       No worksheets uploaded yet. Add them in Setup.
@@ -1364,11 +1386,12 @@ function setDials(v, va, f, o) {
   setDial('overall', o, '#f5c842');
 }
 function setDial(id, score, color) {
-  const circ = document.getElementById(`d-${id}`);
-  const val = document.getElementById(`dv-${id}`);
+  const circ = document.getElementById('d-' + id);
+  const val  = document.getElementById('dv-' + id);
+  if (!circ || !val) return;
   const pct = score / 100;
   const circ_len = 2 * Math.PI * 14;
-  circ.style.strokeDasharray = `${pct * circ_len} ${circ_len}`;
+  circ.style.strokeDasharray = (pct * circ_len) + ' ' + circ_len;
   val.textContent = score;
 }
 
@@ -1392,7 +1415,7 @@ function updateArcFromText(text) {
 function updateXP(text) {
   const wc = text.trim().split(/\s+/).filter(w=>w).length;
   const pct = Math.min(100, Math.round(wc / S.targetWords * 100));
-  document.getElementById('xp-fill').style.width = pct + '%';
+  var xpFill = document.getElementById('xp-fill'); if(xpFill) xpFill.style.width = pct + '%';
   document.getElementById('xp-label').textContent = `${wc} / ${S.targetWords} words`;
 }
 
@@ -1533,25 +1556,26 @@ function updateVocabPane(text) {
 // ─── WORKSHEET DRAWER ───
 function renderWsDrawer() {
   const body = document.getElementById('ws-drawer-body');
-  if (!S.worksheets.length) return;
-  body.innerHTML = '';
-  S.worksheets.forEach(ws => {
-    const h = document.createElement('div');
-    h.style = 'font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:10px;';
-    h.textContent = ws.title;
-    body.appendChild(h);
-    ws.pages.forEach(pg => {
-      const d = document.createElement('div');
-      d.className = 'ws-pg';
-      d.id = `wsp-${pg.num}`;
-      d.innerHTML = `<div class="ws-pg-num">📄 Page ${pg.num}</div><div class="ws-pg-text">${pg.content}</div>`;
-      body.appendChild(d);
-    });
-  });
+  if (!body) return;
+  if (!S.worksheets || !S.worksheets.length) {
+    body.innerHTML = '<div style="text-align:center;padding:24px 8px;color:var(--text2);font-size:0.78rem;">No worksheets uploaded yet.</div>';
+    return;
+  }
+  body.innerHTML = S.worksheets.map(function(ws, i) {
+    return '<div class="ws-pg" id="ws-pg-' + i + '" onclick="highlightWsPage(' + i + ')">' +
+      '<div class="ws-pg-num">Pg ' + (ws.page || (i+1)) + '</div>' +
+      '<div style="font-size:0.75rem;font-weight:700;color:var(--text);margin:2px 0;">' + (ws.title || 'Page ' + (i+1)) + '</div>' +
+      (ws.keyPoints ? '<div style="font-size:0.70rem;color:var(--text2);margin-top:3px;line-height:1.4;">' + ws.keyPoints + '</div>' : '') +
+    '</div>';
+  }).join('');
 }
 
 function toggleWsDrawer() {
-  document.getElementById('ws-drawer').classList.toggle('open');
+  const d = document.getElementById('ws-drawer');
+  const lbl = document.getElementById('ws-pill-label');
+  if (!d) return;
+  const isOpen = d.classList.toggle('open');
+  if (lbl) { lbl.textContent = isOpen ? 'Think it Booklet' : 'TB'; lbl.style.fontSize = isOpen ? '0.75rem' : '13px'; }
 }
 
 function scrollToWsPage(num) {
@@ -1572,10 +1596,10 @@ function toggleFocus() {
   const coachCol = document.querySelector('.coach-col');
   const header = document.querySelector('.app-header');
   if (btn.classList.toggle('on')) {
-    coachCol.style.display = 'none';
+    if (coachCol) coachCol.style.display = 'none';
     btn.textContent = '⤢ Exit Focus';
   } else {
-    coachCol.style.display = '';
+    if (coachCol) coachCol.style.display = '';
     btn.textContent = '⤢ Focus Mode';
   }
 }
@@ -1590,8 +1614,8 @@ function switchCoachTab(id, btn) {
 
 // ─── CHAT ───
 function autoGrow(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+  if (el) { el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px'; }
 }
 function chatKeyDown(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
@@ -1764,7 +1788,7 @@ function renderDashboard() {
 
   const tbody = document.getElementById('student-tbody');
   tbody.innerHTML = '';
-  document.getElementById('no-students').style.display = S.students.length ? 'none' : 'block';
+  var noStu = document.getElementById('no-students'); if(noStu) noStu.style.display = S.students.length ? 'none' : 'block';
 
   S.students.forEach(s => {
     const tr = document.createElement('tr');
@@ -1797,15 +1821,186 @@ function clearEditor() {
   }
 }
 
+
+// ── DRAFT SAVE KEY ──
+function draftKey() {
+  return 'sf_draft_' + (currentStudent ? currentStudent.name.replace(/[^a-zA-Z0-9]/g,'_') : 'guest');
+}
+
+// ── SAVE DRAFT ──
+function saveDraft(silent) {
+  var text = getPlainText().trim();
+  if (!text) { if (!silent) toast('Nothing to save yet'); return; }
+  var wc = text.split(/\s+/).filter(function(w){return w;}).length;
+  var plan = getPlan();
+  var draft = {
+    essay: text, plan: plan, words: wc,
+    topic: S.topic, savedAt: Date.now(),
+    name: currentStudent ? currentStudent.name : '',
+    cls:  currentStudent ? currentStudent.cls  : ''
+  };
+  // Save to localStorage
+  try { localStorage.setItem(draftKey(), JSON.stringify(draft)); } catch(e){}
+  // Save to Firebase
+  if (currentStudent) {
+    var safeName = currentStudent.name.replace(/[.#$\[\]]/g, '_');
+    var safeCls  = currentStudent.cls.replace(/[.#$\[\] ]/g, '_');
+    fetch(FIREBASE_DB_URL + '/storyforge_drafts/' + safeCls + '/' + safeName + '.json', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(draft)
+    }).catch(function(e){ console.warn('Draft save failed:', e); });
+  }
+  updateDraftStatus(draft.savedAt);
+  if (!silent) toast('Draft saved ✓');
+}
+
+// ── LOAD DRAFT ──
+function loadDraft() {
+  // Try Firebase first, fall back to localStorage
+  if (currentStudent) {
+    var safeName = currentStudent.name.replace(/[.#$\[\]]/g, '_');
+    var safeCls  = currentStudent.cls.replace(/[.#$\[\] ]/g, '_');
+    fetch(FIREBASE_DB_URL + '/storyforge_drafts/' + safeCls + '/' + safeName + '.json')
+      .then(function(r){ return r.json(); })
+      .then(function(draft) {
+        if (draft && draft.essay) {
+          applyDraft(draft);
+        } else {
+          tryLocalDraft();
+        }
+      })
+      .catch(function(){ tryLocalDraft(); });
+  } else {
+    tryLocalDraft();
+  }
+}
+
+function tryLocalDraft() {
+  try {
+    var raw = localStorage.getItem(draftKey());
+    if (raw) { applyDraft(JSON.parse(raw)); }
+  } catch(e) {}
+}
+
+function applyDraft(draft) {
+  if (!draft || !draft.essay) return;
+  var editor = document.getElementById('prose-editor');
+  if (editor) editor.innerText = draft.essay;
+  // Restore plan
+  if (draft.plan) {
+    var planFields = ['who','when','where','what','why','how'];
+    planFields.forEach(function(k) {
+      var el = document.getElementById('p-' + k);
+      if (el && draft.plan[k]) el.value = draft.plan[k];
+    });
+  }
+  updateDraftStatus(draft.savedAt);
+  updateEditorStats(draft.essay);
+  toast('Draft restored — ' + draft.words + ' words ✓');
+}
+
+function updateDraftStatus(ts) {
+  var el = document.getElementById('draftStatus');
+  if (!el || !ts) return;
+  var d = new Date(ts);
+  var time = ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
+  el.textContent = 'Draft saved ' + time;
+}
+
+// ── GET PLAN ──
+function getPlan() {
+  return {
+    who:   (document.getElementById('p-who')   || {}).value || '',
+    when:  (document.getElementById('p-when')  || {}).value || '',
+    where: (document.getElementById('p-where') || {}).value || '',
+    what:  (document.getElementById('p-what')  || {}).value || '',
+    why:   (document.getElementById('p-why')   || {}).value || '',
+    how:   (document.getElementById('p-how')   || {}).value || ''
+  };
+}
+
+// ── AUTO-SAVE every 30 seconds ──
+function startAutoSave() {
+  setInterval(function() {
+    var text = getPlainText().trim();
+    if (text.length > 20) saveDraft(true); // silent auto-save
+  }, 30000);
+}
+
+// ── FINAL SUBMIT ──
+function finalSubmit() {
+  var text = getPlainText().trim();
+  if (!text) { toast('Write something first!'); return; }
+  var wc = text.split(/\s+/).filter(function(w){return w;}).length;
+  if (wc < 20) { toast('Write more before submitting!'); return; }
+
+  var confirmed = confirm('Submit your final composition?\n\nYou wrote ' + wc + ' words.\nYour teacher will be able to read your work.\n\nClick OK to submit.');
+  if (!confirmed) return;
+
+  var scores = calcScores(text);
+  var firstName = currentStudent ? currentStudent.name.split(',')[0].trim().split(' ')[0] : 'Student';
+
+  addAIMsg('<p>🎉 Well done, <strong>' + firstName + '</strong>! You wrote <strong>' + wc + ' words</strong>.</p><p>Before your teacher reviews it, do a quick check:<br>• Read it aloud — does every sentence make sense?<br>• Does your opening grab attention?<br>• Have you shown emotions through actions, not just stated them?<br>• Is there a clear beginning, middle, and end?</p><p>Your composition has been saved for your teacher to read. Great effort today! 🌟</p>', 'praise');
+
+  // Disable submit button to prevent double submit
+  var btn = document.getElementById('submitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '✅ Submitted'; btn.style.opacity = '0.6'; }
+  var draftBtn = document.getElementById('saveDraftBtn');
+  if (draftBtn) { draftBtn.disabled = true; draftBtn.style.opacity = '0.5'; }
+
+  // Save final to Firebase
+  submitScoreToFirebase(Object.assign({}, scores, {
+    words: wc, status: 'Final',
+    essay: text, plan: getPlan()
+  }));
+
+  // Mark done in localStorage
+  localStorage.setItem('sf_submitted', JSON.stringify({ status: 'Completed', words: wc, ts: Date.now() }));
+
+  // Delete draft since final is submitted
+  try { localStorage.removeItem(draftKey()); } catch(e) {}
+  if (currentStudent) {
+    var safeName = currentStudent.name.replace(/[.#$\[\]]/g, '_');
+    var safeCls  = currentStudent.cls.replace(/[.#$\[\] ]/g, '_');
+    fetch(FIREBASE_DB_URL + '/storyforge_drafts/' + safeCls + '/' + safeName + '.json', {method:'DELETE'}).catch(function(){});
+  }
+
+  S.students.unshift({name: currentStudent ? currentStudent.name : 'You', words:wc, status:'Final'});
+  toast('Final composition submitted! ✓');
+}
+
 function submitComp() {
   const text = getPlainText().trim();
   if (!text) { toast('Write something first!'); return; }
   const wc = text.split(/\s+/).filter(w=>w).length;
-  addAIMsg(`🎉 Excellent work submitting your composition! You wrote <strong>${wc} words</strong>.<br><br>Before your teacher reviews it, do a quick check:<br>• Read it aloud — does every sentence make sense?<br>• Does your opening grab attention?<br>• Have you shown emotions through actions, not just stated them?<br>• Is there a clear beginning, middle, and end?<br><br>Well done for completing this today! 🌟`, 'praise');
-  toast('Composition submitted! ✓');
-  // Add to student list for dashboard
   const scores = calcScores(text);
-  S.students.unshift({name:'You (Student)', words:wc, ...scores, arc:[1,1,wc>60?1:0,wc>120?1:0,wc>180?1:0], status:'Completed'});
+  const firstName = currentStudent ? currentStudent.name.split(',')[0].trim().split(' ')[0] : 'Student';
+
+  addAIMsg(`🎉 Well done, <strong>${firstName}</strong>! You wrote <strong>${wc} words</strong>.<br><br>Before your teacher reviews it, do a quick check:<br>• Read it aloud — does every sentence make sense?<br>• Does your opening grab attention?<br>• Have you shown emotions through actions, not just stated them?<br>• Is there a clear beginning, middle, and end?<br><br>Your composition has been saved for your teacher to read. Great effort today! 🌟`, 'praise');
+  toast('Composition submitted! ✓');
+
+  // Save to Firebase with full essay text
+  submitScoreToFirebase({
+    ...scores,
+    words: wc,
+    status: 'Completed',
+    essay: text,
+    plan: {
+      who:   (document.getElementById('p-who')   || {}).value || '',
+      when:  (document.getElementById('p-when')  || {}).value || '',
+      where: (document.getElementById('p-where') || {}).value || '',
+      what:  (document.getElementById('p-what')  || {}).value || '',
+      why:   (document.getElementById('p-why')   || {}).value || '',
+      how:   (document.getElementById('p-how')   || {}).value || ''
+    }
+  });
+
+  // Mark done in localStorage for island pin
+  localStorage.setItem('sf_submitted', JSON.stringify({ status: 'Completed', words: wc, ts: Date.now() }));
+
+  // Add to local dashboard
+  S.students.unshift({name: currentStudent ? currentStudent.name : 'You', words:wc, ...scores, arc:[1,1,wc>60?1:0,wc>120?1:0,wc>180?1:0], status:'Completed'});
 }
 
 function calcScores(text) {
@@ -1837,7 +2032,7 @@ function escHtml(s) {
 // STUDENT IDENTITY — reads from portal login
 // ════════════════════════════════════════
 const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE'; // ← paste your GAS URL here
-const FIREBASE_DB_URL = 'https://english-island-cps-default-rtdb.firebaseio.com';
+const FIREBASE_DB_URL = 'https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app';
 
 let currentStudent = null; // { name, cls, loginTime }
 
@@ -1863,12 +2058,13 @@ function loadStudentIdentity() {
 }
 
 function showSplash() {
-  document.getElementById('sf-splash').style.display = 'flex';
+  var sp = document.getElementById('sf-splash'); if(sp) sp.style.display = 'flex';
 }
 function hideSplash() {
   const splash = document.getElementById('sf-splash');
+  if (!splash) return;
   splash.style.opacity = '0';
-  setTimeout(() => splash.style.display = 'none', 400);
+  setTimeout(function(){ if(splash) splash.style.display = 'none'; }, 400);
 }
 
 function enterAsGuest() {
@@ -1890,7 +2086,11 @@ function afterIdentityLoaded() {
   const first = currentStudent.name.split(' ')[0];
   // Update header
   document.getElementById('student-badge').textContent = `${currentStudent.name} · ${currentStudent.cls}`;
-  document.getElementById('student-badge').style.display = 'flex';
+  var badge = document.getElementById('student-badge'); if(badge) badge.style.display = 'flex';
+  // Load any existing draft
+  loadDraft();
+  // Start auto-save
+  startAutoSave();
   // Greet in chat
   const msgs = document.getElementById('chat-msgs');
   if (msgs.children.length <= 1) {
@@ -1902,24 +2102,39 @@ function afterIdentityLoaded() {
 async function submitScoreToFirebase(scoreData) {
   if (!currentStudent) return;
   const safeName = currentStudent.name.replace(/[.#$\[\]]/g, '_');
-  const path = `scores/${currentStudent.cls}/${safeName}/storyforge`;
-  const url = `${FIREBASE_DB_URL}/${path}.json`;
+  const safeCls  = currentStudent.cls.replace(/[.#$\[\] ]/g, '_');
+  // Save to scores path (for leaderboard)
+  const scoresPath = `scores/${safeCls}/${safeName}/storyforge`;
+  // Save to essays path (for teacher to read full compositions)
+  const essayPath  = `storyforge_essays/${safeCls}/${safeName}`;
+  const payload = {
+    ...scoreData,
+    name:      currentStudent.name,
+    cls:       currentStudent.cls,
+    topic:     S.topic,
+    timestamp: Date.now(),
+    component: 'SF'
+  };
   try {
-    await fetch(url, {
+    // Save scores (without essay text to keep scores lean)
+    const scoresPayload = { ...payload };
+    delete scoresPayload.essay;
+    delete scoresPayload.plan;
+    await fetch(`${FIREBASE_DB_URL}/${scoresPath}.json`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...scoreData,
-        name: currentStudent.name,
-        cls: currentStudent.cls,
-        topic: S.topic,
-        timestamp: Date.now(),
-        component: 'SF'
-      })
+      body: JSON.stringify(scoresPayload)
     });
-    toast('✓ Score saved to teacher dashboard');
+    // Save full essay separately
+    await fetch(`${FIREBASE_DB_URL}/${essayPath}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    toast('✓ Composition saved to teacher dashboard');
   } catch(e) {
     console.warn('Firebase save failed:', e);
+    toast('⚠ Save failed — check connection');
   }
 }
 
