@@ -1,69 +1,741 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// PASTE THIS — replaces loadEnglishLeaderboard() in BOTH:
-//   1. leaderboard.html
-//   2. island-hangout.html  (same function, same bug)
-//
-// ACTUAL Firebase schema (confirmed from console):
-//   /scores/{studentFullName}/
-//     name: "Aleeya Artabia Prasetyowibowo"
-//     cls:  "4 Integrity"
-//     lastLogin: <timestamp>
-//     zone_vt:  { pts:40, score:4, stars:2, total:5, topic:"...", ts:... }
-//     zone_gc:  { pts, score, stars, total, ts }
-//     zone_rs:  { pts, score, stars, total, ts }
-//     zone_sp:  { pts, score, stars, total, ts }
-//     zone_syn: { pts, score, stars, total, ts }
-//
-// totalPts = sum of all zone_*.pts values
-// ══════════════════════════════════════════════════════════════════════════════
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P4 Champions Board — Cantonment Primary</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #0B0E1A;
+  --bg2:   #111422;
+  --bg3:   #181C2E;
+  --surface: rgba(255,255,255,0.05);
+  --rule:  rgba(255,255,255,0.08);
+  --text:  #F0F0F5;
+  --text2: #9099B8;
+  --text3: #5A6380;
 
-function loadEnglishLeaderboard() {
-  const loadingEl = document.getElementById('lb-english-loading');
-  const listEl    = document.getElementById('lb-english-list');
-  if (loadingEl) loadingEl.style.display = 'block';
-  if (listEl)    listEl.innerHTML = '';
+  --care:  #FF5A3C;
+  --grace: #3CB8FF;
+  --resil: #3CFF8A;
+  --respe: #C97FFF;
+  --integ: #FFB83C;
 
-  const ZONES = ['zone_gc', 'zone_rs', 'zone_vt', 'zone_sp', 'zone_syn'];
+  --gold:   #FFD700;
+  --silver: #C0C8D8;
+  --bronze: #CD8B5A;
+
+  --glow-care:  0 0 24px rgba(255,90,60,0.4);
+  --glow-grace: 0 0 24px rgba(60,184,255,0.4);
+  --glow-resil: 0 0 24px rgba(60,255,138,0.4);
+  --glow-respe: 0 0 24px rgba(201,127,255,0.4);
+  --glow-integ: 0 0 24px rgba(255,184,60,0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND GRID ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* ── HEADER ── */
+header {
+  position: relative; z-index: 10;
+  padding: 28px 40px 0;
+  text-align: center;
+}
+.header-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--text3);
+  margin-bottom: 8px;
+}
+.header-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 8vw, 96px);
+  letter-spacing: 4px;
+  line-height: 1;
+  background: linear-gradient(135deg, #fff 30%, var(--text2) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+.header-sub {
+  font-size: 13px; color: var(--text2); font-weight: 500;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+}
+.live-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(60,255,138,0.1); border: 1px solid rgba(60,255,138,0.3);
+  color: var(--resil); padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 700; letter-spacing: .5px;
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--resil);
+  animation: blink 1.5s ease infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.refresh-info { font-size: 11px; color: var(--text3); }
+
+/* ── MAIN ── */
+main {
+  position: relative; z-index: 10;
+  padding: 40px 40px 60px;
+  max-width: 1400px; margin: 0 auto;
+}
+
+/* ── SECTION TITLES ── */
+.section-label {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px;
+}
+.section-label-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; letter-spacing: 2px; color: var(--text);
+}
+.section-label-line {
+  flex: 1; height: 1px; background: var(--rule);
+}
+.section-label-count {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+
+/* ── CLASS RACE ── */
+.class-race { margin-bottom: 56px; }
+.race-grid {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.race-row {
+  display: flex; align-items: center; gap: 14px;
+  animation: slideIn .6s cubic-bezier(.4,0,.2,1) both;
+}
+.race-row:nth-child(1) { animation-delay: .05s }
+.race-row:nth-child(2) { animation-delay: .10s }
+.race-row:nth-child(3) { animation-delay: .15s }
+.race-row:nth-child(4) { animation-delay: .20s }
+.race-row:nth-child(5) { animation-delay: .25s }
+@keyframes slideIn {
+  from { opacity:0; transform: translateX(-20px); }
+  to   { opacity:1; transform: translateX(0); }
+}
+
+.race-rank {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; width: 32px; text-align: right; flex-shrink: 0;
+  color: var(--text3);
+}
+.race-rank.r1 { color: var(--gold); text-shadow: 0 0 20px rgba(255,215,0,.5); }
+.race-rank.r2 { color: var(--silver); }
+.race-rank.r3 { color: var(--bronze); }
+
+.race-label {
+  width: 118px; flex-shrink: 0;
+}
+.race-class-name {
+  font-size: 13px; font-weight: 700; color: var(--text);
+}
+.race-class-sub {
+  font-size: 10px; color: var(--text3); font-weight: 500;
+}
+
+.race-track {
+  flex: 1; height: 44px; background: rgba(255,255,255,0.04);
+  border-radius: 8px; overflow: hidden; position: relative;
+  border: 1px solid var(--rule);
+}
+.race-fill {
+  height: 100%; border-radius: 7px;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 12px;
+  transition: width 1.4s cubic-bezier(.4,0,.2,1);
+  position: relative; overflow: hidden;
+}
+.race-fill::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 60%, rgba(255,255,255,0.12));
+}
+.race-fill-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 700; color: #fff;
+  position: relative; z-index: 1;
+}
+.race-fill-label {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5);
+  letter-spacing: .5px; text-transform: uppercase; z-index: 1;
+}
+
+.race-meta {
+  width: 80px; flex-shrink: 0; text-align: right;
+}
+.race-students { font-size: 11px; color: var(--text3); }
+.race-crown { font-size: 20px; }
+
+/* ── STAR PERFORMERS ── */
+.star-section { margin-bottom: 56px; }
+.stars-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+.star-card {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 20px 16px 18px;
+  text-align: center;
+  position: relative; overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+  animation: fadeUp .5s ease both;
+}
+.star-card:hover { transform: translateY(-3px); }
+.star-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+
+.star-card:nth-child(1)::before { background: var(--care); }
+.star-card:nth-child(2)::before { background: var(--grace); }
+.star-card:nth-child(3)::before { background: var(--resil); }
+.star-card:nth-child(4)::before { background: var(--respe); }
+.star-card:nth-child(5)::before { background: var(--integ); }
+
+.star-card:nth-child(1) { animation-delay:.05s; }
+.star-card:nth-child(2) { animation-delay:.10s; }
+.star-card:nth-child(3) { animation-delay:.15s; }
+.star-card:nth-child(4) { animation-delay:.20s; }
+.star-card:nth-child(5) { animation-delay:.25s; }
+
+.star-class-badge {
+  font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 3px 9px;
+  border-radius: 99px; margin-bottom: 14px;
+  display: inline-block;
+}
+.star-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  margin: 0 auto 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: #fff;
+  position: relative;
+}
+.star-avatar::after {
+  content: '⭐';
+  position: absolute; top: -4px; right: -4px;
+  font-size: 16px;
+}
+.star-name {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  margin-bottom: 2px; line-height: 1.2;
+}
+.star-score-wrap {
+  display: flex; align-items: baseline; justify-content: center; gap: 3px;
+  margin: 10px 0 6px;
+}
+.star-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 44px; line-height: 1;
+}
+.star-score-pct {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; color: var(--text2);
+}
+.star-comps {
+  font-size: 10px; color: var(--text3); font-weight: 500;
+}
+
+/* mini spark inside star card */
+.star-spark {
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 3px; height: 24px; margin-top: 10px;
+}
+.star-spark-bar {
+  width: 8px; border-radius: 3px 3px 0 0;
+}
+
+/* ── TOP 10 TABLE ── */
+.top10-section { }
+.top10-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.top10-panel {
+  background: var(--bg2); border: 1px solid var(--rule);
+  border-radius: 14px; overflow: hidden;
+  animation: fadeUp .5s ease .2s both;
+}
+.top10-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: center; gap: 8px;
+}
+.top10-header-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.top10-header-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+}
+.top10-header-count {
+  margin-left: auto; font-size: 10px; color: var(--text3);
+  font-weight: 600;
+}
+.top10-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: background .1s;
+}
+.top10-row:last-child { border-bottom: none; }
+.top10-row:hover { background: rgba(255,255,255,0.03); }
+.top10-pos {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; width: 24px; text-align: center;
+  color: var(--text3); flex-shrink: 0;
+}
+.top10-pos.p1 { color: var(--gold); }
+.top10-pos.p2 { color: var(--silver); }
+.top10-pos.p3 { color: var(--bronze); }
+.top10-av {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.top10-name {
+  flex: 1; font-size: 12px; font-weight: 600; color: var(--text);
+  min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.top10-bar-wrap {
+  width: 60px; height: 5px; background: rgba(255,255,255,0.08);
+  border-radius: 99px; overflow: hidden; flex-shrink: 0;
+}
+.top10-bar-fill { height: 100%; border-radius: 99px; }
+.top10-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700; flex-shrink: 0; width: 38px; text-align: right;
+}
+
+/* ── LOADING / EMPTY ── */
+.loading-screen {
+  position: fixed; inset: 0; z-index: 500;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+}
+.loading-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.08);
+  border-top-color: var(--resil);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text {
+  font-size: 13px; color: var(--text3); font-weight: 500;
+  letter-spacing: .5px;
+}
+.empty-state {
+  text-align: center; padding: 48px 24px;
+  color: var(--text3); font-size: 13px; font-weight: 500;
+}
+.empty-emoji { font-size: 40px; margin-bottom: 12px; display: block; }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 10;
+  text-align: center; padding: 20px 40px 40px;
+  font-size: 11px; color: var(--text3); letter-spacing: .5px;
+}
+.footer-refresh {
+  display: inline-flex; align-items: center; gap: 8px;
+  cursor: pointer; padding: 6px 14px;
+  border: 1px solid var(--rule); border-radius: 99px;
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  background: none; font-family: 'Outfit', sans-serif;
+  transition: all .15s; margin-bottom: 12px;
+}
+.footer-refresh:hover { border-color: var(--text2); color: var(--text2); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1000px) {
+  .stars-grid { grid-template-columns: repeat(3, 1fr); }
+  .top10-grid { grid-template-columns: 1fr; }
+  main { padding: 28px 20px 48px; }
+  header { padding: 22px 20px 0; }
+}
+@media (max-width: 640px) {
+  .stars-grid { grid-template-columns: 1fr 1fr; }
+  .race-fill-label { display: none; }
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Loading live results…</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-eyebrow">Cantonment Primary School · Primary 4</div>
+  <div class="header-title">Champions Board</div>
+  <div class="header-sub">
+    <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+    <span class="refresh-info" id="lastUpdated">Fetching data…</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- CLASS RACE -->
+  <div class="class-race">
+    <div class="section-label">
+      <div class="section-label-text">Class Race</div>
+      <div class="section-label-line"></div>
+      <div class="section-label-count" id="raceSubtitle">Average across all components</div>
+    </div>
+    <div class="race-grid" id="raceGrid">
+      <div class="empty-state"><span class="empty-emoji">📊</span>Loading class standings…</div>
+    </div>
+  </div>
+
+  <!-- STAR PERFORMERS -->
+  <div class="star-section">
+    <div class="section-label">
+      <div class="section-label-text">Star Performers</div>
+      <div class="section-label-line"></div>
+      <div class="section-label-count">Top scorer in each class</div>
+    </div>
+    <div class="stars-grid" id="starsGrid">
+    </div>
+  </div>
+
+  <!-- TOP 10 ALL-ROUND -->
+  <div class="top10-section">
+    <div class="section-label">
+      <div class="section-label-text">Top 10 All-Round</div>
+      <div class="section-label-line"></div>
+      <div class="section-label-count">Best overall across all 5 components</div>
+    </div>
+    <div class="top10-grid" id="top10Grid">
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <button class="footer-refresh" onclick="loadData()">⟳ Refresh</button>
+  <div>Data updates live from Firebase · Cantonment Primary P4 · <span id="footerTime"></span></div>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG — Firebase (replaces Google Apps Script)
+// ══════════════════════════════════════════════
+const _fbCfg = {
+  apiKey:            "AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",
+  authDomain:        "english-island-cps.firebaseapp.com",
+  databaseURL:       "https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "english-island-cps",
+  storageBucket:     "english-island-cps.firebasestorage.app",
+  messagingSenderId: "892743482834",
+  appId:             "1:892743482834:web:6705bc3e3bc832cf749c0b"
+};
+if (!firebase.apps.length) firebase.initializeApp(_fbCfg);
+const db = firebase.database();
+
+const CLASS_STUDENTS = {"4 Care":["AARON JAMES MC HUGH","AXTON SHANG FUSHENG","AYDEN BIN AZAHAR","AYSHA ALIYA AZRYN","CANDICE HO ZIHAN","CHUA SHAN TING, CELESTE","CLARA LILLIAN PEREIRA","DAI JIATAI","DAO TUAN HUY HARVEY","DAPHNE ALEXANDRA YI TING LO","ELIZABETH SUBANEKNAN","FARAZ ARSHAD RAMADHAN ARDIWINATA","GOSWAMI AMAY","HO DING KANG, EDWARD","JAYDEN GOPU LEE JIE EN","MARCUS LIGTENBERG","MASONN KOH SHAO YU","MAXENCE GARNIER","MUHAMMAD UMAR BIN AZIZ AHMAD","NG ZI HAO JAMESON","RANASINGHE SIENNA TARYN","SAHANA SAFRIN BINTE MOHAMED ARIFF","SARIKA SANMAN SHETTY","SIM EN XUAN, JERINA","SKYLER TAN GUAN MIN","SUNG SEBASTIAN","SYURAHBIL BIN SHAHRILL","THUT LYAN MOE","VIKRANT KHAITAN","WONG YUU MINN JULIAN","YIU CHUN HEI KADEN"],"4 Graciousness":["AENI AQISYA BINTE MUHAMMAD AEWANDA","AGARWAL NISHANT","ARIDASU AASHINYA SRI","AVALYN ONG HUI QI","CHEONG YONG JUN WESLEY","DOMINIC FONG YU BIN","ERIC HEIN HTET KYAW","GAZI AVERO","GLENDA LEE EN LE","GOH KHUN LEE","GU EVEREST","HANNAH LOH YU EN","HU YUYANG","JAKE ARJUN THYAGARAJAN","KOJIMA SHINTARO","LIAO YUQUAN, LANCE","LUCAS CUI ZHENGPING","MOHAMED NIZAMUDEEN ZAAFIRA","MUHAMMAD ADRYAN BIN MOHAMED IRWAN","NAKANOSONO TAIGA","NGO BAO NAM","OLIVER JOSEPH LOWE","PASTRANA MARC GABRIEL HIDALGO","PATEL VIHAAN KIRAN","SCHLAGER LEON ALEXANDER","SHAZRIL BIN MUHAMMAD NIZAM","SOPHIE LOUISE HEMMINGS","TAN JING EN REX","TAN JUN WEI","WANG MANTING","WILSON PETER HAN-WEN","HAYLEY KAYLEIGH LONGDEN"],"4 Resilience":["AGRAWAL AMAY","AHMAD HANIF BIN RASHID","ALESSA HANA WINATA","ASHWIN PARTHI","BHONE THUTA PAING","CAYVIER KOH ZHENG JIE","CHAN YEN LING ISABELLE","DASHIELL ONG YU HAN","DAYA KAUR D/O SARBJIT SINGH","EE JUN QI, TRISTAN","ELIYA'NURSHEZA BINTE MUHAMMAD HAZMAN","GAGANPREET KAUR D/O HARPRIT SINGH SIDHU","HE CHUNQI","ISAAC LIN QIXIANG","JADEN FOO YAN KAI","JAYDEN TEE TZU LE","LIM SERIN","LUCAS LOW","MUHAMMAD ELIAS AASYAHFI BIN MUHAMMAD FARHAN","MURALIKRISHNAN HARISHWARAMOORTHY","NAFIHA JEHAAN","NGUYEN VI","PANCHAPAGESAN SUDHARSHAN","RIHAAN SARKAR","SHEN ZHIYUAN","SIDDHARTH PANTA","SIM GEK BOON THEOPHANIE","THONGLUE CHANAPAT","XIAO YA NING JOANNE","XU XIAOCHEN","ZOEY LI","ZAIM AKILI IYLIA"],"4 Respect":["AGARWAL RAMANSH HARSH","ARUL LOURDURAJ STEEVEJOE","BENJAMIN WONG GUANLIN","DU ZHENGHENG","HAMZAH BIN BACHTIAR","JADE LOUISE BOISSEAU","JAKE ANG JIA LE","JIA ZEKAI","JULIA THANT SIN","KADEN CHUA DE RONG","LAURYN GRACE OVERY","LEE HAJUN","LEE SEUNG WOO","LIN MU-CHEN","LIN XUAN YING KARISA","MALHOTRA AVA","MATHILDA TAY","MUHAMMAD DAMIER SKY BIN MUHAMMAD SHAHRUL AMEEN","NAGUULAN RAVISHANKAR","NUR UFAIRAH PUTRI PUTRA ALFIAN","ONG WEI TING CHLOE","PHAM MINH KHANH CHI","SHAYEIN ARUSHA CUACA","SHIVANSH JAIN","TAY ZHI YUAN, ERIC","THADANI AHAAN ROHIT","TIO WEN LE","TOH JING XUAN JOSLYN","WANG HAIGE","WARREN CHEN BOYUAN","WISUTTI JOAQUIN"],"4 Integrity":["ALEEYA ARTABIA PRASETYOWIBOWO","CHUNG YUE EN, GUINEVERE","COLLIN ALICE DOROTHY MARIE","DANIEL CAI JIEHAN","DAVE LIM DOW FENG","GUNERATNE BRYN TULLIUS CHAN SHUN","JEONG ICHAN","JOSHUA CHONG KWOK ERN","KOH KAY XUAN IRIS","LEE EN HUI","LIM DURIN","LIM HUI YU","MAK GUAN XUAN","MARTIN NEDVED","MUHAMMAD UBAY HYDE BIN MUHAMMAD ALIFFIZWAN","NAFISAH RANIAH BINTE SHAHRIR","NAVEEN SINGH DHILLON S/O JASMINDER SINGH DHILLON","NIKOLA STOJANAC","NOAH LAKRA","NUR NAURA AALIYAH BINTE MUHAMMAD AFIQ","OMKAR VAIDHYA RAMASWAMI","ONG YAN ZHE, JERRIC","PUTRI NUR IMELDA BINTE MUHAMMAD IKHMAL","SADIKOT RIYAAZ MUBIN","SEOW YI XUN, MATTHEW","SHANNAN LIM","SI RUISHEN","SIM EN WEI, JAVION","SOFIA MAIRA BINTE MOHAMAD SHAFIEE","SONG SHOUFU","SOPHIE ANNE COPLAND","SYED AHMED HARRIS MOHAMED AFFAN KABEER","XU ZIMO","YUKI ITO"]};
+
+const COMP_KEYS  = ['rs','syn','vt','gc','sp'];
+const CLASS_CONFIG = {
+  '4 Care':        { color: '#FF5A3C', short: 'Care',  glow: 'rgba(255,90,60,0.35)'  },
+  '4 Graciousness':{ color: '#3CB8FF', short: 'Grace', glow: 'rgba(60,184,255,0.35)' },
+  '4 Resilience':  { color: '#3CFF8A', short: 'Resil', glow: 'rgba(60,255,138,0.35)' },
+  '4 Respect':     { color: '#C97FFF', short: 'Respe', glow: 'rgba(201,127,255,0.35)'},
+  '4 Integrity':   { color: '#FFB83C', short: 'Integ', glow: 'rgba(255,184,60,0.35)' },
+};
+
+// ── HELPERS ──────────────────────────────────
+function initials(name) {
+  const parts = name.replace(/,.*/, '').trim().split(' ');
+  return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+}
+function shortName(name) {
+  return name.replace(/,.*/, '')
+    .replace(/\s+(BIN|BINTE|D\/O|S\/O)\s+.*/i, '').trim()
+    .split(' ').slice(0, 2).join(' ');
+}
+
+// ── FETCH DATA FROM FIREBASE ──────────────────
+// Firebase schema (confirmed):
+// /scores/{studentFullName}/
+//   name, cls, lastLogin
+//   zone_vt:  { pts, score, stars, total, ts }
+//   zone_gc:  { pts, score, stars, total, ts }
+//   zone_rs:  { pts, score, stars, total, ts }
+//   zone_sp:  { pts, score, stars, total, ts }
+//   zone_syn: { pts, score, stars, total, ts }
+function loadData() {
+  document.getElementById('lastUpdated').textContent = 'Refreshing…';
+
+  const ZONE_TO_COMP = {
+    zone_gc:  'gc',
+    zone_rs:  'rs',
+    zone_vt:  'vt',
+    zone_sp:  'sp',
+    zone_syn: 'syn'
+  };
 
   db.ref('scores').once('value', snap => {
-    const entries = [];
+    // Build sheetStudents in the same shape processAndRender() expects:
+    // { [UPPERCASED_NAME]: { components: { gc:{pct,score,total}, rs:{...}, ... } } }
+    const sheetStudents = {};
 
     snap.forEach(studentSnap => {
       const d = studentSnap.val();
-
-      // Must have a name field (skips class-keyed nodes if any exist)
       if (!d || !d.name) return;
 
-      let totalPts   = 0;
-      let zonesFound = 0;
+      const components = {};
+      let hasAny = false;
 
-      ZONES.forEach(z => {
-        if (d[z] && typeof d[z].pts !== 'undefined') {
-          totalPts += (d[z].pts || 0);
-          zonesFound++;
+      Object.entries(ZONE_TO_COMP).forEach(([zone, compKey]) => {
+        if (d[zone] && typeof d[zone].score !== 'undefined') {
+          const score = d[zone].score || 0;
+          const total = d[zone].total || 0;
+          const pct   = total > 0 ? Math.round((score / total) * 100) : 0;
+          components[compKey] = { score, total, pct, stars: d[zone].stars || 0 };
+          hasAny = true;
         }
       });
 
-      // Skip students who have a login record but no quiz scores yet
-      if (zonesFound === 0) return;
+      if (!hasAny) return;   // logged in but no quiz scores — skip
 
-      entries.push({
-        name: d.name,
-        cls:  d.cls || '',
-        pts:  Math.round(totalPts)
-      });
+      const key = (d.name || '').trim().toUpperCase();
+      sheetStudents[key] = { components };
     });
 
-    // Sort highest score first
-    entries.sort((a, b) => b.pts - a.pts);
+    processAndRender(sheetStudents);
 
-    if (loadingEl) loadingEl.style.display = 'none';
-
-    if (entries.length === 0) {
-      if (listEl) listEl.innerHTML = '<div class="lb-loading">No scores yet! 📚</div>';
-      return;
-    }
-
-    renderLbList('lb-english-list', entries);
+    const now = new Date();
+    document.getElementById('lastUpdated').textContent =
+      'Updated ' + now.toLocaleTimeString('en-SG', {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('footerTime').textContent =
+      now.toLocaleDateString('en-SG', {day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('loadingScreen').style.display = 'none';
+  }, err => {
+    console.warn('Firebase read error:', err);
+    document.getElementById('lastUpdated').textContent = 'Could not reach Firebase';
+    processAndRender({});
+    document.getElementById('loadingScreen').style.display = 'none';
   });
 }
+
+// ── PROCESS + RENDER ──────────────────────────
+function processAndRender(sheetStudents) {
+  // Build student list with live data
+  const students = [];
+  for (const [cls, names] of Object.entries(CLASS_STUDENTS)) {
+    names.forEach(name => {
+      const key  = name.trim().toUpperCase();
+      const live = sheetStudents[key];
+      if (!live || !live.components) return; // skip students with no data
+
+      const attempted = COMP_KEYS.filter(k => live.components[k]);
+      if (attempted.length === 0) return;
+
+      const overall = Math.round(
+        attempted.reduce((s, k) => s + live.components[k].pct, 0) / attempted.length
+      );
+      students.push({ name, cls, overall, comps: live.components, attempted: attempted.length });
+    });
+  }
+
+  renderClassRace(students);
+  renderStars(students);
+  renderTop10(students);
+}
+
+// ── CLASS RACE ────────────────────────────────
+function renderClassRace(students) {
+  const el = document.getElementById('raceGrid');
+
+  // Compute class averages
+  const classStats = {};
+  for (const cls of Object.keys(CLASS_STUDENTS)) {
+    const clsStudents = students.filter(s => s.cls === cls);
+    classStats[cls] = {
+      cls,
+      avg: clsStudents.length
+        ? Math.round(clsStudents.reduce((s,x) => s+x.overall, 0) / clsStudents.length)
+        : 0,
+      count: clsStudents.length,
+      total: CLASS_STUDENTS[cls].length
+    };
+  }
+
+  const sorted = Object.values(classStats).sort((a,b) => b.avg - a.avg);
+  const maxAvg  = sorted[0]?.avg || 1;
+
+  if (sorted.every(c => c.count === 0)) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-emoji">📊</span>No scores yet — be the first to complete a component!</div>';
+    document.getElementById('raceSubtitle').textContent = 'No data yet';
+    return;
+  }
+
+  document.getElementById('raceSubtitle').textContent =
+    'Average score across all components · ' + students.length + ' students with data';
+
+  const rankClasses = ['r1','r2','r3','',''];
+  const rankIcons   = ['👑','','','',''];
+
+  el.innerHTML = sorted.map((c, i) => {
+    const cfg   = CLASS_CONFIG[c.cls] || { color:'#666', glow:'rgba(0,0,0,0)' };
+    const width = c.avg > 0 ? Math.round((c.avg / maxAvg) * 96) : 2;
+    return `<div class="race-row">
+      <div class="race-rank ${rankClasses[i]}">${i+1}</div>
+      <div class="race-label">
+        <div class="race-class-name">${c.cls}</div>
+        <div class="race-class-sub">${c.count} / ${c.total} scored</div>
+      </div>
+      <div class="race-track">
+        <div class="race-fill" style="width:${width}%;background:${cfg.color};box-shadow:0 0 20px ${cfg.glow}">
+          <div class="race-fill-label">${cfg.short.toUpperCase()}</div>
+          <div class="race-fill-pct">${c.avg > 0 ? c.avg+'%' : ''}</div>
+        </div>
+      </div>
+      <div class="race-meta">
+        ${i===0 ? '<div class="race-crown">👑</div>' : `<div class="race-students">${c.avg > 0 ? c.avg+'%' : '—'}</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── STAR PERFORMERS ───────────────────────────
+function renderStars(students) {
+  const el = document.getElementById('starsGrid');
+  const classes = Object.keys(CLASS_STUDENTS);
+
+  const cards = classes.map(cls => {
+    const cfg = CLASS_CONFIG[cls] || { color:'#666' };
+    const clsStudents = students.filter(s => s.cls === cls);
+
+    if (clsStudents.length === 0) {
+      return `<div class="star-card" style="opacity:.4">
+        <div class="star-class-badge" style="background:${cfg.color}22;color:${cfg.color}">${cls}</div>
+        <div class="star-avatar" style="background:${cfg.color}33">?</div>
+        <div class="star-name" style="color:var(--text3)">No data yet</div>
+        <div class="star-score-wrap">
+          <div class="star-score" style="color:var(--text3)">—</div>
+        </div>
+      </div>`;
+    }
+
+    const star = [...clsStudents].sort((a,b) => b.overall - a.overall)[0];
+    const sparkBars = COMP_KEYS.map(k => {
+      const pct = star.comps[k]?.pct ?? 0;
+      const h   = pct > 0 ? Math.max(4, Math.round(pct * 0.22)) : 4;
+      const op  = pct > 0 ? '1' : '0.15';
+      return `<div class="star-spark-bar" style="height:${h}px;background:${cfg.color};opacity:${op}"></div>`;
+    }).join('');
+
+    const scoreColor = star.overall >= 75 ? cfg.color
+      : star.overall >= 55 ? '#FFB83C' : '#FF5A3C';
+
+    return `<div class="star-card" style="box-shadow:0 8px 32px ${cfg.color}20">
+      <div class="star-class-badge" style="background:${cfg.color}22;color:${cfg.color}">${cls}</div>
+      <div class="star-avatar" style="background:${cfg.color};box-shadow:0 0 24px ${cfg.color}60">
+        ${initials(star.name)}
+      </div>
+      <div class="star-name">${shortName(star.name)}</div>
+      <div class="star-score-wrap">
+        <div class="star-score" style="color:${scoreColor}">${star.overall}</div>
+        <div class="star-score-pct" style="color:${scoreColor}">%</div>
+      </div>
+      <div class="star-comps">${star.attempted} / 5 components</div>
+      <div class="star-spark">${sparkBars}</div>
+    </div>`;
+  });
+
+  el.innerHTML = cards.join('');
+}
+
+// ── TOP 10 ─────────────────────────────────────
+function renderTop10(students) {
+  const el = document.getElementById('top10Grid');
+
+  const allSorted = [...students].sort((a,b) => b.overall - a.overall);
+  const top10     = allSorted.slice(0, 10);
+
+  if (top10.length === 0) {
+    el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><span class="empty-emoji">🏆</span>Complete activities to appear on the leaderboard!</div>';
+    return;
+  }
+
+  // Split into left (1-5) and right (6-10)
+  const leftList  = top10.slice(0, 5);
+  const rightList = top10.slice(5, 10);
+
+  function buildPanel(list, startRank) {
+    const rows = list.map((s, i) => {
+      const rank = startRank + i;
+      const cfg  = CLASS_CONFIG[s.cls] || { color:'#666' };
+      const posClass = rank === 1 ? 'p1' : rank === 2 ? 'p2' : rank === 3 ? 'p3' : '';
+      const rankLabel = rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank;
+      const barW = Math.round((s.overall / 100) * 100);
+      return `<div class="top10-row">
+        <div class="top10-pos ${posClass}">${rankLabel}</div>
+        <div class="top10-av" style="background:${cfg.color}">${initials(s.name)}</div>
+        <div class="top10-name">${shortName(s.name)}</div>
+        <div class="top10-bar-wrap">
+          <div class="top10-bar-fill" style="width:${barW}%;background:${cfg.color}"></div>
+        </div>
+        <div class="top10-score" style="color:${cfg.color}">${s.overall}%</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="top10-panel">
+      <div class="top10-header">
+        <div style="font-size:14px">${startRank === 1 ? '🏆' : '📋'}</div>
+        <div class="top10-header-title">${startRank === 1 ? 'Top Performers' : 'Runners Up'}</div>
+        <div class="top10-header-count">Rank ${startRank}–${startRank + list.length - 1}</div>
+      </div>
+      ${rows}
+    </div>`;
+  }
+
+  let html = buildPanel(leftList, 1);
+  if (rightList.length > 0) html += buildPanel(rightList, 6);
+  el.innerHTML = html;
+}
+
+// ── AUTO REFRESH every 2 min ──────────────────
+loadData();
+setInterval(loadData, 120000);
+</script>
+</body>
+</html>
