@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StoryForge — Student Essays</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f5f0;--sur:#fff;--ink:#1a1a2e;--ink2:#555;
+  --teal:#00897b;--gold:#f5a623;--red:#e53935;--grn:#43a047;
+  --border:#e0d8cc;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+body{background:var(--bg);color:var(--ink);font-family:'Nunito',sans-serif;min-height:100vh}
+
+/* HEADER */
+header{background:var(--ink);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.logo{font-family:'Playfair Display',serif;font-size:22px}
+.logo span{color:var(--gold)}
+#loginBadge{margin-left:auto;font-size:13px;font-weight:700;color:rgba(255,255,255,.7)}
+
+/* LOGIN */
+#loginWrap{max-width:360px;margin:80px auto;background:var(--sur);border-radius:16px;padding:32px;box-shadow:var(--shadow);text-align:center}
+#loginWrap h2{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px}
+#loginWrap p{color:var(--ink2);font-size:13px;margin-bottom:24px}
+#loginWrap input{width:100%;padding:10px 14px;border-radius:9px;border:1px solid var(--border);font-size:14px;font-family:'Nunito',sans-serif;margin-bottom:12px;outline:none}
+#loginWrap button{width:100%;padding:11px;border-radius:9px;border:none;background:var(--teal);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif}
+
+/* MAIN */
+#mainWrap{display:none;max-width:1000px;margin:0 auto;padding:24px 16px}
+
+/* FILTERS */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.filters select{padding:7px 12px;border-radius:8px;border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;background:var(--sur);cursor:pointer}
+#searchInp{padding:7px 12px;border-radius:8px;border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;flex:1;min-width:160px;outline:none}
+.btn-refresh{padding:7px 14px;border-radius:8px;border:none;background:var(--teal);color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif}
+
+/* STATS BAR */
+#statsBar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.stat-card{background:var(--sur);border-radius:10px;padding:12px 18px;box-shadow:var(--shadow);flex:1;min-width:120px;text-align:center}
+.stat-val{font-size:22px;font-weight:800;color:var(--teal)}
+.stat-lbl{font-size:11px;color:var(--ink2);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+/* ESSAY LIST */
+#essayList{display:flex;flex-direction:column;gap:12px}
+.essay-card{background:var(--sur);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border)}
+.essay-header{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.essay-header:hover{background:#f5f3ef}
+.stu-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;flex-shrink:0}
+.stu-name{font-weight:800;font-size:14px}
+.stu-cls{font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase}
+.essay-meta{margin-left:auto;display:flex;gap:10px;align-items:center;flex-shrink:0}
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:800}
+.badge-words{background:rgba(0,137,123,.1);color:var(--teal)}
+.badge-score{background:rgba(245,166,35,.12);color:#c17f00}
+.badge-time{background:rgba(0,0,0,.05);color:var(--ink2)}
+.chevron{font-size:18px;color:var(--ink2);transition:transform .2s;flex-shrink:0}
+.essay-card.open .chevron{transform:rotate(180deg)}
+
+/* ESSAY BODY */
+.essay-body{display:none;padding:0 18px 18px;border-top:1px solid var(--border)}
+.essay-card.open .essay-body{display:block}
+.essay-topic{font-size:12px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.essay-text{font-size:14px;line-height:1.8;color:var(--ink);white-space:pre-wrap;background:#faf9f7;border-radius:8px;padding:14px;border:1px solid var(--border);max-height:400px;overflow-y:auto}
+.scores-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0}
+.score-pill{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.plan-section{margin-top:12px}
+.plan-title{font-size:12px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.plan-item{background:#f0f0f0;border-radius:7px;padding:6px 10px;font-size:12px}
+.plan-item strong{color:var(--ink);font-weight:800}
+.btn-copy{margin-top:12px;padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:var(--sur);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+.btn-copy:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* EMPTY */
+#emptyState{text-align:center;padding:60px 20px;color:var(--ink2)}
+#emptyState .icon{font-size:48px;margin-bottom:12px}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;display:none;z-index:200}
+
+@media(max-width:600px){.plan-grid{grid-template-columns:1fr}.essay-meta{gap:5px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Story<span>Forge</span></div>
+  <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.6)">📋 Teacher Essay Viewer</div>
+  <div id="loginBadge"></div>
+</header>
+
+<!-- LOGIN -->
+<div id="loginWrap">
+  <h2>🔑 Teacher Access</h2>
+  <p>Enter the teacher password to view student essays.</p>
+  <input type="password" id="pwInp" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+  <div id="loginErr" style="color:#e53935;font-size:12px;font-weight:700;margin-bottom:10px;display:none">Wrong password.</div>
+  <button onclick="doLogin()">Enter</button>
+</div>
+
+<!-- MAIN -->
+<div id="mainWrap">
+  <div class="filters">
+    <div style="display:flex;gap:4px;background:#f0ece6;border-radius:8px;padding:3px">
+      <button id="tabFinal" onclick="switchTab('final')" style="padding:5px 12px;border-radius:6px;border:none;background:#fff;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;box-shadow:0 1px 4px rgba(0,0,0,.1)">📤 Final</button>
+      <button id="tabDraft" onclick="switchTab('draft')" style="padding:5px 12px;border-radius:6px;border:none;background:transparent;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;color:#888">💾 Drafts</button>
+    </div>
+    <select id="clsFilter" onchange="renderList()">
+      <option value="">All Classes</option>
+      <option>4 Care</option>
+      <option>4 Graciousness</option>
+      <option>4 Integrity</option>
+      <option>4 Respect</option>
+      <option>4 Resilience</option>
+    </select>
+    <input id="searchInp" placeholder="Search student name..." oninput="renderList()">
+    <button class="btn-refresh" onclick="loadEssays()">🔄 Refresh</button>
+    <button class="btn-refresh" style="background:#455a64" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+
+  <div id="statsBar">
+    <div class="stat-card"><div class="stat-val" id="statTotal">0</div><div class="stat-lbl">Submissions</div></div>
+    <div class="stat-card"><div class="stat-val" id="statAvgWords">0</div><div class="stat-lbl">Avg Words</div></div>
+    <div class="stat-card"><div class="stat-val" id="statAvgScore">0%</div><div class="stat-lbl">Avg Score</div></div>
+  </div>
+
+  <div id="essayList"></div>
+  <div id="emptyState" style="display:none"><div class="icon">📝</div><p>No essays submitted yet.</p></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var TEACHER_PW = 'cps2026';
+var DB_URL = 'https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app';
+var FB_CONFIG = {
+  apiKey: 'AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo',
+  authDomain: 'english-island-cps.firebaseapp.com',
+  databaseURL: DB_URL,
+  projectId: 'english-island-cps',
+  storageBucket: 'english-island-cps.firebasestorage.app',
+  messagingSenderId: '892743482834',
+  appId: '1:892743482834:web:6705bc3e3bc832cf749c0b'
+};
+
+var db = null;
+var allEssays  = [];
+var allDrafts  = [];
+var activeTab  = 'final';
+
+var CLASS_COLORS = {
+  '4 Care':'#e53935','4 Graciousness':'#1e88e5',
+  '4 Integrity':'#fb8c00','4 Respect':'#8e24aa','4 Resilience':'#43a047'
+};
+
+function doLogin() {
+  if (document.getElementById('pwInp').value === TEACHER_PW) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('mainWrap').style.display = 'block';
+    document.getElementById('loginBadge').textContent = '✅ Teacher Mode';
+    initFirebase();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function initFirebase() {
+  if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+  db = firebase.database();
+  loadEssays();
+}
+
+function loadEssays() {
+  if (!db) return;
+  document.getElementById('essayList').innerHTML = '<div style="text-align:center;padding:40px;color:#888">Loading...</div>';
+  // Load finals
+  db.ref('storyforge_essays').once('value', function(snap) {
+    allEssays = [];
+    if (snap.exists()) {
+      snap.forEach(function(clsSnap) {
+        clsSnap.forEach(function(stuSnap) {
+          var d = stuSnap.val();
+          if (d && d.essay) allEssays.push(d);
+        });
+      });
+      allEssays.sort(function(a,b){ return (b.timestamp||0) - (a.timestamp||0); });
+    }
+    // Load drafts
+    db.ref('storyforge_drafts').once('value', function(snap2) {
+      allDrafts = [];
+      if (snap2.exists()) {
+        snap2.forEach(function(clsSnap) {
+          clsSnap.forEach(function(stuSnap) {
+            var d = stuSnap.val();
+            if (d && d.essay) allDrafts.push(d);
+          });
+        });
+        allDrafts.sort(function(a,b){ return (b.savedAt||0) - (a.savedAt||0); });
+      }
+      renderList();
+      showToast('Loaded ' + allEssays.length + ' finals, ' + allDrafts.length + ' drafts');
+    });
+  });
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabFinal').style.background = tab==='final' ? '#fff' : 'transparent';
+  document.getElementById('tabFinal').style.color      = tab==='final' ? '#1a1a2e' : '#888';
+  document.getElementById('tabFinal').style.boxShadow  = tab==='final' ? '0 1px 4px rgba(0,0,0,.1)' : 'none';
+  document.getElementById('tabDraft').style.background = tab==='draft' ? '#fff' : 'transparent';
+  document.getElementById('tabDraft').style.color      = tab==='draft' ? '#1a1a2e' : '#888';
+  document.getElementById('tabDraft').style.boxShadow  = tab==='draft' ? '0 1px 4px rgba(0,0,0,.1)' : 'none';
+  renderList();
+}
+
+function renderList() {
+  var cls    = document.getElementById('clsFilter').value;
+  var search = document.getElementById('searchInp').value.toLowerCase();
+  var source = activeTab === 'draft' ? allDrafts : allEssays;
+  var filtered = source.filter(function(e) {
+    if (cls && e.cls !== cls) return false;
+    if (search && !(e.name||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  // Stats
+  document.getElementById('statTotal').textContent = filtered.length;
+  var avgW = filtered.length ? Math.round(filtered.reduce(function(t,e){ return t+(e.words||0); },0)/filtered.length) : 0;
+  var avgS = filtered.length ? Math.round(filtered.reduce(function(t,e){ return t+(e.overall||0); },0)/filtered.length) : 0;
+  document.getElementById('statAvgWords').textContent = avgW;
+  document.getElementById('statAvgScore').textContent = avgS + '%';
+
+  var list = document.getElementById('essayList');
+  var empty = document.getElementById('emptyState');
+
+  if (!filtered.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = filtered.map(function(e, i) {
+    var col = CLASS_COLORS[e.cls] || '#888';
+    var initials = (e.name||'?').replace(/,.*/,'').trim().split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();
+    var firstName = (e.name||'Student').split(',')[0].trim().split(' ')[0];
+    var ts = e.timestamp || e.savedAt || 0;
+    var date = ts ? new Date(ts).toLocaleDateString('en-SG',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    var isDraft = activeTab === 'draft';
+    var scoreColor = e.overall >= 70 ? '#43a047' : e.overall >= 50 ? '#fb8c00' : '#e53935';
+    var plan = e.plan || {};
+    var hasPlan = Object.values(plan).some(function(v){ return v && v.trim(); });
+
+    return '<div class="essay-card" id="card'+i+'">' +
+      '<div class="essay-header" onclick="toggleCard('+i+')">' +
+        '<div class="stu-av" style="background:'+col+'">'+initials+'</div>' +
+        '<div><div class="stu-name">'+esc(firstName)+'</div><div class="stu-cls">'+esc(e.cls||'')+'</div></div>' +
+        '<div class="essay-meta">' +
+          (isDraft ? '<span class="badge" style="background:rgba(100,180,255,.12);color:#7ec8ff">💾 Draft</span>' : '') +
+          '<span class="badge badge-words">'+((e.words||0))+' words</span>' +
+          '<span class="badge badge-score" style="background:'+scoreColor+'22;color:'+scoreColor+'">'+((e.overall||0))+'%</span>' +
+          '<span class="badge badge-time">'+date+'</span>' +
+        '</div>' +
+        '<span class="chevron">▼</span>' +
+      '</div>' +
+      '<div class="essay-body">' +
+        '<div class="essay-topic">Topic: ' + esc(e.topic||'') + '</div>' +
+        '<div class="essay-text">' + esc(e.essay||'') + '</div>' +
+        '<div class="scores-row">' +
+          '<span class="score-pill" style="background:rgba(0,137,123,.1);color:#00897b">Vocab: '+(e.vocab||0)+'%</span>' +
+          '<span class="score-pill" style="background:rgba(245,166,35,.1);color:#c17f00">Variety: '+(e.variety||0)+'%</span>' +
+          '<span class="score-pill" style="background:rgba(30,136,229,.1);color:#1565c0">Flow: '+(e.flow||0)+'%</span>' +
+          '<span class="score-pill" style="background:rgba(142,36,170,.1);color:#6a1b9a">Overall: '+(e.overall||0)+'%</span>' +
+        '</div>' +
+        (hasPlan ? '<div class="plan-section"><div class="plan-title">Story Plan (5W1H)</div><div class="plan-grid">' +
+          (plan.who   ? '<div class="plan-item"><strong>Who:</strong> '+esc(plan.who)+'</div>' : '') +
+          (plan.when  ? '<div class="plan-item"><strong>When:</strong> '+esc(plan.when)+'</div>' : '') +
+          (plan.where ? '<div class="plan-item"><strong>Where:</strong> '+esc(plan.where)+'</div>' : '') +
+          (plan.what  ? '<div class="plan-item"><strong>What:</strong> '+esc(plan.what)+'</div>' : '') +
+          (plan.why   ? '<div class="plan-item"><strong>Why:</strong> '+esc(plan.why)+'</div>' : '') +
+          (plan.how   ? '<div class="plan-item"><strong>How:</strong> '+esc(plan.how)+'</div>' : '') +
+          '</div></div>' : '') +
+        '<button class="btn-copy" onclick="copyEssay('+i+')">📋 Copy Essay</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleCard(i) {
+  var card = document.getElementById('card'+i);
+  card.classList.toggle('open');
+}
+
+function copyEssay(i) {
+  var cls    = document.getElementById('clsFilter').value;
+  var search = document.getElementById('searchInp').value.toLowerCase();
+  var filtered = allEssays.filter(function(e) {
+    if (cls && e.cls !== cls) return false;
+    if (search && !(e.name||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+  var e = filtered[i];
+  if (!e) return;
+  var text = 'Name: ' + e.name + '\nClass: ' + e.cls + '\nTopic: ' + e.topic + '\nWords: ' + e.words + '\n\n' + e.essay;
+  navigator.clipboard.writeText(text).then(function(){
+    showToast('Essay copied to clipboard!');
+  });
+}
+
+function exportCSV() {
+  if (!allEssays.length) { showToast('No essays to export'); return; }
+  var rows = [['Name','Class','Topic','Words','Vocab%','Variety%','Flow%','Overall%','Date','Essay']];
+  allEssays.forEach(function(e) {
+    var date = e.timestamp ? new Date(e.timestamp).toLocaleDateString('en-SG') : '';
+    rows.push([
+      e.name||'', e.cls||'', e.topic||'',
+      e.words||0, e.vocab||0, e.variety||0, e.flow||0, e.overall||0,
+      date,
+      '"' + (e.essay||'').replace(/"/g,'""') + '"'
+    ]);
+  });
+  var csv = rows.map(function(r){ return r.join(','); }).join('\n');
+  var blob = new Blob([csv], {type:'text/csv'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'storyforge_essays_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  showToast('CSV exported!');
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(function(){ t.style.display='none'; }, 2500);
+}
+</script>
+</body>
+</html>
