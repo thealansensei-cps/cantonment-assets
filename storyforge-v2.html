@@ -452,6 +452,23 @@ textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 .star-badge.show { display: flex; }
 
 /* Right: Coach panel */
+.ws-panel {
+  width: 0; flex-shrink: 0; overflow: hidden;
+  transition: width 0.3s ease;
+  background: var(--surface2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+}
+.ws-panel.open { width: 280px; }
+.ws-panel-header {
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0; background: var(--surface);
+}
+.ws-panel-title { font-size: 0.78rem; font-weight: 800; color: var(--gold); }
+.ws-panel-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1rem; }
+.ws-panel-body { flex: 1; overflow-y: auto; padding: 12px; }
+.ws-panel-empty { text-align: center; padding: 32px 12px; color: var(--text2); font-size: 0.78rem; }
 .coach-col {
   width: 370px; flex-shrink: 0;
   display: flex; flex-direction: column;
@@ -644,28 +661,39 @@ textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 }
 .celebrate-msg { font-size: 0.88rem; color: var(--text2); margin-bottom: 20px; }
 
-/* Worksheet drawer */
+/* Worksheet drawer — compact TB pill */
 .ws-drawer {
-  position: fixed; right: 370px; top: 52px;
-  width: 320px; height: calc(100vh - 52px);
+  position: fixed; bottom: 80px; right: 16px;
+  width: 56px; height: 56px;
   background: var(--surface2);
-  border-left: 1px solid var(--border);
-  transform: translateX(100%); transition: transform 0.3s;
-  z-index: 90; display: flex; flex-direction: column;
-  box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  z-index: 200;
+  transition: all 0.25s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  display: flex; flex-direction: column;
 }
-.ws-drawer.open { transform: translateX(0); }
+.ws-drawer.open {
+  width: 280px; height: 380px;
+  border-radius: 14px;
+}
 .ws-drawer-header {
-  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
+  flex-shrink: 0; cursor: pointer; min-height: 56px;
 }
-.ws-drawer-title { font-size: 0.85rem; font-weight: 600; }
-.ws-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1.1rem; }
-.ws-drawer-body { flex: 1; overflow-y: auto; padding: 16px; }
+.ws-drawer:not(.open) .ws-drawer-header {
+  justify-content: center; padding: 0; border-bottom: none; min-height: 56px; width: 56px;
+}
+.ws-drawer:not(.open) .ws-close { display: none; }
+.ws-drawer:not(.open) .ws-drawer-body { display: none; }
+.ws-drawer-title { font-size: 0.78rem; font-weight: 700; white-space: nowrap; overflow: hidden; }
+.ws-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1rem; flex-shrink: 0; }
+.ws-drawer-body { flex: 1; overflow-y: auto; padding: 10px 12px; }
 .ws-pg {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; padding: 12px; margin-bottom: 10px;
+  border-radius: 7px; padding: 7px 10px; margin-bottom: 7px; cursor: pointer;
 }
 .ws-pg.highlight { border-color: var(--gold); box-shadow: 0 0 10px rgba(245,200,66,0.2); }
 .ws-pg-num { font-size: 0.68rem; font-weight: 700; color: var(--gold); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -1112,13 +1140,13 @@ textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 
 <!-- Worksheet Drawer -->
 <div class="ws-drawer" id="ws-drawer">
-  <div class="ws-drawer-header">
-    <div class="ws-drawer-title">📄 Worksheet Reference</div>
-    <button class="ws-close" onclick="toggleWsDrawer()">✕</button>
+  <div class="ws-drawer-header" onclick="toggleWsDrawer()">
+    <div class="ws-drawer-title" id="ws-pill-label" style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--gold);letter-spacing:0.5px">TB</div>
+    <button class="ws-close" onclick="event.stopPropagation();toggleWsDrawer()">✕</button>
   </div>
   <div class="ws-drawer-body" id="ws-drawer-body">
-    <div style="text-align:center;padding:32px;color:var(--text2);font-size:0.80rem;">
-      No worksheets uploaded yet. Add them in Setup.
+    <div style="text-align:center;padding:24px 8px;color:var(--text2);font-size:0.78rem;">
+      No worksheets uploaded yet.
     </div>
   </div>
 </div>
@@ -1552,7 +1580,14 @@ function renderWsDrawer() {
 }
 
 function toggleWsDrawer() {
-  document.getElementById('ws-drawer').classList.toggle('open');
+  var d = document.getElementById('ws-drawer');
+  var lbl = document.getElementById('ws-pill-label');
+  if (!d) return;
+  var isOpen = d.classList.toggle('open');
+  if (lbl) {
+    lbl.textContent = isOpen ? 'Think it Booklet' : 'TB';
+    lbl.style.fontSize = isOpen ? '0.72rem' : '13px';
+  }
 }
 
 function scrollToWsPage(num) {
