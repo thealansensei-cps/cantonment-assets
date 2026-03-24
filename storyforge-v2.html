@@ -670,11 +670,13 @@ textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 }
 .ws-drawer:not(.open) .ws-drawer-header {
   justify-content: center; padding: 0; border-bottom: none;
+  min-height: 56px; width: 56px;
 }
 .ws-drawer:not(.open) .ws-close { display: none; }
 .ws-drawer-title { font-size: 0.78rem; font-weight: 700; white-space: nowrap; overflow: hidden; }
 .ws-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1rem; flex-shrink:0; }
 .ws-drawer-body { flex: 1; overflow-y: auto; padding: 10px 12px; }
+.ws-drawer:not(.open) .ws-drawer-body { display: none; }
 .ws-pg {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 7px; padding: 7px 10px; margin-bottom: 7px;
@@ -745,7 +747,6 @@ textarea.dark-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 /* Responsive adjustments for small screens */
 @media (max-width: 1000px) {
   .coach-col { width: 300px; }
-  .ws-drawer { right: 300px; }
 }
 </style>
 </head>
