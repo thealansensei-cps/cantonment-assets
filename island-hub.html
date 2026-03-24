@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -267,31 +269,43 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--ocean
 // GAME DATA
 // ══════════════════════════════════════════
 const GAMES = [
-  { id:'grammar',   icon:'✏️',  name:'Grammar Cloze',          desc:'Fill in the blanks with the correct grammar. Earn points for every correct answer!',          url:'grammar-cloze.html',    color:'linear-gradient(135deg,#1a73c8,#2e9ed8)' },
-  { id:'reported',  icon:'💬',  name:'Reported Speech',         desc:'Convert between direct and indirect speech. Master the rules to climb the leaderboard!',      url:'reported-speech.html',  color:'linear-gradient(135deg,#e67e22,#f39c12)' },
-  { id:'vtc',       icon:'🖼️',  name:'Visual Text Comprehension',desc:'Study images and answer comprehension questions. Look carefully — details matter!',           url:'visual-text.html',      color:'linear-gradient(135deg,#1a8a50,#2ecc71)' },
-  { id:'synthesis', icon:'🔀',  name:'Synthesis & Transformation',desc:'Rewrite sentences in different ways while keeping the meaning the same.',                   url:'synthesis.html',        color:'linear-gradient(135deg,#7c3aed,#a78bfa)' },
-  { id:'spelling',  icon:'🔤',  name:'Spelling',                desc:'Listen to the word and spell it correctly. Every letter counts!',                             url:'spelling.html',         color:'linear-gradient(135deg,#c0392b,#e74c3c)' },
-  { id:'fortress',  icon:'🏰',  name:'English Fortress',            desc:'Build your fortress by answering English questions. Earn Gold, Wood & Energy — then battle classmates!', url:'english-fortress.html', color:'linear-gradient(135deg,#8b4513,#d4af37)' },
-  { id:'fruitclash',icon:'🍉', name:'Fruit Clash',              desc:'Drop and merge fruits — reach the mighty Watermelon! Post your score in chat!',          url:'fruit-clash.html',      color:'linear-gradient(135deg,#ff6b9d,#c850c0)' },
-  { id:'hangout',  icon:'🏝️',  name:'Island Hangout',           desc:'Chat with classmates, play Fruit Clash & Arcade games!',                             url:'island-hangout.html',         color:'linear-gradient(135deg,#00b4d8,#0077b6)' },
+  { id:'grammar',   icon:'✏️',  name:'Grammar Cloze',            desc:'Fill in the blanks with the correct grammar. Earn points for every correct answer!',            url:'grammar-cloze.html',    color:'linear-gradient(135deg,#1a73c8,#2e9ed8)' },
+  { id:'reported',  icon:'💬',  name:'Reported Speech',           desc:'Convert between direct and indirect speech. Master the rules to climb the leaderboard!',        url:'reported-speech.html',  color:'linear-gradient(135deg,#e67e22,#f39c12)' },
+  { id:'vtc',       icon:'🖼️',  name:'Visual Text Comprehension',  desc:'Study images and answer comprehension questions. Look carefully — details matter!',             url:'visual-text.html',      color:'linear-gradient(135deg,#1a8a50,#2ecc71)' },
+  { id:'synthesis', icon:'🔀',  name:'Synthesis & Transformation', desc:'Rewrite sentences in different ways while keeping the meaning the same.',                       url:'synthesis.html',        color:'linear-gradient(135deg,#7c3aed,#a78bfa)' },
+  { id:'spelling',  icon:'🔤',  name:'Spelling',                  desc:'Listen to the word and spell it correctly. Every letter counts!',                               url:'spelling.html',         color:'linear-gradient(135deg,#c0392b,#e74c3c)' },
+  { id:'fortress',  icon:'🏰',  name:'English Fortress',           desc:'Build your fortress by answering English questions. Earn Gold, Wood & Energy — then battle classmates!', url:'english-fortress.html', color:'linear-gradient(135deg,#8b4513,#d4af37)' },
+  { id:'fruitclash',icon:'🍉', name:'Fruit Clash',                desc:'Drop and merge fruits — reach the mighty Watermelon! Post your score in chat!',               url:'fruit-clash.html',      color:'linear-gradient(135deg,#ff6b9d,#c850c0)' },
+  { id:'hangout',   icon:'🏝️',  name:'Island Hangout',             desc:'Chat with classmates, play Fruit Clash & Arcade games!',                                      url:'island-hangout.html',   color:'linear-gradient(135deg,#00b4d8,#0077b6)' },
 ];
 
 // ══════════════════════════════════════════
-// LEADERBOARD DATA (replace with real Google Sheets data)
-// Sample data — update via your Apps Script backend
+// FIREBASE — live leaderboard data
 // ══════════════════════════════════════════
-const LEADERBOARD = {
-  allTime: [
-    // Top student per component: { name, cls, pts, gameId }
-    { name:'Ahmad Faris',  cls:'4 Care',        pts:340, gameId:'grammar'   },
-    { name:'Rachel Wong',  cls:'4 Integrity',   pts:290, gameId:'reported'  },
-    { name:'Lydia Tan',    cls:'4 Graciousness',pts:310, gameId:'vtc'       },
-    { name:'Timothy Ong',  cls:'4 Resilience',  pts:270, gameId:'synthesis' },
-    { name:'Zara Low',     cls:'4 Integrity',   pts:385, gameId:'spelling'  },
-  ],
-  todayHero: { name:'Chloe Ng', cls:'4 Care', pts:85 },
+const _FB_CFG = {
+  apiKey:            "AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",
+  authDomain:        "english-island-cps.firebaseapp.com",
+  databaseURL:       "https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "english-island-cps",
+  storageBucket:     "english-island-cps.firebasestorage.app",
+  messagingSenderId: "892743482834",
+  appId:             "1:892743482834:web:6705bc3e3bc832cf749c0b"
 };
+if (!firebase.apps.length) firebase.initializeApp(_FB_CFG);
+const _db = firebase.database();
+
+// Confirmed Firebase schema:
+// /scores/{studentFullName}/
+//   name, cls, lastLogin
+//   zone_gc:  { pts, score, stars, total, ts }
+//   zone_rs:  { pts, score, stars, total, ts }
+//   zone_vt:  { pts, score, stars, total, ts }
+//   zone_sp:  { pts, score, stars, total, ts }
+//   zone_syn: { pts, score, stars, total, ts }
+
+const ZONES = ['zone_gc','zone_rs','zone_vt','zone_sp','zone_syn'];
+const ZONE_TO_GAME  = { zone_gc:'grammar', zone_rs:'reported', zone_vt:'vtc', zone_sp:'spelling', zone_syn:'synthesis' };
+const ZONE_TO_LABEL = { zone_gc:'Grammar',  zone_rs:'Reported',  zone_vt:'VTC',  zone_sp:'Spelling',  zone_syn:'Synthesis' };
 
 const GAME_COLORS = {
   grammar:'#2e9ed8', reported:'#f39c12', vtc:'#2ecc71', synthesis:'#a78bfa', spelling:'#e74c3c', fortress:'#d4af37'
@@ -314,9 +328,6 @@ function loadSession() {
     if (raw) student = JSON.parse(raw);
   } catch(e) {}
   if (!student) {
-    // If no session, redirect to login
-    // window.location.href = 'student-portal.html';
-    // For demo, use placeholder
     student = { name:'Demo Student', cls:'4 Care' };
   }
 }
@@ -324,7 +335,7 @@ function loadSession() {
 // ══════════════════════════════════════════
 // POINTS & STREAK (localStorage per student key)
 // ══════════════════════════════════════════
-const RESET_DAYS = 5;  // reset after this many days without login
+const RESET_DAYS = 5;
 
 function getStudentKey() { return 'pts_' + (student?.name||'demo').replace(/\s/g,'_'); }
 function getTodayKey()   { return 'today_' + new Date().toISOString().slice(0,10); }
@@ -346,20 +357,14 @@ function checkAndUpdateStreak() {
   const msPerDay = 86400000;
   const daysSinceLast = Math.floor((now - data.lastLogin) / msPerDay);
 
-  let resetHappened = false;
-
   if (daysSinceLast >= RESET_DAYS) {
-    // Reset points
     data.pts = 0;
     data.streak = 0;
-    resetHappened = true;
     document.getElementById('resetBanner').classList.remove('hidden');
   } else if (daysSinceLast >= 1) {
-    // Consecutive day login
     data.streak = (data.streak || 0) + 1;
   }
 
-  // Reset today's points if new day
   const todayKey = getTodayKey();
   if (data.lastTodayKey !== todayKey) {
     data.todayPts = 0;
@@ -368,8 +373,7 @@ function checkAndUpdateStreak() {
 
   data.lastLogin = now;
   saveStudentData(data);
-
-  return { data, daysSinceLast, resetHappened };
+  return { data, daysSinceLast };
 }
 
 // ══════════════════════════════════════════
@@ -381,44 +385,90 @@ function updateTopBar(data, daysSinceLast) {
   document.getElementById('sp-pts').textContent   = data.pts + ' pts';
   document.getElementById('streakDays').textContent = data.streak || 0;
 
-  // Activity panel
   const daysUntilReset = RESET_DAYS - daysSinceLast;
   const actEl = document.getElementById('activity-info');
   actEl.innerHTML = `
     <div style="margin-bottom:4px">🏅 <span style="color:var(--gold)">Total pts:</span> ${data.pts}</div>
-    <div style="margin-bottom:4px">⭐ <span style="color:var(--gold)">Today's pts:</span> ${data.todayPts || 0}</div>
+    <div style="margin-bottom:4px">⭐ <span style="color:var(--gold)">Today\'s pts:</span> ${data.todayPts || 0}</div>
     <div style="margin-bottom:4px">🔥 <span style="color:var(--gold)">Streak:</span> ${data.streak || 0} days</div>
     <div>📅 <span style="color:var(--gold)">Last login:</span> ${daysSinceLast === 0 ? 'Today' : daysSinceLast + 'd ago'}</div>
   `;
 
-  // Warn if 3+ days since last login
   if (daysSinceLast >= 3 && daysSinceLast < RESET_DAYS) {
     document.getElementById('warnCard').style.display = 'block';
     document.getElementById('daysLeft').textContent = daysUntilReset;
   }
 }
 
+// ── HALL OF FAME: top scorer per component, read live from Firebase ──────────
 function renderChampions() {
   const el = document.getElementById('champions-list');
-  el.innerHTML = LEADERBOARD.allTime.map(c => {
-    const col = GAME_COLORS[c.gameId];
-    const ico = GAME_ICONS[c.gameId];
-    return `<div class="champ-row">
-      <div class="champ-badge" style="background:${col}">${ico}</div>
-      <div class="champ-info">
-        <div class="champ-name">${c.name}</div>
-        <div class="champ-game">${GAME_NAMES[c.gameId]}</div>
-      </div>
-      <div class="champ-pts">${c.pts}</div>
-    </div>`;
-  }).join('');
+  el.innerHTML = '<div style="color:rgba(255,255,255,.5);font-size:11px;padding:4px 0">Loading...</div>';
+
+  _db.ref('scores').once('value', snap => {
+    const topByZone = {};   // zone → { name, cls, pts }
+
+    snap.forEach(studentSnap => {
+      const d = studentSnap.val();
+      if (!d || !d.name) return;
+
+      ZONES.forEach(z => {
+        if (d[z] && typeof d[z].pts !== 'undefined') {
+          const pts = d[z].pts || 0;
+          if (!topByZone[z] || pts > topByZone[z].pts) {
+            topByZone[z] = { name: d.name, cls: d.cls || '', pts };
+          }
+        }
+      });
+    });
+
+    const rows = Object.entries(topByZone).map(([z, c]) => {
+      const gameId = ZONE_TO_GAME[z];
+      const col  = GAME_COLORS[gameId] || '#888';
+      const ico  = GAME_ICONS[gameId]  || '🎮';
+      const shortName = (c.name || '').replace(/,.*/,'').trim().split(' ').slice(0,2).join(' ');
+      return `<div class="champ-row">
+        <div class="champ-badge" style="background:${col}">${ico}</div>
+        <div class="champ-info">
+          <div class="champ-name">${shortName}</div>
+          <div class="champ-game">${ZONE_TO_LABEL[z]}</div>
+        </div>
+        <div class="champ-pts">${c.pts}</div>
+      </div>`;
+    });
+
+    el.innerHTML = rows.length
+      ? rows.join('')
+      : '<div style="color:rgba(255,255,255,.5);font-size:11px;padding:4px 0">No scores yet 🎮</div>';
+  });
 }
 
+// ── HERO OF THE DAY: student with highest total pts, read live from Firebase ─
 function renderHero() {
-  const h = LEADERBOARD.todayHero;
-  document.getElementById('hero-name').textContent  = h.name;
-  document.getElementById('hero-class').textContent = h.cls;
-  document.getElementById('hero-pts').textContent   = h.pts;
+  _db.ref('scores').once('value', snap => {
+    let topName = '—', topCls = '—', topPts = 0;
+
+    snap.forEach(studentSnap => {
+      const d = studentSnap.val();
+      if (!d || !d.name) return;
+
+      let total = 0;
+      ZONES.forEach(z => {
+        if (d[z] && typeof d[z].pts !== 'undefined') total += (d[z].pts || 0);
+      });
+
+      if (total > topPts) {
+        topPts  = total;
+        topName = d.name;
+        topCls  = d.cls || '';
+      }
+    });
+
+    const shortName = topName === '—' ? '—' : topName.replace(/,.*/,'').trim().split(' ').slice(0,2).join(' ');
+    document.getElementById('hero-name').textContent  = shortName;
+    document.getElementById('hero-class').textContent = topCls;
+    document.getElementById('hero-pts').textContent   = topPts;
+  });
 }
 
 // ══════════════════════════════════════════
@@ -431,8 +481,8 @@ function openGame(idx) {
   document.getElementById('modal-desc').textContent  = g.desc;
   const btn = document.getElementById('modal-btn');
   btn.href = g.url
-    + '?hero=' + encodeURIComponent(me.name)
-    + '&cls='  + encodeURIComponent(me.cls)
+    + '?hero=' + encodeURIComponent(student.name)
+    + '&cls='  + encodeURIComponent(student.cls)
     + '&returnTo=island-hub.html';
   btn.style.background = g.color;
   document.getElementById('gameModal').classList.add('show');
@@ -449,11 +499,6 @@ function doLogout() {
   try { sessionStorage.removeItem('student'); } catch(e){}
   window.location.href = 'student-portal.html';
 }
-
-// ══════════════════════════════════════════
-// STARS
-// ══════════════════════════════════════════
-// Stars are positioned via CSS % — works with any image size
 
 // ══════════════════════════════════════════
 // INIT
@@ -476,6 +521,3 @@ renderHero();
   }
 })();
 </script>
-</body>
-</html>
-
