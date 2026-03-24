@@ -1842,87 +1842,94 @@ function removeLoadingMsg() {
 async function callAI(userMsg) {
   if (S.isLoading) return;
   S.isLoading = true;
-  document.getElementById('send-btn').disabled = true;
+  var sendBtn = document.getElementById('send-btn');
+  if (sendBtn) sendBtn.disabled = true;
   addLoadingMsg();
 
-  const story = getPlainText().trim();
-  const wsCtx = S.worksheets.map(ws => `Worksheet: "${ws.title}"\n` + ws.pages.map(p=>`Page ${p.num}: ${p.content}`).join('\n')).join('\n\n');
-  const modelCtx = S.modelComps.map(c=>`Model composition "${c.title}":\n${c.body}`).join('\n\n');
-  const planCtx = planIds.filter(k=>S.plan[k]).map(k=>`${k}: ${S.plan[k]}`).join('\n');
-  const focusList = Object.entries(S.coachFocus).filter(([,v])=>v).map(([k])=>k).join(', ');
-  const wc = story.split(/\s+/).filter(w=>w).length;
+  var story   = getPlainText().trim();
+  var wsCtx   = S.worksheets.map(function(ws) {
+    return 'Worksheet: "' + ws.title + '"\n' + (ws.pages||[]).map(function(p){ return 'Page ' + p.num + ': ' + p.content; }).join('\n');
+  }).join('\n\n');
+  var modelCtx = S.modelComps.map(function(c){ return 'Model composition "' + c.title + '":\n' + c.body; }).join('\n\n');
+  var planCtx  = planIds.filter(function(k){ return S.plan[k]; }).map(function(k){ return k + ': ' + S.plan[k]; }).join('\n');
+  var focusList = Object.entries(S.coachFocus).filter(function(e){ return e[1]; }).map(function(e){ return e[0]; }).join(', ');
+  var wc = story.split(/\s+/).filter(function(w){ return w; }).length;
 
-  const system = `You are an encouraging, Socratic P4 English composition writing coach for Singapore primary school students (age 9-10).
+  var system = 'You are an encouraging, Socratic P4 English composition writing coach for Singapore primary school students (age 9-10).\n\n' +
+    'CORE RULE: NEVER write model sentences or passages for students. Ask guiding questions that help them discover improvements themselves.\n\n' +
+    'Coaching technique:\n' +
+    '- Ask specific questions: "What does that moment feel/look/smell like?"\n' +
+    '- Reference their own words when discussing them\n' +
+    '- Be warm, specific, and age-appropriate\n' +
+    '- Focus on ONE or TWO things per response\n' +
+    '- When relevant, cite worksheet pages as [see p.X]\n' +
+    '- Identify feedback type at START using exactly one: [vocab] [structure] [ideas] [grammar] [planning] [praise]\n\n' +
+    'Teacher coaching focus: ' + focusList + '\n\n' +
+    'Worksheet: ' + (wsCtx || 'None uploaded') + '\n\n' +
+    'Model compositions: ' + (modelCtx || 'None added') + '\n\n' +
+    'Student plan: ' + (planCtx || 'Not provided') + '\n\n' +
+    'Essay topic: ' + S.topic + '\n' +
+    'Word count: ' + wc + '\n\n' +
+    'CRITICAL: Keep responses under 180 words. Ask questions, do not write sentences for them.';
 
-CORE RULE: NEVER write model sentences or passages for students. Your job is to ask guiding questions that help them discover improvements on their own.
+  var history = S.chatHistory.slice(-8).map(function(m) {
+    return { role: m.role === 'student' ? 'user' : 'assistant', content: m.content };
+  });
 
-Coaching technique:
-- Ask specific questions: "What does that moment feel/look/smell like?" / "Could you describe the character's face instead of just their emotion?"
-- Reference their own words: quote back words they used when discussing them
-- Be warm, specific, and age-appropriate
-- Focus on ONE or TWO things per response — not everything at once
-- When relevant, cite worksheet pages as [see p.X] — these become clickable buttons
-- Identify your feedback type at the START using exactly one: [vocab] [structure] [ideas] [grammar] [planning] [praise]
+  var userContent = userMsg === 'general_feedback'
+    ? 'Please give me focused feedback on my composition so far.\n\nMy story:\n' + (story || '(not started yet)')
+    : userMsg + '\n\nMy story so far:\n' + (story || '(not started yet)');
 
-Teacher's coaching focus areas: ${focusList}
-
-Worksheet pages:
-${wsCtx || 'None uploaded'}
-
-Model compositions for reference:
-${modelCtx || 'None added'}
-
-Student story plan:
-${planCtx || 'Not provided'}
-
-Essay topic: ${S.topic}
-Current word count: ${wc}
-
-CRITICAL: Keep responses under 180 words. Ask questions, don't write sentences for them.`;
-
-  const history = S.chatHistory.slice(-8).map(m => ({
-    role: m.role === 'student' ? 'user' : 'assistant',
-    content: m.content
-  }));
-
-  const userContent = userMsg === 'general_feedback'
-    ? `Please give me focused feedback on my composition so far.\n\nMy story:\n${story || '(not started yet)'}`
-    : `${userMsg}\n\nMy story so far:\n${story || '(not started yet)'}`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system,
-        messages: [...history, {role:'user', content:userContent}]
-      })
-    });
-    const data = await res.json();
+  // Add timeout so it never hangs forever
+  var timedOut = false;
+  var timeout = setTimeout(function() {
+    timedOut = true;
     removeLoadingMsg();
-    if (data.content?.[0]?.text) {
-      let text = data.content[0].text;
-      // Extract type tag
-      let type = 'ideas';
-      const m = text.match(/^\[(vocab|structure|ideas|grammar|planning|praise)\]/i);
-      if (m) { type = m[1].toLowerCase(); text = text.slice(m[0].length).trim(); }
-      // Extract page refs
-      const pageRefs = [];
-      text = text.replace(/\[see p\.(\d+)\]/gi, (_,pg)=>{ const n=parseInt(pg); if(!pageRefs.includes(n))pageRefs.push(n); return `<a class="page-ref" href="#" onclick="scrollToWsPage(${n});return false;">📄 p.${n}</a>`; });
-      // Format
-      text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
-      addAIMsg(text, type, []);
+    addAIMsg('The coach is taking too long to respond. Please try again.', 'ideas');
+    S.isLoading = false;
+    if (sendBtn) sendBtn.disabled = false;
+  }, 20000);
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: system,
+      messages: history.concat([{ role: 'user', content: userContent }])
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (timedOut) return;
+    clearTimeout(timeout);
+    removeLoadingMsg();
+    var text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    if (!text) {
+      addAIMsg("I am having trouble connecting. Please try again in a moment.", 'ideas');
     } else {
-      addAIMsg("I'm having trouble connecting. Please try again in a moment.", 'ideas');
+      var type = 'ideas';
+      var m = text.match(/^\[(vocab|structure|ideas|grammar|planning|praise)\]/i);
+      if (m) { type = m[1].toLowerCase(); text = text.slice(m[0].length).trim(); }
+      text = text.replace(/\[see p\.(\d+)\]/gi, function(_, pg) {
+        var n = parseInt(pg);
+        return '<a class="page-ref" href="#" onclick="scrollToWsPage(' + n + ');return false;">📄 p.' + n + '</a>';
+      });
+      text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+      addAIMsg(text, type, []);
     }
-  } catch(err) {
+    S.isLoading = false;
+    if (sendBtn) sendBtn.disabled = false;
+  })
+  .catch(function(err) {
+    if (timedOut) return;
+    clearTimeout(timeout);
     removeLoadingMsg();
-    addAIMsg("Connection issue. Please check your internet and try again.", 'ideas');
-  }
-  S.isLoading = false;
-  document.getElementById('send-btn').disabled = false;
+    addAIMsg('Connection issue. Please check your internet and try again.', 'ideas');
+    S.isLoading = false;
+    if (sendBtn) sendBtn.disabled = false;
+  });
 }
 
 // ─── DASHBOARD ───
@@ -2225,7 +2232,13 @@ function enterAsGuest() {
 }
 
 function returnToIsland() {
-  window.location.href = 'student-portal.html';
+  // Pass student identity back via URL params so portal doesn't log them out
+  var base = 'student-portal.html';
+  if (currentStudent && currentStudent.name) {
+    base += '?hero=' + encodeURIComponent(currentStudent.name)
+          + '&cls='  + encodeURIComponent(currentStudent.cls || '');
+  }
+  window.location.href = base;
 }
 
 function afterIdentityLoaded() {
