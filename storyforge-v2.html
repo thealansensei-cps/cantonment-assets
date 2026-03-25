@@ -1712,30 +1712,31 @@ function callAI(userMsg) {
   if (sendBtn) sendBtn.disabled = true;
   addLoadingMsg();
 
-  var story    = getPlainText().trim();
-  var wsCtx    = S.worksheets.map(function(ws) {
-    return 'Worksheet: "' + ws.title + '"' + (ws.pages||[]).map(function(p){ return ' Page ' + p.num + ': ' + p.content; }).join(' ');
-  }).join(' ');
-  var modelCtx = S.modelComps.map(function(c){ return 'Model: ' + c.title + ': ' + c.body; }).join(' ');
-  var planCtx  = planIds.filter(function(k){ return S.plan[k]; }).map(function(k){ return k + ': ' + S.plan[k]; }).join(', ');
-  var focusList = Object.entries(S.coachFocus).filter(function(e){ return e[1]; }).map(function(e){ return e[0]; }).join(', ');
-  var wc = story.split(/\s+/).filter(function(w){ return w; }).length;
+  var story = getPlainText().trim();
+  var wc    = story.split(/\s+/).filter(function(w){ return w; }).length;
+  var planCtx = planIds.filter(function(k){ return S.plan[k]; })
+                       .map(function(k){ return k + ': ' + S.plan[k]; }).join(', ');
 
-  var system = 'You are an encouraging, Socratic P4 English composition writing coach for Singapore primary school students (age 9-10). ' +
-    'CORE RULE: NEVER write sentences for students. Ask guiding questions only. ' +
-    'Start each response with exactly one tag: [vocab] [structure] [ideas] [grammar] [planning] [praise]. ' +
-    'Coaching focus: ' + (focusList || 'all') + '. ' +
-    'Topic: ' + S.topic + '. Words: ' + wc + '. ' +
-    'Student plan: ' + (planCtx || 'none') + '. ' +
-    'Keep under 150 words. Ask questions, do not write for them.';
+  // Keep system prompt SHORT — long prompts get cut by GAS URL limits
+  var system =
+    'You are an encouraging P4 English writing coach (Singapore, age 9-10). ' +
+    'NEVER write sentences for the student. Ask ONE guiding question only. ' +
+    'Start your reply with exactly one label: [vocab] [structure] [ideas] [grammar] [planning] [praise]. ' +
+    'Topic: ' + S.topic + '. ' +
+    (planCtx ? 'Plan: ' + planCtx + '. ' : '') +
+    'Word count so far: ' + wc + '.';
 
-  var history = S.chatHistory.slice(-6).map(function(m) {
-    return { role: m.role === 'student' ? 'user' : 'assistant', content: m.content };
+  // Only keep last 4 exchanges, strip HTML tags from AI messages
+  var history = S.chatHistory.slice(-4).map(function(m) {
+    var content = m.content.replace(/<[^>]+>/g, '').replace(/&nbsp;/g,' ').trim();
+    return { role: m.role === 'student' ? 'user' : 'assistant', content: content };
   });
 
+  // Always include story in the user message
+  var storySnippet = story ? ('\n\nMy story (' + wc + ' words):\n' + story.substring(0, 800)) : '\n\n(No story written yet)';
   var userContent = userMsg === 'general_feedback'
-    ? 'Give feedback on my composition. Story: ' + (story || 'not started yet')
-    : userMsg + ' My story: ' + (story || 'not started yet');
+    ? 'Please give me feedback on my composition.' + storySnippet
+    : userMsg + storySnippet;
 
   var timedOut = false;
   var timeout = setTimeout(function() {
@@ -1761,16 +1762,13 @@ function callAI(userMsg) {
     if (timedOut) return;
     clearTimeout(timeout);
     removeLoadingMsg();
-    var text = data.text || (data.content && data.content[0] && data.content[0].text) || '';
+    var text = data.text || '';
     if (!text) {
       addAIMsg('I am having trouble responding. Please try again.', 'ideas');
     } else {
       var type = 'ideas';
       var m = text.match(/^\[(vocab|structure|ideas|grammar|planning|praise)\]/i);
       if (m) { type = m[1].toLowerCase(); text = text.slice(m[0].length).trim(); }
-      text = text.replace(/\[see p\.(\d+)\]/gi, function(_, pg) {
-        return '<a class="page-ref" onclick="scrollToWsPage(' + parseInt(pg) + ');return false;" href="#">p.' + pg + '</a>';
-      });
       text = text.replace(/[*][*](.*?)[*][*]/g, '<strong>$1</strong>').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
       addAIMsg(text, type, []);
     }
@@ -1782,13 +1780,12 @@ function callAI(userMsg) {
     clearTimeout(timeout);
     removeLoadingMsg();
     console.error('AI fetch error:', err);
-    addAIMsg('Connection issue: ' + (err && err.message ? err.message : 'unknown error'), 'ideas');
+    addAIMsg('Connection issue: ' + (err && err.message ? err.message : 'unknown'), 'ideas');
     S.isLoading = false;
     if (sendBtn) sendBtn.disabled = false;
   });
 }
 
-// ─── DASHBOARD ───
 function renderDashboard() {
   document.getElementById('db-students').textContent = S.students.length;
   const avgW = Math.round(S.students.reduce((a,s)=>a+s.words,0)/S.students.length);
