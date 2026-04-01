@@ -69,38 +69,16 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .set-tab.active{background:rgba(74,144,217,.2);border-color:var(--accent);color:var(--accent2)}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e2340;border:1px solid var(--border2);border-radius:11px;padding:11px 22px;font-size:13px;font-weight:600;color:var(--text);transition:transform .3s ease;z-index:999;pointer-events:none;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
-
-.game-topbar{
-  position:sticky;top:0;z-index:50;
-  background:rgba(13,15,26,.92);backdrop-filter:blur(16px);
-  border-bottom:1px solid rgba(255,255,255,.08);
-  padding:8px 16px;display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:0;
-}
+.game-topbar{position:sticky;top:0;z-index:50;background:rgba(13,15,26,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
 .gtb-left{display:flex;align-items:center;gap:10px}
 .gtb-title{font-family:'Instrument Serif',serif;font-size:16px;color:#fff}
-.btn-island-return{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(0,212,190,.15);border:1px solid rgba(0,212,190,.35);
-  color:#00d4be;font-size:12px;font-weight:800;
-  border-radius:10px;padding:6px 14px;cursor:pointer;
-  font-family:'Nunito',sans-serif;transition:all .15s;text-decoration:none;
-}
+.btn-island-return{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,190,.15);border:1px solid rgba(0,212,190,.35);color:#00d4be;font-size:12px;font-weight:800;border-radius:10px;padding:6px 14px;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;text-decoration:none}
 .btn-island-return:hover{background:rgba(0,212,190,.25);color:#fff}
-
-/* ── HERO BAR ── */
-#heroBar{
-  background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.1);
-  padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-  position:relative;z-index:10;
-}
-.hero-badge{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);
-  border-radius:99px;padding:5px 14px;font-size:11px;font-weight:600;color:#34D399}
+#heroBar{background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.1);padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;z-index:10}
+.hero-badge{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:99px;padding:5px 14px;font-size:11px;font-weight:600;color:#34D399}
 .hero-name{font-size:13px;font-weight:700;color:#E8EAF6}
 .hero-cls{font-size:10px;color:rgba(232,234,246,0.45);font-weight:500;margin-top:1px}
-.btn-back-island{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
-  color:rgba(255,255,255,.5);font-size:11px;font-weight:700;border-radius:8px;
-  padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-back-island{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:11px;font-weight:700;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .btn-back-island:hover{background:rgba(255,255,255,.13);color:#fff}
 .result-banner{display:none;margin-top:14px;padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-align:center}
 .result-banner.show{display:block}
@@ -109,9 +87,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 </style>
 </head>
 <body>
-<!-- ── HERO BAR — shows logged-in student ── -->
 <div id="heroBar"></div>
-
 <div class="game-topbar">
   <div class="gtb-left">
     <span style="font-size:20px">🏝️</span>
@@ -149,7 +125,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <div class="btn-row">
       <button class="btn btn-primary" onclick="checkAnswers()">✅ Check Answers</button>
       <button class="btn btn-ghost" onclick="resetPassage()">🔄 Reset</button>
-      <button class="btn btn-ghost" onclick="revealAnswers()">💡 Show Answers</button>
       <button class="btn btn-ghost" onclick="goBack()">← Back</button>
     </div>
   </div>
@@ -194,16 +169,12 @@ const hero={name:urlP.get('hero')||_stored.name||'',cls:urlP.get('cls')||_stored
 (function(){
   const bar=document.getElementById('heroBar');if(!bar)return;
   if(hero.name){
-    bar.innerHTML='<div class="hero-badge">✓ Logged in</div><div><div class="hero-name">'+hero.name+'</div><div class="hero-cls">'+hero.cls+'</div></div><div style="margin-left:auto;font-size:10px;color:rgba(232,234,246,.45);letter-spacing:.5px">Scores auto-save on completion</div><button class="btn-back-island" onclick="goBack()">← Island</button>';
+    bar.innerHTML='<div class="hero-badge">&#10003; Logged in</div><div><div class="hero-name">'+hero.name+'</div><div class="hero-cls">'+hero.cls+'</div></div><div style="margin-left:auto;font-size:10px;color:rgba(232,234,246,.45);letter-spacing:.5px">Scores auto-save on completion</div><button class="btn-back-island" onclick="goBack()">&#8592; Island</button>';
   }else{
-    bar.innerHTML='<div style="font-size:12px;color:#FBBF24;font-weight:700">⚠️ Not logged in — go back to the portal to log in first.</div><button class="btn-back-island" onclick="window.location.href=hero.returnTo">← Island</button>';
+    bar.innerHTML='<div style="font-size:12px;color:#FBBF24;font-weight:700">&#9888;&#65039; Not logged in — go back to the portal to log in first.</div><button class="btn-back-island" onclick="window.location.href=hero.returnTo">&#8592; Island</button>';
   }
 })();
 
-// ══════════════════════════════════════════════
-// QUIZ DATA — 10 Grammar Cloze sets
-// Each set has 2 passages: Pronouns + Verb Tenses / SVA
-// ══════════════════════════════════════════════
 const CLOZES=[
   {
     title:"Grammar Cloze 1",
@@ -357,11 +328,9 @@ const CLOZES=[
   }
 ];
 
-// ── State ──
-let currentCloze=null, currentPassageIdx=0, selectedBlank=null, blanksData=[], selectedWord=null;
-let totalCorrect=0, totalQs=0, submitted=false;
+let currentCloze=null,currentPassageIdx=0,selectedBlank=null,blanksData=[],selectedWord=null;
+let totalCorrect=0,totalQs=0,submitted=false;
 
-// ── Build tabs ──
 const tabsEl=document.getElementById('setTabs');
 CLOZES.forEach(function(c,i){
   var btn=document.createElement('button');
@@ -372,7 +341,7 @@ CLOZES.forEach(function(c,i){
 });
 
 function loadCloze(c,tabBtn){
-  currentCloze=c; currentPassageIdx=0; totalCorrect=0; totalQs=0; submitted=false;
+  currentCloze=c;currentPassageIdx=0;totalCorrect=0;totalQs=0;submitted=false;
   document.querySelectorAll('.set-tab').forEach(function(t){t.classList.remove('active');});
   if(tabBtn)tabBtn.classList.add('active');
   document.getElementById('quizCard').style.display='block';
@@ -384,7 +353,6 @@ function loadCloze(c,tabBtn){
 function buildPassageTabs(){
   var tabs=document.getElementById('passageTabs');
   if(!tabs){
-    // Create passage tabs area if not present
     var qt=document.getElementById('quizCard');
     var newTabs=document.createElement('div');
     newTabs.className='set-tabs';newTabs.id='passageTabs';
@@ -407,7 +375,7 @@ function buildPassageTabs(){
 
 function loadPassage(idx){
   currentPassageIdx=idx;
-  selectedBlank=null; selectedWord=null; blanksData=[];
+  selectedBlank=null;selectedWord=null;blanksData=[];
   var p=currentCloze.passages[idx];
   document.getElementById('passageTitle').textContent=currentCloze.title+' — '+p.label;
   buildWordBank(p);
@@ -482,7 +450,7 @@ function fillBlank(){
   selectedBlank.classList.remove('empty','wrong','selected');
   selectedWord.classList.add('used');
   selectedWord.style.outline='';
-  selectedWord=null; selectedBlank=null;
+  selectedWord=null;selectedBlank=null;
   document.getElementById('resultBanner').className='result-banner';
   updateProgress();
 }
@@ -495,7 +463,6 @@ function updateProgress(){
 }
 
 function checkAnswers(){
-  var p=currentCloze.passages[currentPassageIdx];
   var correct=0;
   document.querySelectorAll('.blank').forEach(function(el,i){
     if(!blanksData[i]||!blanksData[i].filled)return;
@@ -505,12 +472,11 @@ function checkAnswers(){
     if(ok)correct++;
   });
   var total=blanksData.length;
-  totalCorrect+=correct; totalQs+=total;
+  totalCorrect+=correct;totalQs+=total;
   var banner=document.getElementById('resultBanner');
   var pct=total>0?Math.round(correct/total*100):0;
   banner.className='result-banner show '+(pct>=80?'ok':'bad');
   banner.textContent=pct>=80?'🎉 '+correct+'/'+total+' correct — Great work!':'📝 '+correct+'/'+total+' correct — Keep trying!';
-  // Check if all passages done and auto-show result
   var allPassagesDone=document.querySelectorAll('#passageTabs .set-tab').length===currentPassageIdx+1;
   if(allPassagesDone){setTimeout(function(){showResult();},1200);}
 }
@@ -518,21 +484,8 @@ function checkAnswers(){
 function resetPassage(){
   blanksData.forEach(function(b){b.filled=null;});
   document.querySelectorAll('.opt-btn').forEach(function(b){b.classList.remove('used');b.style.outline='';});
-  selectedBlank=null; selectedWord=null;
+  selectedBlank=null;selectedWord=null;
   loadPassage(currentPassageIdx);
-}
-
-function revealAnswers(){
-  var p=currentCloze.passages[currentPassageIdx];
-  document.querySelectorAll('.blank').forEach(function(el,i){
-    if(!blanksData[i])return;
-    blanksData[i].filled=blanksData[i].answer;
-    var label=p.wordMap?'('+blanksData[i].answer+') '+Object.entries(p.wordMap).find(function(e){return e[0]===blanksData[i].answer;})?.[1]:blanksData[i].answer;
-    el.innerHTML='<span class="blank-num">'+(i+1)+'</span>'+(label||blanksData[i].answer);
-    el.classList.remove('empty','wrong','selected');
-    el.classList.add('correct');
-  });
-  updateProgress();
 }
 
 function showResult(){
@@ -554,7 +507,7 @@ function showResult(){
 async function doSubmit(){
   if(submitted)return;
   var btn=document.getElementById('submitBtn');
-  btn.disabled=true; btn.textContent='⏳ Submitting...';
+  btn.disabled=true;btn.textContent='⏳ Submitting...';
   submitted=true;
   var total=totalQs||blanksData.length;
   var correct=totalCorrect;
@@ -568,10 +521,7 @@ function restart(){loadCloze(currentCloze,document.querySelector('.set-tab.activ
 function goBack(){window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls);}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(function(){t.classList.remove('show');},2000);}
 
-// Init — load first cloze
-loadCloze(CLOZES[0], tabsEl.children[0]);
-</script>
-<script>
+loadCloze(CLOZES[0],tabsEl.children[0]);
 </script>
 <script>
 (function(){
