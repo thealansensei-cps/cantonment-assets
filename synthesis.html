@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Discovery Lab — Synthesis</title>
+<title>Discovery Lab — Synthesis &amp; Transformation</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -20,24 +20,22 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .hdr-sub{font-size:13px;color:var(--muted)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)}
-.texts-area{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-.text-box{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:14px}
-.text-label{font-size:10px;font-weight:800;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.text-body{font-size:13px;line-height:1.7;color:var(--text)}
-.text-body em{color:var(--accent2);font-style:normal;font-weight:700}
-@media(max-width:500px){.texts-area{grid-template-columns:1fr}}
+.rule-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:14px;line-height:1.5}
+.source-sentences{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px;margin-bottom:16px}
+.source-line{font-size:15px;line-height:1.7;color:var(--text);font-family:'Instrument Serif',serif}
+.source-line+.source-line{margin-top:6px}
 .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .progress-bar{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .4s}
 .progress-txt{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
 .q-num{font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.q-text{font-size:15px;color:var(--text);margin-bottom:14px;line-height:1.6}
+.q-text{font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:600}
 .mcq-opts{display:flex;flex-direction:column;gap:8px}
-.mcq-opt{background:var(--surface2);border:1.5px solid var(--border2);border-radius:11px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;font-family:inherit;text-align:left}
+.mcq-opt{background:var(--surface2);border:1.5px solid var(--border2);border-radius:11px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;font-family:inherit;text-align:left;line-height:1.6}
 .mcq-opt:hover{border-color:var(--accent);background:rgba(124,58,237,.1);color:#fff}
 .mcq-opt.correct{border-color:var(--teal);background:rgba(52,211,153,.15);color:var(--teal)}
 .mcq-opt.wrong{border-color:var(--coral);background:rgba(248,113,113,.12);color:var(--coral)}
-.hint-box{display:none;margin-top:12px;padding:11px 14px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:10px;font-size:13px;color:#FBBF24;font-weight:600}
+.hint-box{display:none;margin-top:12px;padding:11px 14px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:10px;font-size:13px;color:#FBBF24;font-weight:600;line-height:1.5}
 .hint-box.show{display:block}
 .feedback{display:none;margin-top:12px;padding:11px 14px;border-radius:10px;font-size:13px;font-weight:600;align-items:center;gap:8px}
 .feedback.show{display:flex}
@@ -62,82 +60,56 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .result-title{font-family:'Instrument Serif',serif;font-size:34px;color:#fff;margin-bottom:6px}
 .result-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
 .submit-note{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:11px;padding:12px 16px;font-size:13px;color:var(--teal);font-weight:600;margin-bottom:16px;text-align:center}
-
-.game-topbar{
-  position:sticky;top:0;z-index:50;
-  background:rgba(13,15,26,.92);backdrop-filter:blur(16px);
-  border-bottom:1px solid rgba(255,255,255,.08);
-  padding:8px 16px;display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:0;
-}
+.game-topbar{position:sticky;top:0;z-index:50;background:rgba(13,15,26,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
 .gtb-left{display:flex;align-items:center;gap:10px}
 .gtb-title{font-family:'Instrument Serif',serif;font-size:16px;color:#fff}
-.btn-island-return{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(0,212,190,.15);border:1px solid rgba(0,212,190,.35);
-  color:#00d4be;font-size:12px;font-weight:800;
-  border-radius:10px;padding:6px 14px;cursor:pointer;
-  font-family:'Nunito',sans-serif;transition:all .15s;text-decoration:none;
-}
+.btn-island-return{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,190,.15);border:1px solid rgba(0,212,190,.35);color:#00d4be;font-size:12px;font-weight:800;border-radius:10px;padding:6px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;text-decoration:none}
 .btn-island-return:hover{background:rgba(0,212,190,.25);color:#fff}
-
-/* ── HERO BAR ── */
-#heroBar{
-  background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.1);
-  padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-  position:relative;z-index:10;
-}
-.hero-badge{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);
-  border-radius:99px;padding:5px 14px;font-size:11px;font-weight:600;color:#34D399}
+#heroBar{background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.1);padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;z-index:10}
+.hero-badge{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:99px;padding:5px 14px;font-size:11px;font-weight:600;color:#34D399}
 .hero-name{font-size:13px;font-weight:700;color:#E8EAF6}
 .hero-cls{font-size:10px;color:rgba(232,234,246,0.45);font-weight:500;margin-top:1px}
-.btn-back-island{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
-  color:rgba(255,255,255,.5);font-size:11px;font-weight:700;border-radius:8px;
-  padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-back-island{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:11px;font-weight:700;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .btn-back-island:hover{background:rgba(255,255,255,.13);color:#fff}
 </style>
 </head>
 <body>
-<!-- ── HERO BAR — shows logged-in student ── -->
 <div id="heroBar"></div>
-
 <div class="game-topbar">
   <div class="gtb-left">
-    <span style="font-size:20px">🏝️</span>
+    <span style="font-size:20px">&#127965;&#65039;</span>
     <span class="gtb-title">English Island</span>
   </div>
-  <button class="btn-island-return" onclick="goBack()">🏝️ Return to Island</button>
+  <button class="btn-island-return" onclick="goBack()">&#127965;&#65039; Return to Island</button>
 </div>
 <div class="wrap">
   <div class="hdr">
-    <div class="hdr-badge">⚗️ Discovery Lab</div>
-    <div class="hdr-logo">🔀</div>
-    <h1 class="hdr-title">Synthesis <span>Writing</span></h1>
-    <p class="hdr-sub" id="heroLabel">Read two texts and answer questions</p>
+    <div class="hdr-badge">&#9879;&#65039; Discovery Lab</div>
+    <div class="hdr-logo">&#128256;</div>
+    <h1 class="hdr-title">Synthesis <span>&amp; Transformation</span></h1>
+    <p class="hdr-sub">Combine the sentences using the correct connector</p>
   </div>
 
   <div class="card" id="quizCard">
-    <div class="texts-area">
-      <div class="text-box"><div class="text-label">Text 1 — Blog Post</div><div class="text-body">Many students in Singapore spend too much time on screens. Research shows that children aged 7 to 12 spend an average of <em>four hours</em> a day on devices. Experts say this can affect sleep, eyesight and concentration. Parents are encouraged to set <em>screen time limits</em> to protect their children's health.</div></div>
-      <div class="text-box"><div class="text-label">Text 2 — Forum Reply</div><div class="text-body">I disagree that screen time is always harmful. Tablets and computers help children <em>learn interactively</em> and develop digital skills they will need in the future. The key is balance — children should be taught <em>responsible use</em>, not just told to put devices down.</div></div>
-    </div>
+    <div class="rule-chip" id="ruleChip">&#128204; Rule</div>
     <div class="progress-row">
       <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:10%"></div></div>
       <div class="progress-txt" id="progressTxt">1 / 10</div>
     </div>
     <div class="q-num" id="qNum">Question 1 of 10</div>
-    <div class="q-text" id="qText"></div>
+    <div class="source-sentences" id="sourceSentences"></div>
+    <div class="q-text">Choose the correctly combined sentence:</div>
     <div class="mcq-opts" id="mcqOpts"></div>
     <div class="hint-box" id="hintBox"></div>
     <div class="feedback" id="feedback"></div>
     <div class="btn-row">
-      <button class="btn btn-outline" onclick="showHint()">💡 Hint</button>
-      <button class="btn btn-ghost" onclick="goBack()">← Back</button>
+      <button class="btn btn-outline" onclick="showHint()">&#128161; Hint</button>
+      <button class="btn btn-ghost" onclick="goBack()">&larr; Back</button>
     </div>
   </div>
 
   <div class="result-screen" id="resultScreen">
-    <div class="result-emoji" id="resultEmoji">🌟</div>
+    <div class="result-emoji" id="resultEmoji">&#127775;</div>
     <div class="result-title" id="resultTitle">Well Done!</div>
     <div class="result-sub" id="resultSub"></div>
     <div class="stat-row" style="max-width:300px;margin:0 auto 16px">
@@ -145,68 +117,186 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
       <div class="stat"><div class="stat-val" id="rStars">0</div><div class="stat-lbl">Stars</div></div>
       <div class="stat"><div class="stat-val" id="rPts">0</div><div class="stat-lbl">Points</div></div>
     </div>
-    <div class="submit-note">✅ Done! Click below to save your score and return to the island.</div>
+    <div class="submit-note">&#9989; Done! Click below to save your score and return to the island.</div>
     <div class="btn-row" style="justify-content:center;flex-direction:column;align-items:center;gap:10px">
-      <button class="btn btn-success" id="submitBtn" onclick="doSubmit()">📤 Submit Score & Return to Island</button>
-      <button class="btn btn-ghost" onclick="restart()">↩ Try Again</button>
-      <button class="btn btn-island-return" style="padding:12px 22px;font-size:14px" onclick="goBack()">🏝️ Back to Island</button>
+      <button class="btn btn-success" id="submitBtn" onclick="doSubmit()">&#128228; Submit Score &amp; Return to Island</button>
+      <button class="btn btn-ghost" onclick="restart()">&#8617; Try Again</button>
+      <button class="btn btn-island-return" style="padding:12px 22px;font-size:14px" onclick="goBack()">&#127965;&#65039; Back to Island</button>
     </div>
   </div>
 </div>
 
 <script>
-
-function fbKey(s){ return (s||'').replace(/[.#$\[\]\/]/g,'_'); }
-
+function fbKey(s){return(s||'').replace(/[.#$\[\]\/]/g,'_');}
 async function fbSaveScore(name,cls,zone,topic,score,total,stars){
-  if(!name||!window._fbDb) return;
+  if(!name)return;
+  // Wait up to 3s for Firebase to initialise
+  var waited=0;
+  while(!window._fbDb&&waited<3000){
+    await new Promise(function(r){setTimeout(r,100);});
+    waited+=100;
+  }
+  if(!window._fbDb){console.warn('Firebase not ready');return;}
   try{
     await window._fbDb.ref('scores/'+fbKey(name)).update({
-      name, cls,
+      name,cls,
       ['zone_'+zone]:{score,total,stars,pts:score*10,topic,ts:Date.now()}
     });
   }catch(e){console.warn('Firebase save error:',e);}
 }
-
 </script>
+
 <script>
 const urlP=new URLSearchParams(location.search);
-const _stored=(function(){try{return JSON.parse(sessionStorage.getItem('student')||'{}');}catch(e){return {};}})();
+const _stored=(function(){try{return JSON.parse(sessionStorage.getItem('student')||'{}');}catch(e){return{};}})();
 const hero={name:urlP.get('hero')||_stored.name||'',cls:urlP.get('cls')||_stored.cls||'',returnTo:urlP.get('returnTo')||'student-portal.html'};
 
-// ── Render hero bar ──
 (function(){
-  const bar = document.getElementById('heroBar');
-  if(!bar) return;
+  const bar=document.getElementById('heroBar');if(!bar)return;
   if(hero.name){
-    bar.innerHTML =
-      '<div class="hero-badge">\u2713 Logged in</div>' +
-      '<div>' +
-        '<div class="hero-name">' + hero.name + '</div>' +
-        '<div class="hero-cls">' + hero.cls + '</div>' +
-      '</div>' +
-      '<div style="margin-left:auto;font-size:10px;color:rgba(232,234,246,.45);letter-spacing:.5px">Scores auto-save on completion</div>' +
-      '<button class="btn-back-island" onclick="goBack()">← Island</button>';
-  } else {
-    bar.innerHTML =
-      '<div style="font-size:12px;color:#FBBF24;font-weight:700">\u26a0\ufe0f Not logged in \u2014 go back to the portal to log in first.</div>' +
-      '<button class="btn-back-island" onclick="window.location.href=hero.returnTo">← Island</button>';
+    bar.innerHTML='<div class="hero-badge">&#10003; Logged in</div><div><div class="hero-name">'+hero.name+'</div><div class="hero-cls">'+hero.cls+'</div></div><div style="margin-left:auto;font-size:10px;color:rgba(232,234,246,.45);letter-spacing:.5px">Scores auto-save on completion</div><button class="btn-back-island" onclick="goBack()">&larr; Island</button>';
+  }else{
+    bar.innerHTML='<div style="font-size:12px;color:#FBBF24;font-weight:700">&#9888;&#65039; Not logged in &mdash; go back to the portal to log in first.</div><button class="btn-back-island" onclick="window.location.href=hero.returnTo">&larr; Island</button>';
   }
 })();
 
-
-
+// ══════════════════════════════════════════
+// QUESTIONS — from 2026_P4_Synthesis.doc
+// Practices 1–10: since (reason), since (time),
+// so that, so...that, either...or, neither...nor (x2),
+// where, unless, if
+// ══════════════════════════════════════════
 const QUESTIONS=[
-  {q:'What is the main concern raised in Text 1?',opts:["Children do not enjoy using devices","Excessive screen time harms children's health","Parents do not monitor their children enough","Digital skills are not important"],answer:1,hint:'Look for words like "affect sleep, eyesight and concentration".'},
-  {q:'According to Text 1, how many hours do children aged 7–12 spend on devices daily on average?',opts:['Two hours','Three hours','Four hours','Five hours'],answer:2,hint:'Look for the specific number mentioned in Text 1.'},
-  {q:"What is the writer of Text 2's opinion about screen time?",opts:['Screen time should be completely banned','Screen time is always harmful to children','Screen time can be beneficial if used responsibly','Screen time has no effect on children at all'],answer:2,hint:'The writer "disagrees that screen time is always harmful" — what do they suggest instead?'},
-  {q:'Which word in Text 2 is closest in meaning to "in a hands-on, engaging way"?',opts:['responsibly','interactively','balance','digital'],answer:1,hint:'Think about which word suggests learning through doing.'},
-  {q:'Both texts agree that:',opts:['children should not use devices at all','screen time must be completely avoided','some form of control or balance over screen time is needed','devices help children develop important skills'],answer:2,hint:'What does Text 1 say parents should do? What does Text 2 say the key is?'},
-  {q:'Text 1 and Text 2 DIFFER in that:',opts:['Text 1 thinks devices are harmful while Text 2 sees potential benefits','Both texts agree that devices are completely harmless','Text 1 talks about parents while Text 2 talks about teachers','They discuss completely different topics'],answer:0,hint:'What does each text emphasise about devices?'},
-  {q:'The phrase "screen time limits" in Text 1 suggests that parents should:',opts:['buy fewer devices for their children','allow children unlimited access to devices','control how long children use devices','teach children to build their own devices'],answer:2,hint:'What does "limits" mean in this context?'},
-  {q:'Which word from Text 2 has a similar meaning to "in charge of their own use"?',opts:['interactively','balance','responsible','digital'],answer:2,hint:'Which word relates to being careful and thoughtful about actions?'},
-  {q:'Based on both texts, what would be the BEST solution to screen time issues?',opts:['Ban all devices for children under 12','Allow unlimited screen time for learning only','Set time limits and teach children responsible use','Let children decide their own screen time'],answer:2,hint:'Combine the advice from both texts.'},
-  {q:'The word "balance" in Text 2 is closest in meaning to:',opts:['equality between two sides','a healthy mixture of different things','a physical weighing scale','fairness in treating people'],answer:1,hint:'In context, "balance" refers to mixing screen time with other activities.'}
+  {
+    rule:'SINCE (reason) — join two sentences when the second gives a reason.',
+    s1:'David should be punished.',
+    s2:'He has told a lie.',
+    opts:[
+      'David should be punished since he has told a lie.',
+      'David should be punished since he tells a lie.',
+      'Since David should be punished, he has told a lie.',
+      'David has told a lie since he should be punished.'
+    ],
+    answer:0,
+    hint:'Since = because (reason). The result comes first: "David should be punished since + reason."'
+  },
+  {
+    rule:'SINCE (time) — shows the starting point of an action that continues till now.',
+    s1:'From last night till now, Alice has not spoken to us.',
+    s2:'',
+    opts:[
+      'Alice has not spoken to us since last night.',
+      'Alice did not speak to us since last night.',
+      'Since last night, Alice does not speak to us.',
+      'Alice has not spoken to us until last night.'
+    ],
+    answer:0,
+    hint:'Since + time point needs present perfect tense (has/have + past participle). "has not spoken".'
+  },
+  {
+    rule:'SO THAT — explains a person\'s purpose (why they do something).',
+    s1:'The burglar wears a mask.',
+    s2:'He does not want to be recognised.',
+    opts:[
+      'The burglar wears a mask so that he will not be recognised.',
+      'The burglar wears a mask so that he does not want to be recognised.',
+      'So that he wears a mask, the burglar will not be recognised.',
+      'The burglar wears a mask so he is not recognised.'
+    ],
+    answer:0,
+    hint:'SO THAT + subject + will/can + verb. Rewrite the purpose positively or negatively as needed.'
+  },
+  {
+    rule:'SO...THAT — expresses a high degree of a quality that causes a result.',
+    s1:'Ivan was very angry.',
+    s2:'Ivan could not control his temper.',
+    opts:[
+      'Ivan was so angry that he could not control his temper.',
+      'Ivan was so very angry that he could not control his temper.',
+      'Ivan was angry so that he could not control his temper.',
+      'Ivan was so angry so he could not control his temper.'
+    ],
+    answer:0,
+    hint:'Pattern: [Subject] was SO [adjective] THAT [result]. Drop "very" — "so" replaces it.'
+  },
+  {
+    rule:'EITHER...OR — used for a choice between two possibilities.',
+    s1:'You can pay us cash.',
+    s2:'You can send us a cheque.',
+    opts:[
+      'You can either pay us cash or send us a cheque.',
+      'You can either pay us cash or you can send us a cheque.',
+      'Either you pay us cash or send us a cheque.',
+      'You either can pay cash or a cheque.'
+    ],
+    answer:0,
+    hint:'EITHER...OR: share the subject + modal once. You can EITHER [do A] OR [do B].'
+  },
+  {
+    rule:'NEITHER...NOR — links two negative ideas. Removes "not" from both sentences.',
+    s1:'Mr Lee is not helpful.',
+    s2:'He is also not friendly.',
+    opts:[
+      'Mr Lee is neither helpful nor friendly.',
+      'Mr Lee is neither helpful nor he is friendly.',
+      'Neither Mr Lee is helpful nor friendly.',
+      'Mr Lee is not helpful neither is he friendly.'
+    ],
+    answer:0,
+    hint:'NEITHER...NOR replaces "not...not". Pattern: [Subject] is NEITHER [adjective] NOR [adjective].'
+  },
+  {
+    rule:'NEITHER...NOR — verb agrees with the subject closest to it.',
+    s1:"Kelly's friends were not at the party.",
+    s2:'Kelly was not at the party.',
+    opts:[
+      "Neither Kelly's friends nor Kelly was at the party.",
+      "Neither Kelly's friends nor Kelly were at the party.",
+      "Neither Kelly nor her friends was at the party.",
+      "Kelly's friends and Kelly were neither at the party."
+    ],
+    answer:0,
+    hint:'"Kelly" (singular) is closest to the verb, so use "was". Neither A nor B [verb agrees with B].'
+  },
+  {
+    rule:'WHERE — used after words or phrases that refer to a place.',
+    s1:'William works in a factory.',
+    s2:'Toys are manufactured in that factory.',
+    opts:[
+      'William works in a factory where toys are manufactured.',
+      'William works in a factory where toys were manufactured.',
+      'William works in a factory which toys are manufactured.',
+      'William works in a factory that is where toys are manufactured.'
+    ],
+    answer:0,
+    hint:'WHERE replaces the repeated place phrase ("in that factory"). Keep present tense — it is still true.'
+  },
+  {
+    rule:'UNLESS — means "if...not". Introduces the condition that prevents something.',
+    s1:'The classroom will be hot.',
+    s2:'You must switch on the fan.',
+    opts:[
+      'The classroom will be hot unless you switch on the fan.',
+      'The classroom will be hot unless you switched on the fan.',
+      'Unless the classroom will be hot, you switch on the fan.',
+      'The classroom will be hot unless the fan is switched.'
+    ],
+    answer:0,
+    hint:'UNLESS = IF NOT. [Result] UNLESS [condition in present tense]. Keep "switch on" — do not use past tense.'
+  },
+  {
+    rule:'IF — introduces a condition that leads to a result.',
+    s1:'No one turns up.',
+    s2:'The show will be cancelled.',
+    opts:[
+      'The show will be cancelled if no one turns up.',
+      'The show will be cancelled if no one turned up.',
+      'If no one turns up, the show is cancelled.',
+      'The show will cancel if no one turns up.'
+    ],
+    answer:0,
+    hint:'IF + present simple → future (will + verb). "The show will be cancelled if no one turns up."'
+  }
 ];
 
 let qi=0,score=0,answered=false,submitted=false;
@@ -216,33 +306,48 @@ function renderQ(){
   document.getElementById('progressFill').style.width=((qi+1)/QUESTIONS.length*100)+'%';
   document.getElementById('progressTxt').textContent=(qi+1)+' / '+QUESTIONS.length;
   document.getElementById('qNum').textContent='Question '+(qi+1)+' of '+QUESTIONS.length;
-  document.getElementById('qText').textContent=q.q;
+  document.getElementById('ruleChip').textContent='\uD83D\uDCCC '+q.rule;
   document.getElementById('hintBox').className='hint-box';
   document.getElementById('feedback').className='feedback';
   answered=false;
+  const src=document.getElementById('sourceSentences');
+  src.innerHTML=q.s2
+    ?'<div class="source-line">'+q.s1+'</div><div class="source-line">'+q.s2+'</div>'
+    :'<div class="source-line">'+q.s1+'</div>';
   document.getElementById('mcqOpts').innerHTML=q.opts.map((o,i)=>
-    `<button class="mcq-opt" onclick="pickOpt(${i},this)">${String.fromCharCode(65+i)}. ${o}</button>`
+    '<button class="mcq-opt" onclick="pickOpt('+i+',this)">'+String.fromCharCode(65+i)+'. '+o+'</button>'
   ).join('');
 }
 
 function pickOpt(i,btn){
-  if(answered)return;answered=true;
+  if(answered)return;
+  answered=true;
   const q=QUESTIONS[qi];
-  const opts=document.querySelectorAll('.mcq-opt');
-  opts.forEach(o=>o.style.pointerEvents='none');
-  if(i===q.answer){score++;btn.classList.add('correct');const fb=document.getElementById('feedback');fb.className='feedback show ok';fb.textContent='✅ Correct!';}
-  else{btn.classList.add('wrong');opts[q.answer].classList.add('correct');const fb=document.getElementById('feedback');fb.className='feedback show bad';fb.textContent='❌ Not quite. The correct answer is highlighted.';}
-  setTimeout(()=>{if(qi<QUESTIONS.length-1){qi++;renderQ();}else showResult();},1400);
+  document.querySelectorAll('.mcq-opt').forEach(function(o){o.style.pointerEvents='none';});
+  if(i===q.answer){
+    score++;btn.classList.add('correct');
+    var fb=document.getElementById('feedback');fb.className='feedback show ok';fb.textContent='\u2705 Correct!';
+  }else{
+    btn.classList.add('wrong');
+    document.querySelectorAll('.mcq-opt')[q.answer].classList.add('correct');
+    var fb=document.getElementById('feedback');fb.className='feedback show bad';
+    fb.textContent='\u274C Not quite. The correct answer is highlighted.';
+  }
+  setTimeout(function(){if(qi<QUESTIONS.length-1){qi++;renderQ();}else showResult();},1500);
 }
 
-function showHint(){const h=document.getElementById('hintBox');h.textContent='💡 '+QUESTIONS[qi].hint;h.classList.add('show')}
+function showHint(){
+  var h=document.getElementById('hintBox');
+  h.textContent='\uD83D\uDCA1 '+QUESTIONS[qi].hint;
+  h.classList.add('show');
+}
 
 function showResult(){
-  const total=QUESTIONS.length,pct=Math.round(score/total*100);
-  const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
+  var total=QUESTIONS.length,pct=Math.round(score/total*100);
+  var stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
   document.getElementById('quizCard').style.display='none';
   document.getElementById('resultScreen').classList.add('show');
-  document.getElementById('resultEmoji').textContent=stars===3?'🏆':stars===2?'🌟':stars===1?'⭐':'💪';
+  document.getElementById('resultEmoji').textContent=stars===3?'\uD83C\uDFC6':stars===2?'\uD83C\uDF1F':stars===1?'\u2B50':'\uD83D\uDCAA';
   document.getElementById('resultTitle').textContent=stars===3?'Perfect!':stars===2?'Great Work!':stars===1?'Good Try!':'Keep Practising!';
   document.getElementById('resultSub').textContent='You got '+score+'/'+total+' correct';
   document.getElementById('rScore').textContent=score;
@@ -252,27 +357,28 @@ function showResult(){
 
 async function doSubmit(){
   if(submitted)return;
-  const btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='⏳ Submitting...';
+  var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='\u23F3 Submitting...';
   submitted=true;
-  const total=QUESTIONS.length,pct=Math.round(score/total*100),stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
-  await fbSaveScore(hero.name,hero.cls,'syn','Synthesis',score,total,stars);
+  var total=QUESTIONS.length,pct=Math.round(score/total*100),stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
+  await fbSaveScore(hero.name,hero.cls,'syn','Synthesis & Transformation',score,total,stars);
   window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls)+'&zone=syn&score='+score+'&total='+total+'&stars='+stars;
 }
 
-function restart(){qi=0;score=0;answered=false;submitted=false;document.getElementById('quizCard').style.display='block';document.getElementById('resultScreen').classList.remove('show');renderQ()}
-function goBack(){window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls)}
+function restart(){qi=0;score=0;answered=false;submitted=false;document.getElementById('quizCard').style.display='block';document.getElementById('resultScreen').classList.remove('show');renderQ();}
+function goBack(){window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls);}
 
 renderQ();
 </script>
-<script>
-</script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
 <script>
 (function(){
-  var c={apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",authDomain:"english-island-cps.firebaseapp.com",projectId:"english-island-cps",storageBucket:"english-island-cps.firebasestorage.app",messagingSenderId:"892743482834",appId:"1:892743482834:web:6705bc3e3bc832cf749c0b",databaseURL:"https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app"};
-  if(!firebase.apps.length)firebase.initializeApp(c);
-  window._fbDb=firebase.database();
+  var cfg={apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",authDomain:"english-island-cps.firebaseapp.com",databaseURL:"https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"english-island-cps",storageBucket:"english-island-cps.firebasestorage.app",messagingSenderId:"892743482834",appId:"1:892743482834:web:6705bc3e3bc832cf749c0b"};
+  function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;s.onerror=function(){};document.head.appendChild(s);}
+  loadScript('https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',function(){
+    loadScript('https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js',function(){
+      try{if(!firebase.apps.length)firebase.initializeApp(cfg);window._fbDb=firebase.database();}catch(e){console.warn('FB init error:',e);}
+    });
+  });
 })();
 </script>
 </body>
