@@ -11,23 +11,17 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(232,160,32,.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(52,211,153,.07) 0%,transparent 55%)}
 .wrap{max-width:680px;margin:0 auto;padding:20px 16px 56px;position:relative;z-index:1}
-
-/* ── HERO BAR ── */
 #heroBar{background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.1);padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;z-index:10}
 .hero-badge{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:99px;padding:5px 14px;font-size:11px;font-weight:600;color:#34D399}
 .hero-name{font-size:13px;font-weight:700;color:#E8EAF6}
 .hero-cls{font-size:10px;color:rgba(232,234,246,0.45);font-weight:500;margin-top:1px}
 .btn-back-island{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:11px;font-weight:700;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .btn-back-island:hover{background:rgba(255,255,255,.13);color:#fff}
-
-/* ── GAME TOPBAR ── */
 .game-topbar{position:sticky;top:0;z-index:50;background:rgba(13,15,26,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 16px;display:flex;align-items:center;justify-content:space-between}
 .gtb-left{display:flex;align-items:center;gap:10px}
 .gtb-title{font-family:'Instrument Serif',serif;font-size:16px;color:#fff}
 .btn-island-return{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,190,.15);border:1px solid rgba(0,212,190,.35);color:#00d4be;font-size:12px;font-weight:800;border-radius:10px;padding:6px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;text-decoration:none}
 .btn-island-return:hover{background:rgba(0,212,190,.25);color:#fff}
-
-/* ── HEADER ── */
 .hdr{text-align:center;padding:28px 0 20px}
 .hdr-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.3);border-radius:99px;padding:5px 14px;margin-bottom:14px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent2)}
 .hdr-logo{width:70px;height:70px;background:linear-gradient(135deg,var(--accent),#D97706);border-radius:24px;display:inline-flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:12px;box-shadow:0 8px 32px rgba(232,160,32,.35);animation:float 4s ease-in-out infinite}
@@ -35,32 +29,20 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .hdr-title{font-family:'Instrument Serif',serif;font-size:clamp(26px,6vw,42px);font-weight:400;color:#fff;margin-bottom:8px}
 .hdr-title span{color:var(--accent2);font-style:italic}
 .hdr-sub{font-size:13px;color:var(--muted)}
-
-/* ── WS SELECTOR ── */
 .ws-selector{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 .ws-btn{background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
 .ws-btn:hover{border-color:var(--accent);color:var(--accent2)}
 .ws-btn.active{background:rgba(232,160,32,.15);border-color:var(--accent);color:var(--accent2)}
-
-/* ── CARD ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)}
-
-/* ── RULE CHIP ── */
 .rule-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:99px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--teal);margin-bottom:16px}
-
-/* ── PROGRESS ── */
 .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 .progress-bar{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .4s}
 .progress-txt{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
-
-/* ── QUESTION ── */
 .q-num{font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
 .direct-speech{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px;font-family:'Instrument Serif',serif;font-size:17px;color:#fff;margin-bottom:16px;font-style:italic}
 .q-label{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:10px}
-
-/* ── SENTENCE BUILDER ── */
 .sentence-builder{background:var(--surface2);border:1.5px solid var(--border2);border-radius:12px;padding:16px;font-size:15px;color:var(--text);line-height:2}
 .prefix{color:var(--accent2);font-weight:600}
 .blank-select{appearance:none;background:rgba(232,160,32,.12);border:1.5px solid rgba(232,160,32,.4);border-radius:8px;color:#fff;padding:4px 32px 4px 10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23F5C842' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:all .2s;max-width:100%}
@@ -68,16 +50,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .blank-select.correct{border-color:var(--teal);background-color:rgba(52,211,153,.15);color:var(--teal)}
 .blank-select.wrong{border-color:var(--coral);background-color:rgba(248,113,113,.12);color:var(--coral)}
 .blank-select option{background:#1A1F36;color:#E8EAF6}
-
-/* ── FEEDBACK ── */
 .hint-box{display:none;margin-top:12px;padding:11px 14px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:10px;font-size:13px;color:#FBBF24;font-weight:600}
 .hint-box.show{display:block}
 .feedback{display:none;margin-top:12px;padding:11px 14px;border-radius:10px;font-size:13px;font-weight:600;align-items:center;gap:8px}
 .feedback.show{display:flex}
 .feedback.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--teal)}
 .feedback.bad{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--coral)}
-
-/* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:11px;padding:12px 22px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
 .btn-primary{background:linear-gradient(135deg,var(--accent),#D97706);color:#fff;box-shadow:0 4px 18px rgba(232,160,32,.35)}
 .btn-primary:hover{transform:translateY(-2px)}
@@ -90,8 +68,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .btn-check{background:linear-gradient(135deg,var(--accent),#D97706);color:#fff;box-shadow:0 4px 18px rgba(232,160,32,.35);border:none}
 .btn-check:hover{transform:translateY(-2px)}
 .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
-
-/* ── STATS + RESULT ── */
 .stat-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .stat{flex:1;min-width:75px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;text-align:center}
 .stat-val{font-family:'Instrument Serif',serif;font-size:26px;color:#fff}
@@ -103,8 +79,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .result-title{font-family:'Instrument Serif',serif;font-size:34px;color:#fff;margin-bottom:6px}
 .result-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
 .submit-note{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:11px;padding:12px 16px;font-size:13px;color:var(--teal);font-weight:600;margin-bottom:16px;text-align:center}
-
-/* ── WS COMPLETE BANNER ── */
 .ws-complete{display:none;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);border-radius:14px;padding:18px;text-align:center;margin-bottom:14px}
 .ws-complete.show{display:block}
 .ws-complete-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--teal);margin-bottom:6px}
@@ -131,10 +105,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <p class="hdr-sub" id="heroLabel">Complete the reported speech sentences</p>
   </div>
 
-  <!-- WS selector -->
   <div class="ws-selector" id="wsSelector"></div>
 
-  <!-- Quiz card -->
   <div class="card" id="quizCard">
     <div class="rule-chip" id="ruleChip">📌 Rule</div>
     <div class="progress-row">
@@ -154,7 +126,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     </div>
   </div>
 
-  <!-- WS complete banner -->
   <div class="ws-complete" id="wsCompleteBanner">
     <div class="ws-complete-title" id="wsCompleteTitle">Worksheet Complete!</div>
     <div class="ws-complete-sub" id="wsCompleteSub"></div>
@@ -164,7 +135,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     </div>
   </div>
 
-  <!-- Final result screen -->
   <div class="result-screen" id="resultScreen">
     <div class="result-emoji" id="resultEmoji">🌟</div>
     <div class="result-title" id="resultTitle">Well Done!</div>
@@ -186,300 +156,123 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <script>
 /* ── Firebase helpers ── */
 function fbKey(s){ return (s||'').replace(/[.#$\[\]\/]/g,'_'); }
+
 async function fbSaveScore(name,cls,zone,topic,score,total,stars){
-  if(!name||!window._fbDb)return;
+  if(!name) return;
+  /* Wait up to 5s for Firebase to initialise via loadScript chain */
+  var waited = 0;
+  while(!window._fbDb && waited < 5000){
+    await new Promise(function(r){ setTimeout(r, 100); });
+    waited += 100;
+  }
+  if(!window._fbDb){ console.warn('Firebase not ready after 5s'); return; }
   try{
     await window._fbDb.ref('scores/'+fbKey(name)).update({
-      name,cls,
-      ['zone_'+zone]:{score,total,stars,pts:score*10,topic,ts:Date.now()}
+      name, cls,
+      ['zone_'+zone]: { score, total, stars, pts: score*10, topic, ts: Date.now() }
     });
-  }catch(e){console.warn('Firebase save error:',e);}
+  } catch(e){ console.warn('Firebase save error:', e); }
 }
 </script>
 
 <script>
 /* ── URL / session hero ── */
-const urlP=new URLSearchParams(location.search);
-const _stored=(function(){try{return JSON.parse(sessionStorage.getItem('student')||'{}');}catch(e){return {};}}());
-const hero={name:urlP.get('hero')||_stored.name||'',cls:urlP.get('cls')||_stored.cls||'',returnTo:urlP.get('returnTo')||'student-portal.html'};
+const urlP = new URLSearchParams(location.search);
+const _stored = (function(){ try{ return JSON.parse(sessionStorage.getItem('student')||'{}'); } catch(e){ return {}; } }());
+const hero = {
+  name:     urlP.get('hero')     || _stored.name || '',
+  cls:      urlP.get('cls')      || _stored.cls  || '',
+  returnTo: urlP.get('returnTo') || 'student-portal.html'
+};
 
 (function(){
-  const bar=document.getElementById('heroBar');
-  if(!bar)return;
+  const bar = document.getElementById('heroBar');
+  if(!bar) return;
   if(hero.name){
-    bar.innerHTML=
-      '<div class="hero-badge">✓ Logged in</div>'+
-      '<div><div class="hero-name">'+hero.name+'</div><div class="hero-cls">'+hero.cls+'</div></div>'+
-      '<div style="margin-left:auto;font-size:10px;color:rgba(232,234,246,.45);letter-spacing:.5px">Scores auto-save on completion</div>'+
+    bar.innerHTML =
+      '<div class="hero-badge">✓ Logged in</div>' +
+      '<div><div class="hero-name">'+hero.name+'</div><div class="hero-cls">'+hero.cls+'</div></div>' +
+      '<div style="margin-left:auto;font-size:10px;color:rgba(232,234,246,.45);letter-spacing:.5px">Scores auto-save on completion</div>' +
       '<button class="btn-back-island" onclick="goBack()">← Island</button>';
   } else {
-    bar.innerHTML=
-      '<div style="font-size:12px;color:#FBBF24;font-weight:700">⚠️ Not logged in — go back to the portal to log in first.</div>'+
+    bar.innerHTML =
+      '<div style="font-size:12px;color:#FBBF24;font-weight:700">⚠️ Not logged in — go back to the portal to log in first.</div>' +
       '<button class="btn-back-island" onclick="window.location.href=hero.returnTo">← Island</button>';
   }
 })();
 
-/* ── Worksheet data (from 2026_P4_Reported_Speech_WS.doc) ── */
 const WORKSHEETS=[
   {
-    id:'ws1',
-    title:'WS 1 — This/These → That/Those',
+    id:'ws1',title:'WS 1 — This/These → That/Those',
     rule:'Change This→That and These→Those. Also shift present tense to past tense.',
     questions:[
-      {
-        direct:'Mr Lee told us, "Monday is a school holiday."',
-        prefix:'Mr Lee told us that',
-        answer:'Monday was a school holiday',
-        opts:['Monday was a school holiday','Monday is a school holiday','Monday had been a school holiday'],
-        hint:'Shift "is" → "was".'
-      },
-      {
-        direct:'My sister exclaimed, "These books are heavier than the toys."',
-        prefix:'My sister exclaimed that',
-        answer:'those books were heavier than the toys',
-        opts:['those books were heavier than the toys','these books were heavier than the toys','those books are heavier than the toys'],
-        hint:'"These" → "those", "are" → "were".'
-      },
-      {
-        direct:'"The boy has a bunch of bananas," said Wilson.',
-        prefix:'Wilson said that',
-        answer:'the boy had a bunch of bananas',
-        opts:['the boy had a bunch of bananas','the boy has a bunch of bananas','the boy was having a bunch of bananas'],
-        hint:'"has" → "had".'
-      },
-      {
-        direct:'The farmer said, "The pigs eat more than the cows."',
-        prefix:'The farmer said that',
-        answer:'the pigs ate more than the cows',
-        opts:['the pigs ate more than the cows','the pigs eat more than the cows','the pigs had eaten more than the cows'],
-        hint:'"eat" → "ate".'
-      },
-      {
-        direct:'Molly said, "The milkman delivers milk every morning."',
-        prefix:'Molly said that',
-        answer:'the milkman delivered milk every morning',
-        opts:['the milkman delivered milk every morning','the milkman delivers milk every morning','the milkman had delivered milk every morning'],
-        hint:'"delivers" → "delivered".'
-      }
+      {direct:'Mr Lee told us, "Monday is a school holiday."',prefix:'Mr Lee told us that',answer:'Monday was a school holiday',opts:['Monday was a school holiday','Monday is a school holiday','Monday had been a school holiday'],hint:'Shift "is" → "was".'},
+      {direct:'My sister exclaimed, "These books are heavier than the toys."',prefix:'My sister exclaimed that',answer:'those books were heavier than the toys',opts:['those books were heavier than the toys','these books were heavier than the toys','those books are heavier than the toys'],hint:'"These" → "those", "are" → "were".'},
+      {direct:'"The boy has a bunch of bananas," said Wilson.',prefix:'Wilson said that',answer:'the boy had a bunch of bananas',opts:['the boy had a bunch of bananas','the boy has a bunch of bananas','the boy was having a bunch of bananas'],hint:'"has" → "had".'},
+      {direct:'The farmer said, "The pigs eat more than the cows."',prefix:'The farmer said that',answer:'the pigs ate more than the cows',opts:['the pigs ate more than the cows','the pigs eat more than the cows','the pigs had eaten more than the cows'],hint:'"eat" → "ate".'},
+      {direct:'Molly said, "The milkman delivers milk every morning."',prefix:'Molly said that',answer:'the milkman delivered milk every morning',opts:['the milkman delivered milk every morning','the milkman delivers milk every morning','the milkman had delivered milk every morning'],hint:'"delivers" → "delivered".'}
     ]
   },
   {
-    id:'ws2',
-    title:'WS 2 — Pronoun I → he/she',
+    id:'ws2',title:'WS 2 — Pronoun I → he/she',
     rule:'Change the pronoun "I" to "he" or "she". Also shift tenses to past.',
     questions:[
-      {
-        direct:'Helen protested, "I am not a beggar!"',
-        prefix:'Helen protested that',
-        answer:'she was not a beggar',
-        opts:['she was not a beggar','he was not a beggar','she is not a beggar'],
-        hint:'"I" → "she", "am" → "was".'
-      },
-      {
-        direct:'Edwin said, "I like to read comics."',
-        prefix:'Edwin said that',
-        answer:'he liked to read comics',
-        opts:['he liked to read comics','she liked to read comics','he likes to read comics'],
-        hint:'"I" → "he", "like" → "liked".'
-      },
-      {
-        direct:'Aunt Fanny said, "I do not know how to cycle."',
-        prefix:'Aunt Fanny said that',
-        answer:'she did not know how to cycle',
-        opts:['she did not know how to cycle','he did not know how to cycle','she does not know how to cycle'],
-        hint:'"I" → "she", "do not" → "did not".'
-      },
-      {
-        direct:'Sean and David said, "We are very disappointed."',
-        prefix:'Sean and David said that',
-        answer:'they were very disappointed',
-        opts:['they were very disappointed','we were very disappointed','they are very disappointed'],
-        hint:'"We" → "they", "are" → "were".'
-      },
-      {
-        direct:'The taxi-driver said, "I have to pick up a passenger."',
-        prefix:'The taxi-driver said that',
-        answer:'he/she had to pick up a passenger',
-        opts:['he/she had to pick up a passenger','he/she has to pick up a passenger','I had to pick up a passenger'],
-        hint:'"I" → "he/she", "have to" → "had to".'
-      }
+      {direct:'Helen protested, "I am not a beggar!"',prefix:'Helen protested that',answer:'she was not a beggar',opts:['she was not a beggar','he was not a beggar','she is not a beggar'],hint:'"I" → "she", "am" → "was".'},
+      {direct:'Edwin said, "I like to read comics."',prefix:'Edwin said that',answer:'he liked to read comics',opts:['he liked to read comics','she liked to read comics','he likes to read comics'],hint:'"I" → "he", "like" → "liked".'},
+      {direct:'Aunt Fanny said, "I do not know how to cycle."',prefix:'Aunt Fanny said that',answer:'she did not know how to cycle',opts:['she did not know how to cycle','he did not know how to cycle','she does not know how to cycle'],hint:'"I" → "she", "do not" → "did not".'},
+      {direct:'Sean and David said, "We are very disappointed."',prefix:'Sean and David said that',answer:'they were very disappointed',opts:['they were very disappointed','we were very disappointed','they are very disappointed'],hint:'"We" → "they", "are" → "were".'},
+      {direct:'The taxi-driver said, "I have to pick up a passenger."',prefix:'The taxi-driver said that',answer:'he/she had to pick up a passenger',opts:['he/she had to pick up a passenger','he/she has to pick up a passenger','I had to pick up a passenger'],hint:'"I" → "he/she", "have to" → "had to".'}
     ]
   },
   {
-    id:'ws3',
-    title:'WS 3 — My/Our → his/her/their',
+    id:'ws3',title:'WS 3 — My/Our → his/her/their',
     rule:'Change "my"→"his/her" and "our"→"their". Shift pronouns and tenses.',
     questions:[
-      {
-        direct:'The old lady said, "My daughters are in America."',
-        prefix:'The old lady said that',
-        answer:'her daughters were in America',
-        opts:['her daughters were in America','his daughters were in America','my daughters were in America'],
-        hint:'"My" → "her" (old lady), "are" → "were".'
-      },
-      {
-        direct:'Michael said, "John is my new classmate."',
-        prefix:'Michael said that',
-        answer:'John was his new classmate',
-        opts:['John was his new classmate','John was her new classmate','John is his new classmate'],
-        hint:'"my" → "his", "is" → "was".'
-      },
-      {
-        direct:'"Paul is very kind to us," remarked the children.',
-        prefix:'The children remarked that',
-        answer:'Paul was very kind to them',
-        opts:['Paul was very kind to them','Paul was very kind to us','Paul is very kind to them'],
-        hint:'"us" → "them", "is" → "was".'
-      },
-      {
-        direct:'Fiona said, "I play table-tennis with my cousins."',
-        prefix:'Fiona said that',
-        answer:'she played table-tennis with her cousins',
-        opts:['she played table-tennis with her cousins','she plays table-tennis with her cousins','he played table-tennis with his cousins'],
-        hint:'"I" → "she", "my" → "her", "play" → "played".'
-      },
-      {
-        direct:'The boys said, "Our teacher is teaching us a new song."',
-        prefix:'The boys said that',
-        answer:'their teacher was teaching them a new song',
-        opts:['their teacher was teaching them a new song','their teacher is teaching them a new song','our teacher was teaching us a new song'],
-        hint:'"Our" → "their", "us" → "them", "is teaching" → "was teaching".'
-      }
+      {direct:'The old lady said, "My daughters are in America."',prefix:'The old lady said that',answer:'her daughters were in America',opts:['her daughters were in America','his daughters were in America','my daughters were in America'],hint:'"My" → "her" (old lady), "are" → "were".'},
+      {direct:'Michael said, "John is my new classmate."',prefix:'Michael said that',answer:'John was his new classmate',opts:['John was his new classmate','John was her new classmate','John is his new classmate'],hint:'"my" → "his", "is" → "was".'},
+      {direct:'"Paul is very kind to us," remarked the children.',prefix:'The children remarked that',answer:'Paul was very kind to them',opts:['Paul was very kind to them','Paul was very kind to us','Paul is very kind to them'],hint:'"us" → "them", "is" → "was".'},
+      {direct:'Fiona said, "I play table-tennis with my cousins."',prefix:'Fiona said that',answer:'she played table-tennis with her cousins',opts:['she played table-tennis with her cousins','she plays table-tennis with her cousins','he played table-tennis with his cousins'],hint:'"I" → "she", "my" → "her", "play" → "played".'},
+      {direct:'The boys said, "Our teacher is teaching us a new song."',prefix:'The boys said that',answer:'their teacher was teaching them a new song',opts:['their teacher was teaching them a new song','their teacher is teaching them a new song','our teacher was teaching us a new song'],hint:'"Our" → "their", "us" → "them", "is teaching" → "was teaching".'}
     ]
   },
   {
-    id:'ws4',
-    title:'WS 4 — Time: today/now → that day/then',
+    id:'ws4',title:'WS 4 — Time: today/now → that day/then',
     rule:'today→that day, tonight→that night, this week/month→that week/month, now→then.',
     questions:[
-      {
-        direct:'Mike said, "I am going to the Science Centre today."',
-        prefix:'Mike said that',
-        answer:'he was going to the Science Centre that day',
-        opts:['he was going to the Science Centre that day','he was going to the Science Centre today','he is going to the Science Centre that day'],
-        hint:'"today" → "that day", "am going" → "was going".'
-      },
-      {
-        direct:'Tom said, "We are having a party tonight."',
-        prefix:'Tom said that',
-        answer:'they were having a party that night',
-        opts:['they were having a party that night','they were having a party tonight','we were having a party that night'],
-        hint:'"tonight" → "that night", "We" → "they".'
-      },
-      {
-        direct:'My uncle told us, "I have a driving test this month."',
-        prefix:'My uncle told us that',
-        answer:'he had a driving test that month',
-        opts:['he had a driving test that month','he had a driving test this month','he has a driving test that month'],
-        hint:'"this month" → "that month", "have" → "had".'
-      },
-      {
-        direct:'"My father is going to London this Tuesday," answered the little girl.',
-        prefix:'The little girl answered that',
-        answer:'her father was going to London that Tuesday',
-        opts:['her father was going to London that Tuesday','her father is going to London this Tuesday','her father was going to London this Tuesday'],
-        hint:'"this Tuesday" → "that Tuesday", "my" → "her".'
-      },
-      {
-        direct:'"The plane is going to take off now," announced the pilot.',
-        prefix:'The pilot announced that',
-        answer:'the plane was going to take off then',
-        opts:['the plane was going to take off then','the plane was going to take off now','the plane is going to take off then'],
-        hint:'"now" → "then", "is going" → "was going".'
-      }
+      {direct:'Mike said, "I am going to the Science Centre today."',prefix:'Mike said that',answer:'he was going to the Science Centre that day',opts:['he was going to the Science Centre that day','he was going to the Science Centre today','he is going to the Science Centre that day'],hint:'"today" → "that day", "am going" → "was going".'},
+      {direct:'Tom said, "We are having a party tonight."',prefix:'Tom said that',answer:'they were having a party that night',opts:['they were having a party that night','they were having a party tonight','we were having a party that night'],hint:'"tonight" → "that night", "We" → "they".'},
+      {direct:'My uncle told us, "I have a driving test this month."',prefix:'My uncle told us that',answer:'he had a driving test that month',opts:['he had a driving test that month','he had a driving test this month','he has a driving test that month'],hint:'"this month" → "that month", "have" → "had".'},
+      {direct:'"My father is going to London this Tuesday," answered the little girl.',prefix:'The little girl answered that',answer:'her father was going to London that Tuesday',opts:['her father was going to London that Tuesday','her father is going to London this Tuesday','her father was going to London this Tuesday'],hint:'"this Tuesday" → "that Tuesday", "my" → "her".'},
+      {direct:'"The plane is going to take off now," announced the pilot.',prefix:'The pilot announced that',answer:'the plane was going to take off then',opts:['the plane was going to take off then','the plane was going to take off now','the plane is going to take off then'],hint:'"now" → "then", "is going" → "was going".'}
     ]
   },
   {
-    id:'ws5',
-    title:'WS 5 — will → would / next → following',
+    id:'ws5',title:'WS 5 — will → would / next → following',
     rule:'will→would, tomorrow→the next day, next week/year→the following week/year.',
     questions:[
-      {
-        direct:'James said, "I will tell you the truth tomorrow."',
-        prefix:'James said that',
-        answer:'he would tell me the truth the next day',
-        opts:['he would tell me the truth the next day','he will tell me the truth the next day','he would tell me the truth tomorrow'],
-        hint:'"will" → "would", "tomorrow" → "the next day".'
-      },
-      {
-        direct:'My uncle said, "My wife and I are going to Sentosa next week."',
-        prefix:'My uncle said that',
-        answer:'he and his wife were going to Sentosa the following week',
-        opts:['he and his wife were going to Sentosa the following week','he and his wife are going to Sentosa next week','he and his wife would go to Sentosa the following week'],
-        hint:'"My wife and I" → "he and his wife", "next week" → "the following week".'
-      },
-      {
-        direct:'"All of you will be in the same class next year," said Miss Wong.',
-        prefix:'Miss Wong said that',
-        answer:'all of them would be in the same class the following year',
-        opts:['all of them would be in the same class the following year','all of them will be in the same class next year','all of them would be in the same class next year'],
-        hint:'"will" → "would", "next year" → "the following year", "you" → "them".'
-      },
-      {
-        direct:'Sharon said, "My birthday is on the first day of next month."',
-        prefix:'Sharon said that',
-        answer:'her birthday was on the first day of the following month',
-        opts:['her birthday was on the first day of the following month','her birthday was on the first day of next month','her birthday is on the first day of the following month'],
-        hint:'"My" → "her", "next month" → "the following month".'
-      },
-      {
-        direct:'The principal said, "The PSLE results will be announced tomorrow."',
-        prefix:'The principal said that',
-        answer:'the PSLE results would be announced the following day',
-        opts:['the PSLE results would be announced the following day','the PSLE results will be announced the following day','the PSLE results would be announced tomorrow'],
-        hint:'"will" → "would", "tomorrow" → "the following day".'
-      }
+      {direct:'James said, "I will tell you the truth tomorrow."',prefix:'James said that',answer:'he would tell me the truth the next day',opts:['he would tell me the truth the next day','he will tell me the truth the next day','he would tell me the truth tomorrow'],hint:'"will" → "would", "tomorrow" → "the next day".'},
+      {direct:'My uncle said, "My wife and I are going to Sentosa next week."',prefix:'My uncle said that',answer:'he and his wife were going to Sentosa the following week',opts:['he and his wife were going to Sentosa the following week','he and his wife are going to Sentosa next week','he and his wife would go to Sentosa the following week'],hint:'"My wife and I" → "he and his wife", "next week" → "the following week".'},
+      {direct:'"All of you will be in the same class next year," said Miss Wong.',prefix:'Miss Wong said that',answer:'all of them would be in the same class the following year',opts:['all of them would be in the same class the following year','all of them will be in the same class next year','all of them would be in the same class next year'],hint:'"will" → "would", "next year" → "the following year", "you" → "them".'},
+      {direct:'Sharon said, "My birthday is on the first day of next month."',prefix:'Sharon said that',answer:'her birthday was on the first day of the following month',opts:['her birthday was on the first day of the following month','her birthday was on the first day of next month','her birthday is on the first day of the following month'],hint:'"My" → "her", "next month" → "the following month".'},
+      {direct:'The principal said, "The PSLE results will be announced tomorrow."',prefix:'The principal said that',answer:'the PSLE results would be announced the following day',opts:['the PSLE results would be announced the following day','the PSLE results will be announced the following day','the PSLE results would be announced tomorrow'],hint:'"will" → "would", "tomorrow" → "the following day".'}
     ]
   },
   {
-    id:'ws6',
-    title:'WS 6 — Past → Past Perfect / yesterday → previous day',
+    id:'ws6',title:'WS 6 — Past → Past Perfect / yesterday → previous day',
     rule:'Past tense → past perfect. yesterday→the previous day, last week/year→the previous week/year.',
     questions:[
-      {
-        direct:'"Joel was our class captain last year," said Nicholas.',
-        prefix:'Nicholas said that',
-        answer:'Joel had been their class captain the previous year',
-        opts:['Joel had been their class captain the previous year','Joel was their class captain the previous year','Joel had been their class captain last year'],
-        hint:'"was" → "had been", "last year" → "the previous year", "our" → "their".'
-      },
-      {
-        direct:'"Mary drove a red car to work yesterday," said Mother.',
-        prefix:'Mother said that',
-        answer:'Mary had driven a red car to work the previous day',
-        opts:['Mary had driven a red car to work the previous day','Mary drove a red car to work the previous day','Mary had driven a red car to work yesterday'],
-        hint:'"drove" → "had driven", "yesterday" → "the previous day".'
-      },
-      {
-        direct:'The children said, "We took part in the tournament last year."',
-        prefix:'The children said that',
-        answer:'they had taken part in the tournament the previous year',
-        opts:['they had taken part in the tournament the previous year','they took part in the tournament the previous year','they had taken part in the tournament last year'],
-        hint:'"took" → "had taken", "last year" → "the previous year", "We" → "they".'
-      },
-      {
-        direct:'My neighbour said, "Many people went to the carnival last week."',
-        prefix:'My neighbour said that',
-        answer:'many people had gone to the carnival the previous week',
-        opts:['many people had gone to the carnival the previous week','many people went to the carnival the previous week','many people had gone to the carnival last week'],
-        hint:'"went" → "had gone", "last week" → "the previous week".'
-      },
-      {
-        direct:'Jason said, "I ate a very delicious burger last night."',
-        prefix:'Jason said that',
-        answer:'he had eaten a very delicious burger the previous night',
-        opts:['he had eaten a very delicious burger the previous night','he ate a very delicious burger the previous night','he had eaten a very delicious burger last night'],
-        hint:'"ate" → "had eaten", "last night" → "the previous night", "I" → "he".'
-      }
+      {direct:'"Joel was our class captain last year," said Nicholas.',prefix:'Nicholas said that',answer:'Joel had been their class captain the previous year',opts:['Joel had been their class captain the previous year','Joel was their class captain the previous year','Joel had been their class captain last year'],hint:'"was" → "had been", "last year" → "the previous year", "our" → "their".'},
+      {direct:'"Mary drove a red car to work yesterday," said Mother.',prefix:'Mother said that',answer:'Mary had driven a red car to work the previous day',opts:['Mary had driven a red car to work the previous day','Mary drove a red car to work the previous day','Mary had driven a red car to work yesterday'],hint:'"drove" → "had driven", "yesterday" → "the previous day".'},
+      {direct:'The children said, "We took part in the tournament last year."',prefix:'The children said that',answer:'they had taken part in the tournament the previous year',opts:['they had taken part in the tournament the previous year','they took part in the tournament the previous year','they had taken part in the tournament last year'],hint:'"took" → "had taken", "last year" → "the previous year", "We" → "they".'},
+      {direct:'My neighbour said, "Many people went to the carnival last week."',prefix:'My neighbour said that',answer:'many people had gone to the carnival the previous week',opts:['many people had gone to the carnival the previous week','many people went to the carnival the previous week','many people had gone to the carnival last week'],hint:'"went" → "had gone", "last week" → "the previous week".'},
+      {direct:'Jason said, "I ate a very delicious burger last night."',prefix:'Jason said that',answer:'he had eaten a very delicious burger the previous night',opts:['he had eaten a very delicious burger the previous night','he ate a very delicious burger the previous night','he had eaten a very delicious burger last night'],hint:'"ate" → "had eaten", "last night" → "the previous night", "I" → "he".'}
     ]
   }
 ];
 
-/* ── State ── */
 let wsIdx=0, qi=0, wsScore=0, totalScore=0, totalQ=0, answered=false, submitted=false;
 const TOTAL_WS=WORKSHEETS.length;
 
-/* ── Build WS selector buttons ── */
 function buildSelector(){
   const sel=document.getElementById('wsSelector');
   sel.innerHTML=WORKSHEETS.map((ws,i)=>
@@ -488,18 +281,14 @@ function buildSelector(){
 }
 
 function jumpWs(i){
-  wsIdx=i; qi=0; wsScore=0; answered=false;
+  wsIdx=i;qi=0;wsScore=0;answered=false;
   document.getElementById('wsCompleteBanner').classList.remove('show');
   document.getElementById('quizCard').style.display='block';
-  buildSelector();
-  renderQ();
+  buildSelector();renderQ();
 }
 
 function renderQ(){
-  const ws=WORKSHEETS[wsIdx];
-  const q=ws.questions[qi];
-  const total=ws.questions.length;
-
+  const ws=WORKSHEETS[wsIdx];const q=ws.questions[qi];const total=ws.questions.length;
   document.getElementById('ruleChip').textContent='📌 '+ws.rule;
   document.getElementById('progressFill').style.width=((qi+1)/total*100)+'%';
   document.getElementById('progressTxt').textContent=(qi+1)+' / '+total;
@@ -508,100 +297,70 @@ function renderQ(){
   document.getElementById('hintBox').className='hint-box';
   document.getElementById('feedback').className='feedback';
   answered=false;
-
-  // Build sentence builder: prefix + dropdown
   const opts=q.opts.map(o=>`<option value="${o}">${o}</option>`).join('');
   document.getElementById('sentenceBuilder').innerHTML=
     '<span class="prefix">'+q.prefix+'</span> '+
-    '<select class="blank-select" id="blankSel">'+
-      '<option value="">— choose —</option>'+opts+
-    '</select>';
+    '<select class="blank-select" id="blankSel"><option value="">— choose —</option>'+opts+'</select>';
 }
 
 function checkAnswer(){
   if(answered)return;
   const sel=document.getElementById('blankSel');
   if(!sel||sel.value===''){
-    const fb=document.getElementById('feedback');
-    fb.className='feedback show bad';fb.textContent='⚠️ Please choose an answer first.';
-    return;
+    const fb=document.getElementById('feedback');fb.className='feedback show bad';fb.textContent='⚠️ Please choose an answer first.';return;
   }
-  answered=true;
-  sel.disabled=true;
+  answered=true;sel.disabled=true;
   const q=WORKSHEETS[wsIdx].questions[qi];
   if(sel.value===q.answer){
-    wsScore++; totalScore++;
-    sel.classList.add('correct');
+    wsScore++;totalScore++;sel.classList.add('correct');
     const fb=document.getElementById('feedback');fb.className='feedback show ok';fb.textContent='✅ Correct!';
   } else {
     sel.classList.add('wrong');
-    const fb=document.getElementById('feedback');
-    fb.className='feedback show bad';
-    fb.textContent='❌ The correct answer is: '+q.answer;
+    const fb=document.getElementById('feedback');fb.className='feedback show bad';fb.textContent='❌ The correct answer is: '+q.answer;
   }
   totalQ++;
-  setTimeout(advanceQ, 1500);
+  setTimeout(advanceQ,1500);
 }
 
 function advanceQ(){
   const ws=WORKSHEETS[wsIdx];
-  if(qi<ws.questions.length-1){
-    qi++;
-    document.getElementById('quizCard').style.display='block';
-    renderQ();
-  } else {
-    showWsComplete();
-  }
+  if(qi<ws.questions.length-1){qi++;document.getElementById('quizCard').style.display='block';renderQ();}
+  else showWsComplete();
 }
 
 function showHint(){
   const q=WORKSHEETS[wsIdx].questions[qi];
-  const h=document.getElementById('hintBox');
-  h.textContent='💡 '+q.hint;
-  h.classList.add('show');
+  const h=document.getElementById('hintBox');h.textContent='💡 '+q.hint;h.classList.add('show');
 }
 
 function showWsComplete(){
   document.getElementById('quizCard').style.display='none';
-  const banner=document.getElementById('wsCompleteBanner');
-  banner.classList.add('show');
+  const banner=document.getElementById('wsCompleteBanner');banner.classList.add('show');
   const ws=WORKSHEETS[wsIdx];
   document.getElementById('wsCompleteTitle').textContent=ws.title.split('—')[1].trim()+' — Complete!';
-  document.getElementById('wsCompleteSub').textContent=
-    'You got '+wsScore+' / '+ws.questions.length+' correct on this worksheet.';
+  document.getElementById('wsCompleteSub').textContent='You got '+wsScore+' / '+ws.questions.length+' correct on this worksheet.';
   const nextBtn=document.getElementById('nextWsBtn');
-  if(wsIdx>=TOTAL_WS-1){
-    nextBtn.textContent='🏆 See Final Results';
-    nextBtn.onclick=showFinalResult;
-  } else {
-    nextBtn.textContent='Next Worksheet →';
-    nextBtn.onclick=nextWorksheet;
-  }
+  if(wsIdx>=TOTAL_WS-1){nextBtn.textContent='🏆 See Final Results';nextBtn.onclick=showFinalResult;}
+  else{nextBtn.textContent='Next Worksheet →';nextBtn.onclick=nextWorksheet;}
 }
 
 function nextWorksheet(){
   wsIdx++;qi=0;wsScore=0;answered=false;
   document.getElementById('wsCompleteBanner').classList.remove('show');
   document.getElementById('quizCard').style.display='block';
-  buildSelector();
-  renderQ();
+  buildSelector();renderQ();
 }
 
 function replayWs(){
   qi=0;wsScore=0;answered=false;
-  // Deduct previous scores for this WS from totalScore/totalQ
-  // (simple approach: just reset totals)
   document.getElementById('wsCompleteBanner').classList.remove('show');
-  document.getElementById('quizCard').style.display='block';
-  renderQ();
+  document.getElementById('quizCard').style.display='block';renderQ();
 }
 
 function showFinalResult(){
   document.getElementById('wsCompleteBanner').classList.remove('show');
   document.getElementById('quizCard').style.display='none';
-  const total=TOTAL_WS*5;
-  const pct=Math.round(totalScore/total*100);
-  const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
+  const total=TOTAL_WS*5;const pct=Math.round(totalScore/total*100);const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
   document.getElementById('resultScreen').classList.add('show');
   document.getElementById('resultEmoji').textContent=stars===3?'🏆':stars===2?'🌟':stars===1?'⭐':'💪';
   document.getElementById('resultTitle').textContent=stars===3?'Perfect!':stars===2?'Great Work!':stars===1?'Good Try!':'Keep Practising!';
@@ -613,18 +372,11 @@ function showFinalResult(){
 
 async function doSubmit(){
   if(submitted)return;
-  const btn=document.getElementById('submitBtn');
-  btn.disabled=true;btn.textContent='⏳ Submitting...';
+  const btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='⏳ Submitting...';
   submitted=true;
-  const total=TOTAL_WS*5;
-  const pct=Math.round(totalScore/total*100);
-  const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
+  const total=TOTAL_WS*5;const pct=Math.round(totalScore/total*100);const stars=pct>=90?3:pct>=70?2:pct>=50?1:0;
   await fbSaveScore(hero.name,hero.cls,'rs','Reported Speech',totalScore,total,stars);
-  const ret=hero.returnTo
-    +'?hero='+encodeURIComponent(hero.name)
-    +'&cls='+encodeURIComponent(hero.cls)
-    +'&zone=rs&score='+totalScore+'&total='+total+'&stars='+stars;
-  window.location.href=ret;
+  window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls)+'&zone=rs&score='+totalScore+'&total='+total+'&stars='+stars;
 }
 
 function restartAll(){
@@ -632,26 +384,23 @@ function restartAll(){
   document.getElementById('resultScreen').classList.remove('show');
   document.getElementById('wsCompleteBanner').classList.remove('show');
   document.getElementById('quizCard').style.display='block';
-  buildSelector();
-  renderQ();
+  buildSelector();renderQ();
 }
 
 function goBack(){
   window.location.href=hero.returnTo+'?hero='+encodeURIComponent(hero.name)+'&cls='+encodeURIComponent(hero.cls);
 }
 
-// ── Boot ──
-buildSelector();
-renderQ();
+buildSelector();renderQ();
 </script>
 
 <script>
 (function(){
   var cfg={apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",authDomain:"english-island-cps.firebaseapp.com",databaseURL:"https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"english-island-cps",storageBucket:"english-island-cps.firebasestorage.app",messagingSenderId:"892743482834",appId:"1:892743482834:web:6705bc3e3bc832cf749c0b"};
-  function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;s.onerror=function(){};document.head.appendChild(s);}
+  function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;s.onerror=function(){console.warn('Failed to load '+src);};document.head.appendChild(s);}
   loadScript('https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',function(){
     loadScript('https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js',function(){
-      try{if(!firebase.apps.length)firebase.initializeApp(cfg);window._fbDb=firebase.database();}catch(e){}
+      try{if(!firebase.apps.length)firebase.initializeApp(cfg);window._fbDb=firebase.database();}catch(e){console.warn('FB init error:',e);}
     });
   });
 })();
