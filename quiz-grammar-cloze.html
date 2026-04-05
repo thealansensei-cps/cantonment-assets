@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grammar Cloze | English Island</title>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(160deg, #4a2000 0%, #8b4a00 50%, #3a1800 100%);
+      min-height: 100vh;
+      padding: 20px 16px 40px;
+    }
+
+    .header {
+      text-align: center;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+    .island-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .header h1 { font-size: 26px; font-weight: 900; text-shadow: 0 2px 10px rgba(0,0,0,0.35); }
+    .header .subtitle { font-size: 14px; opacity: 0.8; margin-top: 4px; }
+    .student-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 10px;
+      color: #fff;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 28px;
+      max-width: 700px;
+      margin: 0 auto 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #8b4a00;
+      background: #fff4e0;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+    }
+    .section-source {
+      font-size: 12px;
+      color: #aaa;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .instructions {
+      background: #fffbf0;
+      border: 1.5px solid #f5a623;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      font-size: 14px;
+      color: #555;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    /* Word box for passage 1 */
+    .word-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: #f8f8f8;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+    }
+    .word-chip {
+      background: #fff;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    /* Passage text */
+    .passage {
+      font-size: 16px;
+      line-height: 2;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+
+    /* Inline select */
+    .blank-select {
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #8b4a00;
+      background: #fff9f0;
+      border: 2px solid #f5a623;
+      border-radius: 8px;
+      padding: 2px 8px;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+      vertical-align: middle;
+      -webkit-appearance: none;
+      appearance: none;
+      min-width: 120px;
+    }
+    .blank-select:focus { border-color: #d4820a; background: #fff4e0; }
+    .blank-select.correct { border-color: #22c55e; background: #f0fdf4; color: #16a34a; }
+    .blank-select.wrong   { border-color: #ef4444; background: #fef2f2; color: #dc2626; }
+    .blank-select:disabled { cursor: not-allowed; opacity: 0.85; }
+
+    .blank-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #f5a623;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      vertical-align: middle;
+      margin-right: 2px;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 26px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .btn {
+      padding: 11px 26px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #8b4a00; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #6b3800; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(139,74,0,0.4); }
+    .btn-ghost   { background: #f0f0f0; color: #555; }
+    .btn-ghost:hover  { background: #e0e0e0; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+    /* Results panel */
+    .result-row {
+      margin-top: 14px;
+      display: none;
+    }
+    .result-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .result-item.ok  { background: #f0fdf4; color: #16a34a; }
+    .result-item.bad { background: #fef2f2; color: #dc2626; }
+
+    /* Score card */
+    .score-card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 44px 28px 36px;
+      max-width: 700px;
+      margin: 0 auto;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+      text-align: center;
+      display: none;
+    }
+    .score-emoji { font-size: 68px; margin-bottom: 10px; animation: pop 0.5s ease; }
+    @keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
+    .score-num   { font-size: 56px; font-weight: 900; color: #8b4a00; line-height: 1; }
+    .score-denom { font-size: 24px; color: #aaa; font-weight: 700; }
+    .score-section { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #aaa; font-weight: 700; margin-top: 4px; margin-bottom: 20px; }
+    .score-msg   { font-size: 20px; font-weight: 800; color: #1a1a2e; margin-bottom: 6px; }
+    .score-sub   { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .save-pill {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #f3f3f3;
+      color: #888;
+      margin-bottom: 24px;
+    }
+    .save-pill.saved { background: #f0fdf4; color: #16a34a; }
+    .save-pill.err   { background: #fef2f2; color: #dc2626; }
+
+    @media (max-width: 480px) {
+      .header h1 { font-size: 21px; }
+      .card { padding: 18px; }
+      .passage { font-size: 15px; line-height: 1.9; }
+      .blank-select { min-width: 100px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="island-badge">🌴 English Island</div>
+    <h1>✏️ Grammar Cloze</h1>
+    <div class="subtitle">2 passages — 8 blanks from past papers</div>
+    <div class="student-chip">👤 <span id="student-name">Loading…</span></div>
+  </div>
+
+  <div id="quiz-area">
+
+    <!-- ── Passage 1 ── -->
+    <div class="card">
+      <div class="section-label">📄 Passage 1</div>
+      <div class="section-title">Pronouns — Choose from the Word Box</div>
+      <div class="section-source">WA2 2025</div>
+
+      <div class="instructions">
+        Choose the correct word from the word box and select its letter in each blank.<br>
+        <strong>Use each word only once.</strong>
+      </div>
+
+      <div class="word-box">
+        <span class="word-chip">(A) her</span>
+        <span class="word-chip">(B) him</span>
+        <span class="word-chip">(C) his</span>
+        <span class="word-chip">(D) them</span>
+        <span class="word-chip">(E) us</span>
+        <span class="word-chip">(F) we</span>
+      </div>
+
+      <div class="passage" id="passage1"></div>
+
+      <div class="result-row" id="result1"></div>
+    </div>
+
+    <!-- ── Passage 2 ── -->
+    <div class="card">
+      <div class="section-label">📄 Passage 2</div>
+      <div class="section-title">Subject-Verb Agreement — Underline the correct word</div>
+      <div class="section-source">EYE 2025</div>
+
+      <div class="instructions">
+        Choose the correct word from each pair of words in the brackets.
+      </div>
+
+      <div class="passage" id="passage2"></div>
+
+      <div class="result-row" id="result2"></div>
+    </div>
+
+    <!-- ── Submit ── -->
+    <div class="card" style="padding: 20px 28px;">
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="history.back()">← Back</button>
+        <button class="btn btn-primary" id="check-btn" onclick="checkAll()">Check Answers ✓</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Score Card ── -->
+  <div class="score-card" id="score-card">
+    <div class="score-emoji" id="sc-emoji">🏆</div>
+    <div class="score-num" id="sc-num">0</div>
+    <div class="score-denom">/8</div>
+    <div class="score-section">Grammar Cloze</div>
+    <div class="score-msg" id="sc-msg"></div>
+    <div class="score-sub" id="sc-sub"></div>
+    <div class="save-pill" id="save-pill">Saving…</div>
+    <br>
+    <button class="btn btn-ghost" onclick="history.back()">← Back to Island</button>
+  </div>
+
+<script>
+window.onload = function () {
+
+  const cfg = {
+    apiKey: "AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",
+    authDomain: "english-island-cps.firebaseapp.com",
+    databaseURL: "https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "english-island-cps",
+    storageBucket: "english-island-cps.firebasestorage.app",
+    messagingSenderId: "892743482834",
+    appId: "1:892743482834:web:6705bc3e3bc832cf749c0b"
+  };
+  if (!firebase.apps.length) firebase.initializeApp(cfg);
+  const db = firebase.database();
+
+  const params = new URLSearchParams(window.location.search);
+  const studentName = params.get('name') || 'Guest';
+  document.getElementById('student-name').textContent = studentName;
+
+  /* ────────────────────────────────
+     PASSAGE 1 — Pronouns (WA2 2025)
+     Blanks: 1–4
+  ──────────────────────────────── */
+  const p1opts = [
+    { val: 'A', label: '(A) her' },
+    { val: 'B', label: '(B) him' },
+    { val: 'C', label: '(C) his' },
+    { val: 'D', label: '(D) them' },
+    { val: 'E', label: '(E) us' },
+    { val: 'F', label: '(F) we' }
+  ];
+
+  // Answers: 1=F, 2=E, 3=A, 4=B
+  const p1answers = { b1: 'F', b2: 'E', b3: 'A', b4: 'B' };
+
+  function makeSelect(id, opts) {
+    const sel = document.createElement('select');
+    sel.className = 'blank-select';
+    sel.id = id;
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— choose —';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    sel.appendChild(placeholder);
+    opts.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.val;
+      opt.textContent = o.label;
+      sel.appendChild(opt);
+    });
+    return sel;
+  }
+
+  function numBadge(n) {
+    const sp = document.createElement('span');
+    sp.className = 'blank-num';
+    sp.textContent = n;
+    return sp;
+  }
+
+  // Build passage 1 as HTML nodes
+  const p1 = document.getElementById('passage1');
+
+  function addText(parent, text) {
+    parent.appendChild(document.createTextNode(text));
+  }
+
+  addText(p1, 'Last Saturday, my neighbours, my brother and I joined a recycling project organised by our Residents\' Committee.\u00a0');
+  p1.appendChild(numBadge(1));
+  p1.appendChild(makeSelect('b1', p1opts));
+  addText(p1, '\u00a0had noticed the large amount of waste left in the park, so we decided to do something about it.');
+
+  p1.appendChild(document.createElement('br'));
+  p1.appendChild(document.createElement('br'));
+
+  addText(p1, 'Each of us brought a bag from home. My brother forgot to bring his, so I lent him one of mine. Some residents also joined in when they saw\u00a0');
+  p1.appendChild(numBadge(2));
+  p1.appendChild(makeSelect('b2', p1opts));
+  addText(p1, '\u00a0walking around with gloves and tongs.');
+
+  p1.appendChild(document.createElement('br'));
+  p1.appendChild(document.createElement('br'));
+
+  addText(p1, 'One of the organisers, Mrs Huda, asked if I could help sort the items. I nodded and passed the stack of used boxes to\u00a0');
+  p1.appendChild(numBadge(3));
+  p1.appendChild(makeSelect('b3', p1opts));
+  addText(p1, '.');
+
+  p1.appendChild(document.createElement('br'));
+  p1.appendChild(document.createElement('br'));
+
+  addText(p1, 'Later, a reporter arrived. She interviewed my brother and told\u00a0');
+  p1.appendChild(numBadge(4));
+  p1.appendChild(makeSelect('b4', p1opts));
+  addText(p1, '\u00a0that the article would appear in the next issue of the community newsletter.');
+
+  /* ────────────────────────────────
+     PASSAGE 2 — SVA (EYE 2025)
+     Blanks: 5–8
+  ──────────────────────────────── */
+  const p2answers = { b5: 'has', b6: 'are', b7: 'collects', b8: 'make' };
+
+  function makeSelectPair(id, opt1, opt2) {
+    const sel = document.createElement('select');
+    sel.className = 'blank-select';
+    sel.id = id;
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— choose —';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    sel.appendChild(placeholder);
+    [opt1, opt2].forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o;
+      opt.textContent = o;
+      sel.appendChild(opt);
+    });
+    return sel;
+  }
+
+  const p2 = document.getElementById('passage2');
+
+  addText(p2, 'Honeybees live in large groups called colonies. The queen bee\u00a0');
+  p2.appendChild(numBadge(5));
+  p2.appendChild(makeSelectPair('b5', 'has', 'have'));
+  addText(p2, '\u00a0to run everything in the colony. All worker bees\u00a0');
+  p2.appendChild(numBadge(6));
+  p2.appendChild(makeSelectPair('b6', 'is', 'are'));
+  addText(p2, '\u00a0female and do important jobs. Each worker bee\u00a0');
+  p2.appendChild(numBadge(7));
+  p2.appendChild(makeSelectPair('b7', 'collect', 'collects'));
+  addText(p2, '\u00a0nectar from colourful flowers to feed the bees in the colony. Together, worker bees\u00a0');
+  p2.appendChild(numBadge(8));
+  p2.appendChild(makeSelectPair('b8', 'make', 'makes'));
+  addText(p2, '\u00a0honeycombs to store their food. Each bee has a job and by working together, they keep the whole colony healthy and strong.');
+
+  /* ────────────────────────────────
+     CHECK ANSWERS
+  ──────────────────────────────── */
+  const correctLabels = {
+    b1: '(F) we', b2: '(E) us', b3: '(A) her', b4: '(B) him',
+    b5: 'has', b6: 'are', b7: 'collects', b8: 'make'
+  };
+  const questionLabels = {
+    b1: 'Blank 1', b2: 'Blank 2', b3: 'Blank 3', b4: 'Blank 4',
+    b5: 'Blank 5', b6: 'Blank 6', b7: 'Blank 7', b8: 'Blank 8'
+  };
+
+  window.checkAll = function () {
+    const allAnswers = { ...p1answers, ...p2answers };
+    let score = 0;
+
+    // Disable all selects
+    document.querySelectorAll('.blank-select').forEach(s => s.disabled = true);
+
+    // Check each blank
+    Object.keys(allAnswers).forEach(id => {
+      const sel = document.getElementById(id);
+      const correct = allAnswers[id];
+      if (sel.value === correct) {
+        score++;
+        sel.classList.add('correct');
+      } else {
+        sel.classList.add('wrong');
+      }
+    });
+
+    // Show result rows
+    ['result1', 'result2'].forEach(rid => {
+      const div = document.getElementById(rid);
+      div.style.display = 'block';
+    });
+
+    const r1 = document.getElementById('result1');
+    r1.innerHTML = '';
+    ['b1','b2','b3','b4'].forEach(id => {
+      const sel = document.getElementById(id);
+      const isOk = sel.value === p1answers[id];
+      const row = document.createElement('div');
+      row.className = 'result-item ' + (isOk ? 'ok' : 'bad');
+      row.innerHTML = isOk
+        ? `✅ ${questionLabels[id]}: Correct! <strong>${correctLabels[id]}</strong>`
+        : `❌ ${questionLabels[id]}: Correct answer is <strong>${correctLabels[id]}</strong>`;
+      r1.appendChild(row);
+    });
+
+    const r2 = document.getElementById('result2');
+    r2.innerHTML = '';
+    ['b5','b6','b7','b8'].forEach(id => {
+      const sel = document.getElementById(id);
+      const isOk = sel.value === p2answers[id];
+      const row = document.createElement('div');
+      row.className = 'result-item ' + (isOk ? 'ok' : 'bad');
+      row.innerHTML = isOk
+        ? `✅ ${questionLabels[id]}: Correct! <strong>${correctLabels[id]}</strong>`
+        : `❌ ${questionLabels[id]}: Correct answer is <strong>${correctLabels[id]}</strong>`;
+      r2.appendChild(row);
+    });
+
+    document.getElementById('check-btn').disabled = true;
+
+    // Show score card after a short pause
+    setTimeout(() => {
+      document.getElementById('quiz-area').style.display = 'none';
+      const sc = document.getElementById('score-card');
+      sc.style.display = 'block';
+      sc.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('sc-num').textContent = score;
+      const pct = Math.round((score / 8) * 100);
+      let emoji, msg, sub;
+      if      (pct >= 90) { emoji='🏆'; msg='Grammar Cloze Champion!';        sub='Excellent work on both passages!' }
+      else if (pct >= 70) { emoji='⭐'; msg='Great effort, Explorer!';         sub='Good understanding of pronouns & SVA.' }
+      else if (pct >= 50) { emoji='🌊'; msg='Good try — keep practising!';     sub='Review pronouns and subject-verb agreement.' }
+      else                { emoji='🐚'; msg='Keep learning and practising!';    sub='Read the passages carefully and try again.' }
+
+      document.getElementById('sc-emoji').textContent = emoji;
+      document.getElementById('sc-msg').textContent   = msg;
+      document.getElementById('sc-sub').textContent   = sub;
+
+      const pill = document.getElementById('save-pill');
+      if (studentName !== 'Guest') {
+        db.ref(`scores/${studentName}/zone_gcloze`).set(score)
+          .then(() => { pill.textContent = '✅ Score saved!'; pill.className = 'save-pill saved'; })
+          .catch(() => { pill.textContent = '⚠️ Could not save — tell your teacher'; pill.className = 'save-pill err'; });
+      } else {
+        pill.textContent = 'Guest mode — score not saved';
+      }
+    }, 1500);
+  };
+
+};
+</script>
+</body>
+</html>
