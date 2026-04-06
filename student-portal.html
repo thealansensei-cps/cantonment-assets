@@ -150,7 +150,7 @@ select:disabled{opacity:.4;cursor:not-allowed}
 .pin-vtc .pin-head{background:linear-gradient(135deg,#1a8a50,#2ecc71)}
 .pin-synthesis .pin-head{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
 .pin-spelling .pin-head{background:linear-gradient(135deg,#c0392b,#e74c3c)}
-.pin-chat    .pin-head{background:linear-gradient(135deg,#0d9488,#00d4be)}
+.pin-chat    .pin-head{background:linear-gradient(135deg,#4b5563,#6b7280)}
 .pin-gmcq   .pin-head{background:linear-gradient(135deg,#1a73c8,#34d399)}
 .pin-vmcq   .pin-head{background:linear-gradient(135deg,#d97706,#fbbf24)}
 .pin-gcloze .pin-head{background:linear-gradient(135deg,#7c3aed,#c084fc)}
@@ -408,7 +408,7 @@ select:disabled{opacity:.4;cursor:not-allowed}
           <div class="pin-shadow"></div>
         </div>
 
-        <div class="map-pin pin-chat" id="pin-chat" style="left:76%;top:58%" onclick="handlePinClick('chat')">
+        <div class="map-pin pin-chat" id="pin-chat" style="left:76%;top:58%" onclick="showHangoutLocked()">
           <div class="pin-tooltip"><div class="pin-tooltip-name">💬 Island Hangout</div><div class="pin-tooltip-sub">Chat &amp; play with friends!</div></div>
           <div class="pin-head"><span class="pin-head-inner">💬</span></div>
           <div class="pin-shadow"></div>
@@ -861,6 +861,16 @@ function handlePinClick(game) {
     showLockedMsg(game); return;
   }
   goToGame(game);
+}
+
+function showHangoutLocked() {
+  document.getElementById('reward-stars').textContent   = '🚧';
+  document.getElementById('reward-title').textContent   = 'Under Construction!';
+  document.getElementById('reward-sub').textContent     = 'Island Hangout is coming soon. Stay tuned! 🏝️';
+  document.getElementById('reward-pts').textContent     = '';
+  document.getElementById('reward-pts-label').textContent = '';
+  document.getElementById('reward-badges').innerHTML    = '';
+  document.getElementById('rewardOverlay').classList.add('show');
 }
 
 function showLockedMsg(game) {
