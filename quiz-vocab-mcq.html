@@ -290,7 +290,7 @@ window.onload = function () {
   const db = firebase.database();
 
   const params = new URLSearchParams(window.location.search);
-  const studentName = params.get('name') || 'Guest';
+  const studentName = params.get('hero') || params.get('name') || 'Guest';
   document.getElementById('student-name').textContent = studentName;
 
   const questions = [
