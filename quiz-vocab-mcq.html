@@ -411,7 +411,8 @@ window.onload = function () {
     document.getElementById('quiz-card').style.display = 'none';
     document.getElementById('score-card').style.display = 'block';
 
-    const pct = Math.round((score / questions.length) * 100);
+    const total = questions.length;
+    const pct = Math.round((score / total) * 100);
     document.getElementById('sc-num').textContent = score;
 
     let emoji, msg, sub;
@@ -424,9 +425,10 @@ window.onload = function () {
     document.getElementById('sc-msg').textContent   = msg;
     document.getElementById('sc-sub').textContent   = sub;
 
+    const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
     const pill = document.getElementById('save-pill');
     if (studentName !== 'Guest') {
-      db.ref(`scores/${studentName}/zone_vmcq`).set(score)
+      db.ref(`scores/${studentName}/zone_vmcq`).set({ score, total, pts: score * 10, stars, ts: Date.now() })
         .then(() => { pill.textContent = '✅ Score saved!'; pill.className = 'save-pill saved'; })
         .catch(() => { pill.textContent = '⚠️ Could not save — tell your teacher'; pill.className = 'save-pill err'; });
     } else {
