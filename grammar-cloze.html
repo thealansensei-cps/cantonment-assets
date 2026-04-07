@@ -153,10 +153,10 @@ function fbKey(s){return(s||'').replace(/[.#$[\]\/]/g,'_');}
 async function fbSaveScore(name,cls,zone,topic,score,total,stars){
   if(!name||!window._fbDb) return;
   return new Promise(function(resolve){
-    var pct=total>0?Math.round(score/total*100):0;
-    window._fbDb.ref('scores/'+fbKey(cls)+'/'+fbKey(name)+'/'+zone).set({
-      name:name,cls:cls,component:zone,topic:topic,
-      score:score,total:total,pct:pct,stars:stars,timestamp:Date.now()
+    var pts=score*10;
+    window._fbDb.ref('scores/'+fbKey(name)).update({
+      name:name,cls:cls,
+      ['zone_'+zone]:{score:score,total:total,pts:pts,stars:stars,topic:topic,ts:Date.now()}
     }).then(resolve).catch(function(e){console.warn('FB write:',e);resolve();});
   });
 }

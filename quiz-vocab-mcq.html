@@ -271,7 +271,7 @@
     <div class="score-sub" id="sc-sub"></div>
     <div class="save-pill" id="save-pill">Saving…</div>
     <br>
-    <button class="btn btn-ghost" onclick="history.back()">← Back to Island</button>
+    <button class="btn btn-ghost" onclick="goBackToIsland()">← Back to Island</button>
   </div>
 
 <script>
@@ -291,6 +291,7 @@ window.onload = function () {
 
   const params = new URLSearchParams(window.location.search);
   const studentName = params.get('hero') || params.get('name') || 'Guest';
+  const studentCls  = params.get('cls') || '';
   document.getElementById('student-name').textContent = studentName;
 
   const questions = [
@@ -346,7 +347,8 @@ window.onload = function () {
     }
   ];
 
-  let cur = 0, score = 0, answered = false;
+  let cur = 0, score = 0, total = 0, stars = 0, answered = false;
+  const wrongQs = [];
 
   function render() {
     const q = questions[cur];
@@ -391,6 +393,7 @@ window.onload = function () {
       btns[q.ans].classList.add('correct');
       document.getElementById('feedback').textContent = `❌ The correct answer is: (${q.ans + 1}) ${q.opts[q.ans]}`;
       document.getElementById('feedback').className = 'feedback wrong';
+      wrongQs.push({ q: q.text, src: q.src, chosen: q.opts[idx], correct: q.opts[q.ans] });
     }
     document.getElementById('next-btn').disabled = false;
   }
@@ -411,7 +414,7 @@ window.onload = function () {
     document.getElementById('quiz-card').style.display = 'none';
     document.getElementById('score-card').style.display = 'block';
 
-    const total = questions.length;
+    total = questions.length;
     const pct = Math.round((score / total) * 100);
     document.getElementById('sc-num').textContent = score;
 
@@ -425,15 +428,21 @@ window.onload = function () {
     document.getElementById('sc-msg').textContent   = msg;
     document.getElementById('sc-sub').textContent   = sub;
 
-    const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
+    stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
     const pill = document.getElementById('save-pill');
     if (studentName !== 'Guest') {
-      db.ref(`scores/${studentName}/zone_vmcq`).set({ score, total, pts: score * 10, stars, ts: Date.now() })
+      db.ref(`scores/${studentName}/zone_vmcq`).set({ score, total, pts: score * 10, stars, ts: Date.now(), name: studentName, cls: studentCls, wrongQs })
         .then(() => { pill.textContent = '✅ Score saved!'; pill.className = 'save-pill saved'; })
         .catch(() => { pill.textContent = '⚠️ Could not save — tell your teacher'; pill.className = 'save-pill err'; });
     } else {
       pill.textContent = 'Guest mode — score not saved';
     }
+  }
+
+  function goBackToIsland() {
+    window.location.href = 'student-portal.html?hero=' + encodeURIComponent(studentName)
+      + '&cls=' + encodeURIComponent(studentCls)
+      + '&zone=vmcq&score=' + score + '&total=' + total + '&stars=' + stars;
   }
 
   render();

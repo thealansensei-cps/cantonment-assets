@@ -372,6 +372,20 @@ footer {
 }
 .footer-refresh:hover { border-color: var(--text2); color: var(--text2); }
 
+/* ── Error Report ── */
+.err-block { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; margin-bottom:12px; overflow:hidden; }
+.err-block summary { padding:14px 18px; cursor:pointer; font-family:'Fredoka One',cursive; font-size:1rem; color:#fff; list-style:none; display:flex; align-items:center; gap:10px; }
+.err-block summary::-webkit-details-marker { display:none; }
+.err-block[open] summary { border-bottom:1px solid rgba(255,255,255,0.1); }
+.err-meta { font-family:'Nunito',sans-serif; font-size:12px; color:rgba(255,255,255,0.5); font-weight:600; margin-left:auto; }
+.err-table { width:100%; border-collapse:collapse; font-size:13px; }
+.err-table th { padding:8px 14px; text-align:left; color:rgba(255,255,255,0.5); font-size:11px; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid rgba(255,255,255,0.07); }
+.err-table td { padding:9px 14px; border-bottom:1px solid rgba(255,255,255,0.05); vertical-align:top; }
+.err-q { color:#fff; font-weight:700; max-width:280px; }
+.err-ans { color:#4ade80; }
+.err-count { color:#fbbf24; white-space:nowrap; }
+.err-names { color:rgba(255,255,255,0.5); font-size:12px; }
+
 @keyframes fadeUp {
   from { opacity:0; transform:translateY(14px); }
   to   { opacity:1; transform:translateY(0); }
@@ -444,6 +458,13 @@ footer {
     </div>
     <div class="top10-grid" id="top10Grid">
     </div>
+  </div>
+
+  <!-- ── Teacher Error Report ── -->
+  <div style="max-width:900px;margin:40px auto 0;padding:0 16px 40px">
+    <h2 style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.5rem;margin-bottom:16px">📋 Teacher Error Report</h2>
+    <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:20px">Most common wrong answers across the class for practice quizzes. Updates live.</p>
+    <div id="error-report-content"></div>
   </div>
 
 </main>
@@ -534,7 +555,11 @@ function loadData() {
           const score = d[zone].score || 0;
           const total = d[zone].total || 0;
           const pct   = total > 0 ? Math.round((score / total) * 100) : 0;
-          components[compKey] = { score, total, pct, stars: d[zone].stars || 0 };
+          components[compKey] = {
+            score, total, pct, stars: d[zone].stars || 0,
+            wrongQs: d[zone].wrongQs || [],
+            wrongBlanks: d[zone].wrongBlanks || []
+          };
           hasAny = true;
         }
       });
@@ -584,6 +609,7 @@ function processAndRender(sheetStudents) {
   renderClassRace(students);
   renderStars(students);
   renderTop10(students);
+  renderErrorReport(students);
 }
 
 // ── CLASS RACE ────────────────────────────────
@@ -737,6 +763,59 @@ function renderTop10(students) {
   let html = buildPanel(leftList, 1);
   if (rightList.length > 0) html += buildPanel(rightList, 6);
   el.innerHTML = html;
+}
+
+// ── TEACHER ERROR REPORT ─────────────────────
+function renderErrorReport(students) {
+  const el = document.getElementById('error-report-content');
+  if (!el) return;
+
+  const REPORT_ZONES = [
+    { key: 'gmcq',   label: '⚡ Grammar MCQ',    type: 'mcq'    },
+    { key: 'vmcq',   label: '📚 Vocab MCQ',       type: 'mcq'    },
+    { key: 'gcloze', label: '✏️ Grammar Cloze 2', type: 'blanks' },
+  ];
+
+  el.innerHTML = REPORT_ZONES.map(zone => {
+    // Collect all errors for this zone across all students
+    const freq = {};
+    let attempted = 0;
+    students.forEach(s => {
+      const comp = s.comps[zone.key];
+      if (!comp) return;
+      attempted++;
+      const errors = zone.type === 'mcq' ? (comp.wrongQs || []) : (comp.wrongBlanks || []);
+      errors.forEach(e => {
+        const key = zone.type === 'mcq' ? e.q : e.blank;
+        if (!freq[key]) freq[key] = { label: key, correct: e.correct, count: 0, students: [] };
+        freq[key].count++;
+        freq[key].students.push(s.name.split(' ')[0]);
+      });
+    });
+
+    const sorted = Object.values(freq).sort((a, b) => b.count - a.count).slice(0, 8);
+
+    if (sorted.length === 0) {
+      return `<details class="err-block"><summary>${zone.label} <span class="err-meta">${attempted} attempted — no errors recorded yet</span></summary></details>`;
+    }
+
+    const rows = sorted.map(e => `
+      <tr>
+        <td class="err-q">${e.label}</td>
+        <td class="err-ans">✅ ${e.correct}</td>
+        <td class="err-count"><strong>${e.count}</strong> / ${attempted}</td>
+        <td class="err-names">${e.students.slice(0,5).join(', ')}${e.students.length > 5 ? '…' : ''}</td>
+      </tr>`).join('');
+
+    return `
+      <details class="err-block" open>
+        <summary>${zone.label} <span class="err-meta">${attempted} students attempted · ${sorted.length} question(s) with errors</span></summary>
+        <table class="err-table">
+          <thead><tr><th>Question / Blank</th><th>Correct Answer</th><th>Errors</th><th>Who</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </details>`;
+  }).join('');
 }
 
 // ── AUTO REFRESH every 2 min ──────────────────
