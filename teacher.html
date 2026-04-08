@@ -321,6 +321,7 @@ tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
 
 <script>
 // ── Firebase ──────────────────────────────────────
+window.onload = function(){
 (function(){
   const cfg={
     apiKey:"AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",
@@ -335,6 +336,9 @@ tr:hover td{background:rgba(255,255,255,.03);cursor:pointer}
   window._db = firebase.database();
 })();
 
+// Close overlay on outside click
+document.getElementById('score-overlay').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+}; // end window.onload
 // ── Config ────────────────────────────────────────
 const TEACHER_PIN = '262626'; // change as needed — 6 digits
 
@@ -677,7 +681,6 @@ function relTime(ts){
 }
 
 // Close overlay on outside click
-g('score-overlay').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
 </script>
 </body>
 </html>
