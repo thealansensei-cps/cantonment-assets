@@ -373,7 +373,7 @@ const ROSTER = {
 let _scores   = {};   // { fbKey: { name, cls, zone_gc:{pts,score,total,stars,ts}, ... } }
 let _activeClass = 'All';
 let _modalStudent = null; // { name, fbKey }
-const fbKey = n => (n||'').replace(/[.#$[\]/\s]/g,'_');
+const fbKey = n => (n||'').replace(/[.#$[\]\/]/g,'_');
 const shortName = n => (n||'').split(',')[0].trim().split(' ').slice(0,2).join(' ');
 
 // ── Login ─────────────────────────────────────────
