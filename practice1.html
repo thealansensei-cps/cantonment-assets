@@ -586,10 +586,60 @@
   }
   .submit-open-btn:hover { background:#1d4ed8; }
   .submit-open-btn:disabled { background:var(--muted);cursor:default; }
+
+  /* ── SIDE-BY-SIDE LAYOUT ── */
+  .comp-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    align-items: start;
+  }
+  .comp-passage-col {
+    position: sticky;
+    top: 72px;          /* below sticky header */
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    padding: 20px 16px 20px 20px;
+    border-right: 2px solid var(--grey);
+    scroll-behavior: smooth;
+  }
+  .comp-passage-col::-webkit-scrollbar { width: 5px; }
+  .comp-passage-col::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .comp-questions-col {
+    padding: 20px 20px 20px 16px;
+    overflow-y: auto;
+  }
+  .comp-passage-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+  @media (max-width: 680px) {
+    .comp-layout { grid-template-columns: 1fr; }
+    .comp-passage-col {
+      position: static;
+      max-height: none;
+      border-right: none;
+      border-bottom: 2px solid var(--grey);
+      padding: 16px 16px 12px;
+    }
+    .comp-questions-col { padding: 16px; }
+  }
+
+  /* comp sections — remove inner section padding so layout fills edge-to-edge */
+  .section:has(.comp-layout) {
+    padding: 0;
+    overflow: hidden;
+  }
+  .section:has(.comp-layout) .section-header {
+    padding: 16px 24px;
+    margin-bottom: 0;
+    border-bottom: 2px solid var(--grey);
+  }
 </style>
-<!-- Firebase compat SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -922,33 +972,8 @@
     </div>
 
     <!-- Poster -->
-    <div class="visual-text">
-      <div class="vt-title">🌱 1-DAY URBAN FARMS TOUR</div>
-      <div class="vt-org">Organised by Riverview Community Club</div>
-      <p style="font-size:0.85rem;line-height:1.65;margin-bottom:10px;">The number of urban farms in Singapore has steadily increased as more people preferred to use local produce and fresh ingredients for cooking. Urban farming includes micro farms at home and on rooftop plots. Join us for one such tour now!</p>
-      <div class="vt-info">
-        <div class="vt-info-item"><span class="vt-info-label">📅 Date:</span> 26 November 2023</div>
-        <div class="vt-info-item"><span class="vt-info-label">⏰ Time:</span> 9 a.m. to 5 p.m.</div>
-        <div class="vt-info-item"><span class="vt-info-label">💰 Cost:</span> $30/person (transport + lunch)</div>
-        <div class="vt-info-item"><span class="vt-info-label">🎟 Early bird:</span> $5 off if registered before 10 Nov</div>
-      </div>
-      <div class="vt-grid" style="margin-top:14px;">
-        <div class="farm-card">
-          <div class="farm-name">🐐 Willy Goat Farm</div>
-          <div class="farm-addr">24, Sunset Avenue 4</div>
-          <div class="farm-detail">Singapore's only goat farm (~1000 goats). Pet &amp; milk goats, make ice cream, buy goat milk products.</div>
-        </div>
-        <div class="farm-card">
-          <div class="farm-name">🌿 Edible City Farm</div>
-          <div class="farm-addr">34, City Road</div>
-          <div class="farm-detail">High-tech indoor gardening with grow lights. Learn to grow crops, create art with leaves &amp; twigs, make a salad.</div>
-        </div>
-        <div class="farm-card">
-          <div class="farm-name">🏗 High Farm</div>
-          <div class="farm-addr">Orchard Lane, multi-storey carpark</div>
-          <div class="farm-detail">Best soil, minimal electricity &amp; water. Clean farming — no pesticides used.</div>
-        </div>
-      </div>
+    <div style="margin-bottom:20px;">
+      <img src="https://raw.githubusercontent.com/thealansensei-cps/cantonment-assets/main/visual%20text%202023%20SA2.png" alt="Visual Text: 1-Day Urban Farms Tour poster" style="width:100%;border-radius:12px;border:2px solid #d1fae5;display:block;">
     </div>
 
     <!-- Q17 -->
@@ -1189,7 +1214,11 @@
       </div>
     </div>
 
-    <!-- Passage F -->
+    <!-- Side-by-side layout -->
+    <div class="comp-layout">
+      <div class="comp-passage-col">
+        <div class="comp-passage-label">📖 Passage — refer as you answer</div>
+        <!-- Passage F -->
     <div class="passage">
       <div class="passage-lines">
         <div class="passage-line"><span class="line-num">1</span><span class="line-text">Father's Day was just around the corner. Ben did not know what to get for his Dad. Last year, Ben made for him a coupon book. This year, Ben wanted to do something different.</span></div>
@@ -1201,8 +1230,9 @@
         <div class="passage-line"><span class="line-num">24</span><span class="line-text">"I'll be sure to take this tie off when I have some soup," Dad said and they both laughed.</span></div>
       </div>
     </div>
-
-    <!-- Q33 -->
+      </div>
+      <div class="comp-questions-col">
+        <!-- Q33 -->
     <div class="question" id="q33">
       <div class="q-number">Q33 [1m]</div>
       <p class="q-text">When Dad accidentally dipped his tie into the soup, he felt ___________.</p>
@@ -1299,7 +1329,8 @@
     </div>
 
   </div><!-- end section F -->
-
+      </div>
+    </div>
   </div><!-- end secF inner -->
   <div class="sec-done-banner" id="done-F">✅ Section F complete! Head back to choose your next section.</div>
   </div><!-- end secF view -->
@@ -1316,7 +1347,11 @@
       </div>
     </div>
 
-    <!-- Passage G -->
+    <!-- Side-by-side layout -->
+    <div class="comp-layout">
+      <div class="comp-passage-col">
+        <div class="comp-passage-label">📖 Passage — refer as you answer</div>
+        <!-- Passage G -->
     <div class="passage">
       <div class="passage-lines">
         <div class="passage-line"><span class="line-num">1</span><span class="line-text"><em>Bump! Bump! Scratch!</em> It was midnight and something was making those scary sounds. Ken looked around his room. The cupboard door shook as something was banging on it from the inside.</span></div>
@@ -1330,8 +1365,9 @@
         <div class="passage-line"><span class="line-num">28</span><span class="line-text">"Poor Ginger," Ken sighed, "you were probably more scared than I was."</span></div>
       </div>
     </div>
-
-    <!-- Q40 -->
+      </div>
+      <div class="comp-questions-col">
+        <!-- Q40 -->
     <div class="question" id="q40">
       <div class="q-number">Q40 [1m]</div>
       <p class="q-text">Why did Ken run into his brother's room?</p>
@@ -1492,7 +1528,8 @@
     </div>
 
   </div><!-- end section G -->
-
+      </div>
+    </div>
   </div><!-- end secG inner -->
   <div class="sec-done-banner" id="done-G">✅ Section G complete! Head back to choose your next section.</div>
   </div><!-- end secG view -->
@@ -1911,7 +1948,7 @@ function checkMCQ(qid, chosen, correct, btn) {
     fb.className = 'feedback show ' + (isCorrect ? 'correct' : 'wrong');
   }
   const sec = getSectionForQ(qid);
-  if (sec) { const l=_secLetter(sec); sectionScores[l]+=isCorrect?1:0; sectionTotals[l]+=1; checkSectionDone(sec); }
+  if (sec) checkSectionDone(sec);
 }
 
 // ── TRUE/FALSE HANDLER ──
@@ -1951,7 +1988,7 @@ function checkTF(qid, chosen, correctBool, btn) {
     fb.className = 'feedback show ' + (isCorrect ? 'correct' : 'wrong');
   }
   const sec = getSectionForQ(qid);
-  if (sec) { const l=_secLetter(sec); sectionScores[l]+=isCorrect?1:0; sectionTotals[l]+=1; checkSectionDone(sec); }
+  if (sec) checkSectionDone(sec);
 }
 
 // ── GRAMMAR CLOZE P1 ──
@@ -1981,7 +2018,6 @@ function checkClozeP1() {
   fb.innerHTML = html;
   fb.className = 'feedback show ' + (score === 4 ? 'correct' : 'wrong');
   updateScore(score, 4);
-  sectionScores.D += score; sectionTotals.D += 4;
   // Disable all inputs
   ['c21','c22','c23','c24'].forEach(id => { document.getElementById(id).disabled = true; });
   document.querySelector('[onclick="checkClozeP1()"]').disabled = true;
@@ -2016,7 +2052,6 @@ function checkClozeP2() {
   fb.innerHTML = html;
   fb.className = 'feedback show ' + (score === 4 ? 'correct' : 'wrong');
   updateScore(score, 4);
-  sectionScores.D += score; sectionTotals.D += 4;
   // Disable selects
   ['c25','c26','c27','c28'].forEach(id => { document.getElementById(id).disabled = true; });
   document.querySelector('[onclick="checkClozeP2()"]').disabled = true;
@@ -2057,7 +2092,6 @@ function checkSeq37() {
     fb.className = 'feedback show wrong';
     updateScore(false);
   }
-  sectionScores.F += correct ? 1 : 0; sectionTotals.F += 1;
   checkSectionDone('secF');
 }
 
@@ -2084,7 +2118,6 @@ function checkSeq46() {
     fb.className = 'feedback show wrong';
     updateScore(false);
   }
-  sectionScores.G += correct ? 1 : 0; sectionTotals.G += 1;
   checkSectionDone('secG');
 }
 
@@ -2112,34 +2145,8 @@ function submitOpenEnded(qid, secId, aid) {
 }
 
 // ── SCORE TRACKING ──
-// ── URL params ──
-const _p1Params = new URLSearchParams(window.location.search);
-const _p1Name = _p1Params.get('hero') || _p1Params.get('name') || 'Guest';
-const _p1Cls  = _p1Params.get('cls') || '';
-
-function fbKey(s){ return (s||'').replace(/[.#$[\]\/\s]/g,'_'); }
-
-// ── Firebase init ──
-(function(){
-  const cfg = {
-    apiKey: "AIzaSyARwxGCCLctZLL64iQDlIOerRBdSf_Avfo",
-    authDomain: "english-island-cps.firebaseapp.com",
-    databaseURL: "https://english-island-cps-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "english-island-cps",
-    storageBucket: "english-island-cps.firebasestorage.app",
-    messagingSenderId: "892743482834",
-    appId: "1:892743482834:web:6705bc3e3bc832cf749c0b"
-  };
-  if (!firebase.apps.length) firebase.initializeApp(cfg);
-  window._p1Db = firebase.database();
-})();
-
 let autoScore = 0;
 let autoAnswered = 0;
-
-const sectionScores = {A:0, B:0, C:0, D:0, E:0, F:0, G:0};
-const sectionTotals = {A:0, B:0, C:0, D:0, E:0, F:0, G:0};
-function _secLetter(secId){ return (secId||'').replace('sec',''); }
 
 function updateScore(correct, outOf) {
   if (outOf) {
@@ -2166,29 +2173,6 @@ function showFinal() {
   else msg = '💪 Keep practising! Read through all the grammar rules carefully and try the paper again. Every mistake is a learning opportunity!';
   document.getElementById('final-msg').textContent = msg;
   card.style.display = 'block';
-
-  // Save to Firebase if named student
-  if (_p1Name !== 'Guest' && window._p1Db) {
-    const stars = pct >= 80 ? 3 : pct >= 60 ? 2 : 1;
-    window._p1Db.ref('scores/' + fbKey(_p1Name) + '/zone_prac1').set({
-      score: autoScore, total: autoAnswered, pts: autoScore * 10,
-      stars, ts: Date.now(), name: _p1Name, cls: _p1Cls,
-      secA: { score: sectionScores.A, total: sectionTotals.A },
-      secB: { score: sectionScores.B, total: sectionTotals.B },
-      secC: { score: sectionScores.C, total: sectionTotals.C },
-      secD: { score: sectionScores.D, total: sectionTotals.D },
-      secF: { score: sectionScores.F, total: sectionTotals.F },
-      secG: { score: sectionScores.G, total: sectionTotals.G }
-    });
-  }
-}
-
-function goBackToIsland() {
-  const pct = autoAnswered > 0 ? Math.round((autoScore / autoAnswered) * 100) : 0;
-  const stars = pct >= 80 ? 3 : pct >= 60 ? 2 : 1;
-  window.location.href = 'student-portal.html?hero=' + encodeURIComponent(_p1Name)
-    + '&cls=' + encodeURIComponent(_p1Cls)
-    + '&zone=prac1&score=' + autoScore + '&total=' + autoAnswered + '&stars=' + stars;
 }
 
 // ── INIT: lock all model answer buttons ──
@@ -2209,12 +2193,8 @@ window.addEventListener('DOMContentLoaded', function() {
   <div class="final-score-num" id="final-score-num">0</div>
   <div class="final-score-label">out of <span id="final-total-num">28</span> auto-marked questions</div>
   <div class="final-msg" id="final-msg"></div>
-  <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
-    <button onclick="document.getElementById('final-card').style.display='none'"
-      style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:8px 20px;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;">Close</button>
-    <button onclick="goBackToIsland()"
-      style="background:#2563eb;border:none;color:white;border-radius:8px;padding:8px 20px;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;">🏝️ Back to Island</button>
-  </div>
+  <button onclick="document.getElementById('final-card').style.display='none'"
+    style="margin-top:16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:8px 20px;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;">Close</button>
 </div>
 </body>
 </html>
