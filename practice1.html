@@ -639,6 +639,132 @@
     margin-bottom: 0;
     border-bottom: 2px solid var(--grey);
   }
+
+  /* ── ISLAND RETURN BUTTON ── */
+  .island-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 13px;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    box-shadow: 0 2px 6px rgba(2,132,199,0.35);
+  }
+  .island-btn:hover { background: linear-gradient(135deg, #0284c7, #0369a1); transform: translateY(-1px); }
+
+  /* ── CONFIRM MODAL ── */
+  .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .confirm-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+  .confirm-modal {
+    background: white;
+    border-radius: 20px;
+    padding: 32px 28px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .confirm-island-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .confirm-modal h2 {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .confirm-modal p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .confirm-score-box {
+    background: var(--sky);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    border: 1px solid #bfdbfe;
+  }
+  .confirm-score-box .score-big {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1;
+  }
+  .confirm-score-box .score-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .confirm-incomplete-warn {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .confirm-incomplete-warn.show { display: block; }
+  .confirm-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .confirm-cancel-btn {
+    padding: 11px 16px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--grey);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .confirm-cancel-btn:hover { border-color: var(--blue); background: var(--sky); }
+  .confirm-go-btn {
+    padding: 11px 16px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0ea5e9, #0369a1);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 3px 10px rgba(3,105,161,0.3);
+  }
+  .confirm-go-btn:hover { background: linear-gradient(135deg, #0284c7, #075985); }
+
 </style>
 </head>
 <body>
@@ -646,6 +772,9 @@
 <div class="header">
   <div class="header-inner">
     <div class="header-left">
+      <button class="island-btn" onclick="showIslandConfirm()" title="Return to Island">
+        🏝️ Island
+      </button>
       <div class="header-logo">📝</div>
       <div>
         <div class="header-title">Practice Paper 1</div>
@@ -654,7 +783,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <button id="home-btn" onclick="goHome()" style="display:none;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:5px 12px;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;cursor:pointer;">🏠 Sections</button>
-      <div class="score-chip">Score: <span id="live-score">0</span> / <span id="live-total">0</span></div>
+      <div class="score-chip">Score: <span id="live-score">0</span> / <span id="live-total">0</span> <span style="font-size:0.72rem;opacity:0.7;">marks</span></div>
     </div>
   </div>
   <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
@@ -1963,7 +2092,11 @@ function checkTF(qid, chosen, correctBool, btn) {
   const isCorrect = correctBool;
   btn.classList.add(isCorrect ? 'correct' : 'wrong');
 
-  updateScore(isCorrect);
+  // Q42/43: mark requires BOTH correct T/F AND correct reason (mark scheme rule)
+  // So we don't auto-count those in the score — they're self-marked via the reason
+  if (qid !== 'q42' && qid !== 'q43') {
+    updateScore(isCorrect);
+  }
 
   const fb = document.getElementById(qid + '-fb');
   if (!fb) return;
@@ -2145,33 +2278,50 @@ function submitOpenEnded(qid, secId, aid) {
 }
 
 // ── SCORE TRACKING ──
-let autoScore = 0;
-let autoAnswered = 0;
+// Total paper marks: A(10) + B(6) + C(4) + D(8) + E(4) + F(8) + G(10) = 50
+// Auto-gradeable: A(10) + B(6) + C(4) + D(8) + F-auto(4: Q33,34,35,36) + F-seq(1: Q37) + G-auto(3: Q42,43,46) = 36
+// Open-ended (self-mark): E(4) + F-open(2: Q38,39) + G-open(5: Q40,41,44,45,47) = 11... but we track attempted
+let autoScore = 0;     // marks correctly answered (auto-graded only)
+let autoTotal = 0;     // marks attempted so far (auto-graded)
+let clozeScore = 0;    // cloze marks earned (D: 8 marks)
+let clozeTotal = 0;    // cloze marks attempted
 
 function updateScore(correct, outOf) {
-  if (outOf) {
-    // Batch update for cloze (don't count toward button total)
-    return;
+  if (outOf !== undefined) {
+    // Batch update for cloze — score = number correct out of outOf
+    clozeScore += correct;    // correct = number right
+    clozeTotal += outOf;      // outOf = marks in this passage (4)
+  } else {
+    // Single question (MCQ, TF, sequence)
+    autoTotal++;
+    if (correct) autoScore++;
   }
-  autoAnswered++;
-  if (correct) autoScore++;
-  document.getElementById('live-score').textContent = autoScore;
-  document.getElementById('live-total').textContent = autoAnswered;
-  const pct = (autoAnswered / 28) * 100;
+  refreshScoreDisplay();
+}
+
+function refreshScoreDisplay() {
+  const earned = autoScore + clozeScore;
+  const attempted = autoTotal + clozeTotal;
+  document.getElementById('live-score').textContent = earned;
+  document.getElementById('live-total').textContent = attempted;
+  // Progress against full 50-mark paper (auto-gradeable portion = 36 marks, roughly)
+  const pct = (attempted / 34) * 100;
   document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
 }
 
 function showFinal() {
   const card = document.getElementById('final-card');
-  document.getElementById('final-score-num').textContent = autoScore;
-  document.getElementById('final-total-num').textContent = autoAnswered;
-  const pct = autoAnswered > 0 ? Math.round((autoScore / autoAnswered) * 100) : 0;
+  const earned = autoScore + clozeScore;
+  const attempted = autoTotal + clozeTotal;
+  document.getElementById('final-score-num').textContent = earned;
+  document.getElementById('final-total-num').textContent = attempted;
+  const pct = attempted > 0 ? Math.round((earned / attempted) * 100) : 0;
   let msg = '';
   if (pct >= 90) msg = '🌟 Outstanding! You have an excellent command of English grammar and vocabulary. Keep it up!';
   else if (pct >= 75) msg = '👏 Great work! You are doing well. Review the questions you missed and pay attention to the grammar rules.';
   else if (pct >= 60) msg = '📖 Good effort! Focus on the feedback and grammar rules for the questions you got wrong. You are getting there!';
   else msg = '💪 Keep practising! Read through all the grammar rules carefully and try the paper again. Every mistake is a learning opportunity!';
-  document.getElementById('final-msg').textContent = msg;
+  document.getElementById('final-msg').innerHTML = msg + (attempted < 36 ? '<br><br><span style="font-size:0.85rem;color:#bfdbfe;">Note: Open-ended questions (Sections E, F, G) are self-marked using the model answers.</span>' : '');
   card.style.display = 'block';
 }
 
@@ -2184,6 +2334,44 @@ window.addEventListener('DOMContentLoaded', function() {
   // Ensure home is shown
   goHome();
 });
+
+// ── ISLAND RETURN ──
+function showIslandConfirm() {
+  const earned = autoScore + clozeScore;
+  const attempted = autoTotal + clozeTotal;
+  document.getElementById('confirm-score').textContent = earned;
+  document.getElementById('confirm-total').textContent = attempted;
+
+  const sections = ['secA','secB','secC','secD','secE','secF','secG'];
+  const incomplete = sections.filter(s => !sectionDone[s]).length;
+  const warnEl = document.getElementById('confirm-warn');
+  document.getElementById('confirm-incomplete-count').textContent = incomplete;
+  if (incomplete > 0) {
+    warnEl.classList.add('show');
+  } else {
+    warnEl.classList.remove('show');
+  }
+  document.getElementById('island-confirm-overlay').classList.add('show');
+}
+
+function closeIslandConfirm() {
+  document.getElementById('island-confirm-overlay').classList.remove('show');
+}
+
+function goToIsland() {
+  window.location.href = 'https://thealansensei-cps.github.io/cantonment-assets/student-portal.html';
+}
+
+// Close modal on backdrop click
+document.addEventListener('DOMContentLoaded', function() {
+  const overlay = document.getElementById('island-confirm-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeIslandConfirm();
+    });
+  }
+});
+
 </script>
 
 <!-- FINAL SCORE OVERLAY -->
@@ -2191,10 +2379,34 @@ window.addEventListener('DOMContentLoaded', function() {
   <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:-1;" onclick="document.getElementById('final-card').style.display='none';"></div>
   <div style="font-size:2rem;margin-bottom:8px;">🎉</div>
   <div class="final-score-num" id="final-score-num">0</div>
-  <div class="final-score-label">out of <span id="final-total-num">28</span> auto-marked questions</div>
+  <div class="final-score-label">marks out of <span id="final-total-num">36</span> auto-graded <span style="font-size:0.8rem;">(Sections A–D, auto-marked Qs in F &amp; G)</span></div>
   <div class="final-msg" id="final-msg"></div>
   <button onclick="document.getElementById('final-card').style.display='none'"
     style="margin-top:16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:8px 20px;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;">Close</button>
 </div>
+
+<!-- ═══ ISLAND RETURN CONFIRM MODAL ═══ -->
+<div class="confirm-overlay" id="island-confirm-overlay">
+  <div class="confirm-modal">
+    <span class="confirm-island-icon">🏝️</span>
+    <h2>Return to English Island?</h2>
+    <p>Your answers cannot be changed once you leave. Make sure you have completed all sections before going back.</p>
+
+    <div class="confirm-score-box">
+      <div class="score-big"><span id="confirm-score">0</span> / <span id="confirm-total">0</span></div>
+      <div class="score-label">auto-graded marks earned so far</div>
+    </div>
+
+    <div class="confirm-incomplete-warn" id="confirm-warn">
+      ⚠️ You still have <span id="confirm-incomplete-count">0</span> section(s) incomplete. Are you sure you want to leave?
+    </div>
+
+    <div class="confirm-btns">
+      <button class="confirm-cancel-btn" onclick="closeIslandConfirm()">✏️ Keep Working</button>
+      <button class="confirm-go-btn" onclick="goToIsland()">🏝️ Yes, Return!</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
