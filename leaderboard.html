@@ -492,7 +492,7 @@ const db = firebase.database();
 
 const CLASS_STUDENTS = {"4 Care":["AARON JAMES MC HUGH","AXTON SHANG FUSHENG","AYDEN BIN AZAHAR","AYSHA ALIYA AZRYN","CANDICE HO ZIHAN","CHUA SHAN TING, CELESTE","CLARA LILLIAN PEREIRA","DAI JIATAI","DAO TUAN HUY HARVEY","DAPHNE ALEXANDRA YI TING LO","ELIZABETH SUBANEKNAN","FARAZ ARSHAD RAMADHAN ARDIWINATA","GOSWAMI AMAY","HO DING KANG, EDWARD","JAYDEN GOPU LEE JIE EN","MARCUS LIGTENBERG","MASONN KOH SHAO YU","MAXENCE GARNIER","MUHAMMAD UMAR BIN AZIZ AHMAD","NG ZI HAO JAMESON","RANASINGHE SIENNA TARYN","SAHANA SAFRIN BINTE MOHAMED ARIFF","SARIKA SANMAN SHETTY","SIM EN XUAN, JERINA","SKYLER TAN GUAN MIN","SUNG SEBASTIAN","SYURAHBIL BIN SHAHRILL","THUT LYAN MOE","VIKRANT KHAITAN","WONG YUU MINN JULIAN","YIU CHUN HEI KADEN"],"4 Graciousness":["AENI AQISYA BINTE MUHAMMAD AEWANDA","AGARWAL NISHANT","ARIDASU AASHINYA SRI","AVALYN ONG HUI QI","CHEONG YONG JUN WESLEY","DOMINIC FONG YU BIN","ERIC HEIN HTET KYAW","GAZI AVERO","GLENDA LEE EN LE","GOH KHUN LEE","GU EVEREST","HANNAH LOH YU EN","HU YUYANG","JAKE ARJUN THYAGARAJAN","KOJIMA SHINTARO","LIAO YUQUAN, LANCE","LUCAS CUI ZHENGPING","MOHAMED NIZAMUDEEN ZAAFIRA","MUHAMMAD ADRYAN BIN MOHAMED IRWAN","NAKANOSONO TAIGA","NGO BAO NAM","OLIVER JOSEPH LOWE","PASTRANA MARC GABRIEL HIDALGO","PATEL VIHAAN KIRAN","SCHLAGER LEON ALEXANDER","SHAZRIL BIN MUHAMMAD NIZAM","SOPHIE LOUISE HEMMINGS","TAN JING EN REX","TAN JUN WEI","WANG MANTING","WILSON PETER HAN-WEN","HAYLEY KAYLEIGH LONGDEN"],"4 Resilience":["AGRAWAL AMAY","AHMAD HANIF BIN RASHID","ALESSA HANA WINATA","ASHWIN PARTHI","BHONE THUTA PAING","CAYVIER KOH ZHENG JIE","CHAN YEN LING ISABELLE","DASHIELL ONG YU HAN","DAYA KAUR D/O SARBJIT SINGH","EE JUN QI, TRISTAN","ELIYA'NURSHEZA BINTE MUHAMMAD HAZMAN","GAGANPREET KAUR D/O HARPRIT SINGH SIDHU","HE CHUNQI","ISAAC LIN QIXIANG","JADEN FOO YAN KAI","JAYDEN TEE TZU LE","LIM SERIN","LUCAS LOW","MUHAMMAD ELIAS AASYAHFI BIN MUHAMMAD FARHAN","MURALIKRISHNAN HARISHWARAMOORTHY","NAFIHA JEHAAN","NGUYEN VI","PANCHAPAGESAN SUDHARSHAN","RIHAAN SARKAR","SHEN ZHIYUAN","SIDDHARTH PANTA","SIM GEK BOON THEOPHANIE","THONGLUE CHANAPAT","XIAO YA NING JOANNE","XU XIAOCHEN","ZOEY LI","ZAIM AKILI IYLIA"],"4 Respect":["AGARWAL RAMANSH HARSH","ARUL LOURDURAJ STEEVEJOE","BENJAMIN WONG GUANLIN","DU ZHENGHENG","HAMZAH BIN BACHTIAR","JADE LOUISE BOISSEAU","JAKE ANG JIA LE","JIA ZEKAI","JULIA THANT SIN","KADEN CHUA DE RONG","LAURYN GRACE OVERY","LEE HAJUN","LEE SEUNG WOO","LIN MU-CHEN","LIN XUAN YING KARISA","MALHOTRA AVA","MATHILDA TAY","MUHAMMAD DAMIER SKY BIN MUHAMMAD SHAHRUL AMEEN","NAGUULAN RAVISHANKAR","NUR UFAIRAH PUTRI PUTRA ALFIAN","ONG WEI TING CHLOE","PHAM MINH KHANH CHI","SHAYEIN ARUSHA CUACA","SHIVANSH JAIN","TAY ZHI YUAN, ERIC","THADANI AHAAN ROHIT","TIO WEN LE","TOH JING XUAN JOSLYN","WANG HAIGE","WARREN CHEN BOYUAN","WISUTTI JOAQUIN"],"4 Integrity":["ALEEYA ARTABIA PRASETYOWIBOWO","CHUNG YUE EN, GUINEVERE","COLLIN ALICE DOROTHY MARIE","DANIEL CAI JIEHAN","DAVE LIM DOW FENG","GUNERATNE BRYN TULLIUS CHAN SHUN","JEONG ICHAN","JOSHUA CHONG KWOK ERN","KOH KAY XUAN IRIS","LEE EN HUI","LIM DURIN","LIM HUI YU","MAK GUAN XUAN","MARTIN NEDVED","MUHAMMAD UBAY HYDE BIN MUHAMMAD ALIFFIZWAN","NAFISAH RANIAH BINTE SHAHRIR","NAVEEN SINGH DHILLON S/O JASMINDER SINGH DHILLON","NIKOLA STOJANAC","NOAH LAKRA","NUR NAURA AALIYAH BINTE MUHAMMAD AFIQ","OMKAR VAIDHYA RAMASWAMI","ONG YAN ZHE, JERRIC","PUTRI NUR IMELDA BINTE MUHAMMAD IKHMAL","SADIKOT RIYAAZ MUBIN","SEOW YI XUN, MATTHEW","SHANNAN LIM","SI RUISHEN","SIM EN WEI, JAVION","SOFIA MAIRA BINTE MOHAMAD SHAFIEE","SONG SHOUFU","SOPHIE ANNE COPLAND","SYED AHMED HARRIS MOHAMED AFFAN KABEER","XU ZIMO","YUKI ITO"]};
 
-const COMP_KEYS  = ['rs','syn','vt','gc','sp','gmcq','vmcq','gcloze'];
+const COMP_KEYS  = ['rs','syn','vt','gc','sp','gmcq','vmcq','gcloze','prac1'];
 const CLASS_CONFIG = {
   '4 Care':        { color: '#FF5A3C', short: 'Care',  glow: 'rgba(255,90,60,0.35)'  },
   '4 Graciousness':{ color: '#3CB8FF', short: 'Grace', glow: 'rgba(60,184,255,0.35)' },
@@ -535,7 +535,8 @@ function loadData() {
     zone_syn:   'syn',
     zone_gmcq:  'gmcq',
     zone_vmcq:  'vmcq',
-    zone_gcloze:'gcloze'
+    zone_gcloze:'gcloze',
+    zone_prac1: 'prac1'
   };
 
   db.ref('scores').once('value', snap => {
@@ -558,7 +559,13 @@ function loadData() {
           components[compKey] = {
             score, total, pct, stars: d[zone].stars || 0,
             wrongQs: d[zone].wrongQs || [],
-            wrongBlanks: d[zone].wrongBlanks || []
+            wrongBlanks: d[zone].wrongBlanks || [],
+            secA: d[zone].secA || null,
+            secB: d[zone].secB || null,
+            secC: d[zone].secC || null,
+            secD: d[zone].secD || null,
+            secF: d[zone].secF || null,
+            secG: d[zone].secG || null
           };
           hasAny = true;
         }
@@ -776,6 +783,56 @@ function renderErrorReport(students) {
     { key: 'gcloze', label: '✏️ Grammar Cloze 2', type: 'blanks' },
   ];
 
+  // ── Practice Paper 1 section breakdown ──
+  const PRAC1_SECTIONS = [
+    { key: 'secA', label: 'Section A — Grammar MCQ (Q1–10)',     total: 10 },
+    { key: 'secB', label: 'Section B — Vocabulary MCQ (Q11–16)', total: 6  },
+    { key: 'secC', label: 'Section C — Visual Text (Q17–20)',     total: 4  },
+    { key: 'secD', label: 'Section D — Grammar Cloze (Q21–28)',   total: 8  },
+    { key: 'secF', label: 'Section F — Comprehension 1 (Q33–37)', total: 5  },
+    { key: 'secG', label: 'Section G — Comprehension 2 (Q42–46)', total: 3  },
+  ];
+  const prac1Students = students.filter(s => s.comps.prac1);
+  let prac1Html = '';
+  if (prac1Students.length > 0) {
+    const secRows = PRAC1_SECTIONS.map(sec => {
+      const attempted = prac1Students.filter(s => s.comps.prac1[sec.key] && s.comps.prac1[sec.key].total > 0).length;
+      if (attempted === 0) return '';
+      const avg = attempted > 0
+        ? (prac1Students.reduce((sum, s) => {
+            const d = s.comps.prac1[sec.key];
+            return sum + (d && d.total > 0 ? Math.round(d.score / d.total * 100) : 0);
+          }, 0) / attempted).toFixed(0)
+        : 0;
+      const weak = prac1Students
+        .filter(s => { const d = s.comps.prac1[sec.key]; return d && d.total > 0 && (d.score / d.total) < 0.6; })
+        .map(s => s.name.split(' ')[0]).join(', ');
+      const barW = Math.min(100, avg);
+      const col = avg >= 75 ? '#22c55e' : avg >= 50 ? '#f59e0b' : '#ef4444';
+      return `<tr>
+        <td style="font-size:11px;font-weight:700;padding:7px 10px">${sec.label}</td>
+        <td style="padding:7px 10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:8px;background:rgba(255,255,255,.1);border-radius:4px">
+              <div style="width:${barW}%;height:100%;background:${col};border-radius:4px"></div>
+            </div>
+            <span style="font-size:11px;font-weight:800;color:${col};width:38px">${avg}%</span>
+          </div>
+        </td>
+        <td style="font-size:10px;color:rgba(255,255,255,.5);padding:7px 10px">${attempted} students</td>
+        <td style="font-size:10px;color:#fca5a5;padding:7px 10px">${weak || '—'}</td>
+      </tr>`;
+    }).join('');
+    prac1Html = `
+      <details class="err-block" open>
+        <summary>📝 Practice Paper 1 — Section Breakdown <span class="err-meta">${prac1Students.length} students attempted</span></summary>
+        <table class="err-table">
+          <thead><tr><th>Section</th><th>Class Average</th><th>Attempted</th><th>Below 60% (needs support)</th></tr></thead>
+          <tbody>${secRows}</tbody>
+        </table>
+      </details>`;
+  }
+
   el.innerHTML = REPORT_ZONES.map(zone => {
     // Collect all errors for this zone across all students
     const freq = {};
@@ -815,7 +872,7 @@ function renderErrorReport(students) {
           <tbody>${rows}</tbody>
         </table>
       </details>`;
-  }).join('');
+  }).join('') + prac1Html;
 }
 
 // ── AUTO REFRESH every 2 min ──────────────────
