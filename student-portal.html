@@ -338,9 +338,38 @@ select:disabled{opacity:.4;cursor:not-allowed}
     </div>
     <div class="it-right">
       <div class="it-class" id="it-class">—</div>
+      <button class="btn-logout-sm" style="margin-right:6px" onclick="openChangePinModal()">🔑 PIN</button>
       <button class="btn-logout-sm" onclick="doLogout()">← Logout</button>
     </div>
   </div>
+
+<!-- Change PIN Modal -->
+<div id="change-pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:none;align-items:center;justify-content:center">
+  <div style="background:#1a2744;border-radius:20px;padding:28px 24px;width:90%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.5);color:#fff;font-family:'Nunito',sans-serif;">
+    <h3 style="font-size:1.1rem;font-weight:900;margin-bottom:16px">🔑 Change Your PIN</h3>
+    <div style="margin-bottom:12px">
+      <label style="font-size:.8rem;font-weight:700;color:#93c5fd">Current PIN</label>
+      <input id="cp-current" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
+        style="width:100%;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:1.1rem;font-family:'Nunito',sans-serif;letter-spacing:6px">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:.8rem;font-weight:700;color:#93c5fd">New PIN (4 digits)</label>
+      <input id="cp-new" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
+        style="width:100%;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:1.1rem;font-family:'Nunito',sans-serif;letter-spacing:6px">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:.8rem;font-weight:700;color:#93c5fd">Confirm New PIN</label>
+      <input id="cp-confirm" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
+        style="width:100%;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:1.1rem;font-family:'Nunito',sans-serif;letter-spacing:6px">
+    </div>
+    <div id="cp-err" style="display:none;color:#fca5a5;font-size:.8rem;margin-bottom:10px"></div>
+    <div id="cp-ok"  style="display:none;color:#6ee7b7;font-size:.85rem;margin-bottom:10px">✅ PIN changed successfully!</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closePinModal()" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:10px;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer">Cancel</button>
+      <button onclick="doChangePin()" style="flex:2;background:#2563eb;border:none;color:#fff;border-radius:10px;padding:10px;font-family:'Nunito',sans-serif;font-weight:900;cursor:pointer">Save New PIN</button>
+    </div>
+  </div>
+</div>
 
   <div class="island-grid">
 
@@ -1006,9 +1035,26 @@ function doLogin(){
   const cls=$('sel-class').value, name=$('sel-name').value, pin=getPin();
   if(!cls||!name){showErr('Please select your class and name.');return}
   if(pin.length<4){showErr('Please enter all 4 PIN digits.');return}
-  const correct=ROSTER[cls]?.[name];
-  if(!correct){showErr('Student not found.');return}
-  if(pin!==correct){showErr('Wrong PIN — check the hint!');shakePin();clearPin();$(pinIds[0]).focus();return}
+  const rosterPin=ROSTER[cls]?.[name];
+  if(!rosterPin){showErr('Student not found.');return}
+  // Check Firebase for custom PIN first, fall back to roster default
+  if(window._fbDb){
+    window._fbDb.ref('students/'+fbKey(name)+'/pin').once('value').then(snap=>{
+      const correctPin = snap.val() || rosterPin;
+      if(pin!==correctPin){showErr('Wrong PIN — try again!');shakePin();clearPin();$(pinIds[0]).focus();return}
+      _completeLogin(name,cls);
+    }).catch(()=>{
+      // Firebase unavailable — fall back to roster
+      if(pin!==rosterPin){showErr('Wrong PIN — check the hint!');shakePin();clearPin();$(pinIds[0]).focus();return}
+      _completeLogin(name,cls);
+    });
+  } else {
+    if(pin!==rosterPin){showErr('Wrong PIN — check the hint!');shakePin();clearPin();$(pinIds[0]).focus();return}
+    _completeLogin(name,cls);
+  }
+}
+
+function _completeLogin(name,cls){
   student={name,cls};
   try{sessionStorage.setItem('student',JSON.stringify({name,cls}))}catch(e){}
   // Record login timestamp to Firebase
@@ -1038,6 +1084,44 @@ function doLogout(){
   $('sel-class').value='';
   const sel=$('sel-name');sel.innerHTML='<option value="">— Select your name —</option>';sel.disabled=true;
   clearPin();hideErr();$('btn-login').disabled=true;
+}
+
+// ── Change PIN ──
+function openChangePinModal(){
+  const m=$('change-pin-modal');
+  m.style.display='flex';
+  $('cp-current').value='';$('cp-new').value='';$('cp-confirm').value='';
+  $('cp-err').style.display='none';$('cp-ok').style.display='none';
+  $('cp-current').focus();
+}
+function closePinModal(){
+  $('change-pin-modal').style.display='none';
+}
+function doChangePin(){
+  const cur=$('cp-current').value.trim();
+  const nw=$('cp-new').value.trim();
+  const cf=$('cp-confirm').value.trim();
+  const showCpErr=msg=>{$('cp-err').textContent=msg;$('cp-err').style.display='block'};
+  $('cp-err').style.display='none';$('cp-ok').style.display='none';
+  if(!/^\d{4}$/.test(cur)||!/^\d{4}$/.test(nw)||!/^\d{4}$/.test(cf)){showCpErr('All fields must be exactly 4 digits.');return}
+  if(nw!==cf){showCpErr('New PIN and confirmation do not match.');return}
+  const {name,cls}=student;
+  const rosterPin=ROSTER[cls]?.[name]||'';
+  const checkAndSave=(correctPin)=>{
+    if(cur!==correctPin){showCpErr('Current PIN is incorrect.');return}
+    if(nw===correctPin){showCpErr('New PIN must be different from current PIN.');return}
+    window._fbDb.ref('students/'+fbKey(name)+'/pin').set(nw).then(()=>{
+      $('cp-ok').style.display='block';
+      setTimeout(closePinModal,1800);
+    }).catch(()=>showCpErr('Could not save — check connection.'));
+  };
+  if(window._fbDb){
+    window._fbDb.ref('students/'+fbKey(name)+'/pin').once('value').then(snap=>{
+      checkAndSave(snap.val()||rosterPin);
+    }).catch(()=>checkAndSave(rosterPin));
+  } else {
+    showCpErr('No Firebase connection.');
+  }
 }
 
 function renderAll(){

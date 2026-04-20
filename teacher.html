@@ -518,7 +518,10 @@ function renderTable(rows){
       <td class="total-cell">${r.total}</td>
       <td style="color:var(--muted);font-size:10px">${lastStr}</td>
       <td>${statusBadge}</td>
-      <td><button style="background:rgba(46,125,212,.2);border:1px solid rgba(46,125,212,.4);color:#7ec8ff;font-size:9px;font-weight:800;padding:3px 8px;border-radius:6px;cursor:pointer;font-family:'Nunito',sans-serif" onclick="event.stopPropagation();openModal('${r.name}','${r.fbKey}')">✏️ Edit</button></td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        <button style="background:rgba(46,125,212,.2);border:1px solid rgba(46,125,212,.4);color:#7ec8ff;font-size:9px;font-weight:800;padding:3px 8px;border-radius:6px;cursor:pointer;font-family:'Nunito',sans-serif" onclick="event.stopPropagation();openModal('${r.name}','${r.fbKey}')">✏️ Edit</button>
+        <button style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.35);color:#fca5a5;font-size:9px;font-weight:800;padding:3px 8px;border-radius:6px;cursor:pointer;font-family:'Nunito',sans-serif" onclick="event.stopPropagation();resetStudentPin('${r.name}','${r.fbKey}')">🔄 Reset PIN</button>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -667,6 +670,16 @@ function saveScore(){
     setTimeout(closeModal, 1200);
   }).catch(err=>{
     msg.textContent = '❌ Error: '+err.message; msg.className='save-msg save-err';
+  });
+}
+
+// ── Reset student PIN to roster default ──
+function resetStudentPin(name, key) {
+  if (!confirm(`Reset PIN for ${name} to the default roster PIN?`)) return;
+  window._db.ref('students/' + key + '/pin').remove().then(() => {
+    alert(`✅ PIN for ${name} has been reset to the default.`);
+  }).catch(err => {
+    alert('❌ Could not reset PIN: ' + err.message);
   });
 }
 
