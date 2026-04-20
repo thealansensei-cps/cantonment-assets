@@ -765,6 +765,39 @@
   }
   .confirm-go-btn:hover { background: linear-gradient(135deg, #0284c7, #075985); }
 
+
+  /* ── CLOZE DROPDOWN (Passage 1) ── */
+  .cloze-select {
+    display: inline-block;
+    border: none;
+    border-bottom: 2px solid var(--navy);
+    border-radius: 4px 4px 0 0;
+    background: #eff6ff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 3px 6px;
+    color: var(--navy);
+    outline: none;
+    cursor: pointer;
+    vertical-align: bottom;
+    transition: border-color 0.15s, background 0.15s;
+    min-width: 110px;
+    -webkit-appearance: auto;
+  }
+  .cloze-select:focus { border-bottom-color: var(--blue); background: var(--sky); }
+  .cloze-select:disabled { cursor: default; }
+  .cloze-select.correct-ans {
+    border-bottom-color: var(--green);
+    background: var(--green-bg);
+    color: var(--green);
+  }
+  .cloze-select.wrong-ans {
+    border-bottom-color: var(--red);
+    background: var(--red-bg);
+    color: var(--red);
+  }
+
 </style>
 </head>
 <body>
@@ -1100,12 +1133,16 @@
       </div>
     </div>
 
-    <!-- Poster -->
-    <div style="margin-bottom:20px;">
-      <img src="https://raw.githubusercontent.com/thealansensei-cps/cantonment-assets/main/visual%20text%202023%20SA2.png" alt="Visual Text: 1-Day Urban Farms Tour poster" style="width:100%;border-radius:12px;border:2px solid #d1fae5;display:block;">
-    </div>
-
-    <!-- Q17 -->
+    <!-- Side-by-side layout -->
+    <div class="comp-layout">
+      <div class="comp-passage-col">
+        <div class="comp-passage-label">🖼️ Visual Text — refer as you answer</div>
+        <img src="https://raw.githubusercontent.com/thealansensei-cps/cantonment-assets/main/visual%20text%202023%20SA2.png"
+             alt="Visual Text: 1-Day Urban Farms Tour poster"
+             style="width:100%;border-radius:10px;border:2px solid #d1fae5;display:block;">
+      </div>
+      <div class="comp-questions-col">
+        <!-- Q17 -->
     <div class="question" id="q17">
       <div class="q-number">Q17</div>
       <p class="q-text">Which activities will participants take part in at <strong>Edible City Farm</strong>?</p>
@@ -1158,7 +1195,8 @@
     </div>
 
   </div><!-- end section C -->
-
+      </div>
+    </div>
   </div><!-- end secC inner -->
   <div class="sec-done-banner" id="done-C">✅ Section C complete! Head back to choose your next section.</div>
   </div><!-- end secC view -->
@@ -1187,13 +1225,45 @@
 
     <div class="cloze-box">
       My form teacher, Mr Tan, asked my class about our ambitions. He shared that when he was young,
-      <strong>(21)</strong> <input class="cloze-input" id="c21" placeholder="___" size="4">
+      <strong>(21)</strong> <select class="cloze-select" id="c21">
+        <option value="">— choose —</option>
+        <option value="he">A) he</option>
+        <option value="his">B) his</option>
+        <option value="our">C) our</option>
+        <option value="she">D) she</option>
+        <option value="their">E) their</option>
+        <option value="us">F) us</option>
+      </select>
       wanted to be a doctor. My twin sister, Mira, was good at dancing so
-      <strong>(22)</strong> <input class="cloze-input" id="c22" placeholder="___" size="4">
+      <strong>(22)</strong> <select class="cloze-select" id="c22">
+        <option value="">— choose —</option>
+        <option value="he">A) he</option>
+        <option value="his">B) his</option>
+        <option value="our">C) our</option>
+        <option value="she">D) she</option>
+        <option value="their">E) their</option>
+        <option value="us">F) us</option>
+      </select>
       wanted to be a performer. Matthew and Kamal, who loved showing off
-      <strong>(23)</strong> <input class="cloze-input" id="c23" placeholder="___" size="4">
+      <strong>(23)</strong> <select class="cloze-select" id="c23">
+        <option value="">— choose —</option>
+        <option value="he">A) he</option>
+        <option value="his">B) his</option>
+        <option value="our">C) our</option>
+        <option value="she">D) she</option>
+        <option value="their">E) their</option>
+        <option value="us">F) us</option>
+      </select>
       skills, wanted to be professional footballers. Mr Tan assured
-      <strong>(24)</strong> <input class="cloze-input" id="c24" placeholder="___" size="4">
+      <strong>(24)</strong> <select class="cloze-select" id="c24">
+        <option value="">— choose —</option>
+        <option value="he">A) he</option>
+        <option value="his">B) his</option>
+        <option value="our">C) our</option>
+        <option value="she">D) she</option>
+        <option value="their">E) their</option>
+        <option value="us">F) us</option>
+      </select>
       that we can achieve our ambitions as long as we work hard.
     </div>
     <button class="cloze-check-btn" onclick="checkClozeP1()">Check Passage 1</button>
@@ -2126,6 +2196,12 @@ function checkTF(qid, chosen, correctBool, btn) {
 
 // ── GRAMMAR CLOZE P1 ──
 function checkClozeP1() {
+  // Guard: all dropdowns must have a selection
+  const ids = ['c21','c22','c23','c24'];
+  if (ids.some(id => !document.getElementById(id).value)) {
+    alert('Please select an answer for all four blanks before checking.');
+    return;
+  }
   const answers = { c21: 'he', c22: 'she', c23: 'their', c24: 'us' };
   const explanations = {
     c21: 'Q21: <strong>he</strong> — Mr Tan is singular male (he). He wanted to be a doctor.',
@@ -2140,10 +2216,9 @@ function checkClozeP1() {
     const val = inp.value.trim().toLowerCase();
     const isCorrect = val === answers[id];
     if (isCorrect) score++;
-    inp.style.color = isCorrect ? 'var(--green)' : 'var(--red)';
-    inp.style.borderBottomColor = isCorrect ? 'var(--green)' : 'var(--red)';
+    inp.classList.add(isCorrect ? 'correct-ans' : 'wrong-ans');
     const num = id.replace('c','');
-    html += `<div style="margin-bottom:6px;">${explanations[id]} ${isCorrect ? '✅' : `❌ (you wrote: <em>${inp.value || '(blank)'}</em>)`}</div>`;
+    html += `<div style="margin-bottom:6px;">${explanations[id]} ${isCorrect ? '✅' : `❌ (you chose: <em>${inp.value || '(nothing selected)'}</em>)`}</div>`;
   });
   html += `<div style="margin-top:8px;font-weight:800;">Score: ${score}/4</div>`;
   html += '<div class="rule-box" style="margin-top:8px;"><div class="rule-label">📌 Rule – Pronouns</div>Subject: He/She/They | Object: him/her/them/<strong>us</strong> | Possessive: his/her/their/our. Match pronoun to noun in number (singular/plural) and gender (male/female).</div>';
@@ -2152,7 +2227,11 @@ function checkClozeP1() {
   fb.className = 'feedback show ' + (score === 4 ? 'correct' : 'wrong');
   updateScore(score, 4);
   // Disable all inputs
-  ['c21','c22','c23','c24'].forEach(id => { document.getElementById(id).disabled = true; });
+  // Disable dropdowns and colour-code them
+  ['c21','c22','c23','c24'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = true;
+  });
   document.querySelector('[onclick="checkClozeP1()"]').disabled = true;
   // Mark checked
   const marker = document.createElement('span');
