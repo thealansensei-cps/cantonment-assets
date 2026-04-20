@@ -154,6 +154,7 @@ select:disabled{opacity:.4;cursor:not-allowed}
 .pin-gmcq   .pin-head{background:linear-gradient(135deg,#1a73c8,#34d399)}
 .pin-vmcq   .pin-head{background:linear-gradient(135deg,#d97706,#fbbf24)}
 .pin-gcloze .pin-head{background:linear-gradient(135deg,#7c3aed,#c084fc)}
+.pin-prac1  .pin-head{background:linear-gradient(135deg,#0f766e,#34d399)}
 
 /* lock badge */
 .lock-badge{position:absolute;top:-6px;right:-6px;background:#ff6b6b;color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(45deg);z-index:2}
@@ -408,6 +409,12 @@ select:disabled{opacity:.4;cursor:not-allowed}
           <div class="pin-shadow"></div>
         </div>
 
+        <div class="map-pin pin-prac1" id="pin-prac1" style="left:40%;top:12%" onclick="handlePinClick('prac1')">
+          <div class="pin-tooltip"><div class="pin-tooltip-name">📝 Practice Paper 1</div><div class="pin-tooltip-sub">Full P4 English paper</div></div>
+          <div class="pin-head"><span class="pin-head-inner">📝</span></div>
+          <div class="pin-shadow"></div>
+        </div>
+
         <div class="map-pin pin-chat" id="pin-chat" style="left:76%;top:58%" onclick="showHangoutLocked()">
           <div class="pin-tooltip"><div class="pin-tooltip-name">💬 Island Hangout</div><div class="pin-tooltip-sub">Chat &amp; play with friends!</div></div>
           <div class="pin-head"><span class="pin-head-inner">💬</span></div>
@@ -651,11 +658,12 @@ const GAMES = {
   chat:      { file:'chatroom.html', icon:'💬', name:'Hangout',  zone:'',   lockable:false },
   gmcq:     { file:'quiz-grammar-mcq.html',   icon:'⚡', name:'Grammar MCQ',    zone:'gmcq',  lockable:false },
   vmcq:     { file:'quiz-vocab-mcq.html',     icon:'📚', name:'Vocab MCQ',       zone:'vmcq',  lockable:false },
-  gcloze:   { file:'quiz-grammar-cloze.html', icon:'✏️', name:'Grammar Cloze 2', zone:'gcloze',lockable:false }
+  gcloze:   { file:'quiz-grammar-cloze.html', icon:'✏️', name:'Grammar Cloze 2', zone:'gcloze',lockable:false },
+  prac1:    { file:'practice1.html',          icon:'📝', name:'Practice Paper 1', zone:'prac1', lockable:false }
 };
 
-const COMP_LIST = ['grammar','reported','vtc','synthesis','spelling','gmcq','vmcq','gcloze'];
-const ALL_PINS  = ['grammar','reported','vtc','synthesis','spelling','chat','gmcq','vmcq','gcloze'];
+const COMP_LIST = ['grammar','reported','vtc','synthesis','spelling','gmcq','vmcq','gcloze','prac1'];
+const ALL_PINS  = ['grammar','reported','vtc','synthesis','spelling','chat','gmcq','vmcq','gcloze','prac1'];
 const CLASSES   = ['4 Care','4 Graciousness','4 Resilience','4 Respect','4 Integrity','Family'];
 
 // Demo accounts — excluded from leaderboards, rewards and dashboards
