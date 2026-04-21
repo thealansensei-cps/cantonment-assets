@@ -284,6 +284,20 @@ select:disabled{opacity:.4;cursor:not-allowed}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <style>
+  .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px 16px;background:#fff;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;color:#1a2744;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.18);transition:box-shadow .15s,transform .15s;margin-bottom:14px}
+  .btn-google:hover{box-shadow:0 6px 24px rgba(0,0,0,.28);transform:translateY(-1px)}
+  .btn-google svg{width:22px;height:22px;flex-shrink:0}
+  .or-divider{display:flex;align-items:center;gap:10px;margin:4px 0 14px;color:rgba(255,255,255,.35);font-size:.78rem;font-weight:700}
+  .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.15)}
+  .link-pin{background:none;border:none;color:rgba(255,255,255,.5);font-size:.78rem;font-weight:700;cursor:pointer;text-decoration:underline;display:block;text-align:center;margin-top:6px;font-family:'Nunito',sans-serif}
+  .link-pin:hover{color:rgba(255,255,255,.8)}
+  #pin-section{display:none}
+  /* Google name picker */
+  #google-picker{display:none;flex-direction:column;gap:10px}
+  .gp-info{font-size:.82rem;color:rgba(255,255,255,.6);text-align:center;line-height:1.5}
+  </style>
 </head>
 <body>
 <div class="sky"><div class="sky-glow glow1"></div><div class="sky-glow glow2"></div></div>
@@ -303,28 +317,55 @@ select:disabled{opacity:.4;cursor:not-allowed}
     <defs><linearGradient id="sg" x1="0" y1="0" x2="420" y2="0"><stop offset="0%" stop-color="#1055a0"/><stop offset="55%" stop-color="#2e7dd4"/><stop offset="100%" stop-color="#00b4a2"/></linearGradient></defs>
   </svg>
   <div class="cb">
-    <div class="field">
-      <div class="step-row"><span class="sn">1</span><span class="st">Choose Your Class</span></div>
-      <div class="sw"><select id="sel-class" onchange="onClassChange()"><option value="">— Select your class —</option><option>4 Care</option><option>4 Graciousness</option><option>4 Resilience</option><option>4 Respect</option><option>4 Integrity</option><option>Family</option></select></div>
-    </div>
-    <div class="field">
-      <div class="step-row"><span class="sn">2</span><span class="st">Choose Your Name</span></div>
-      <div class="sw"><select id="sel-name" disabled onchange="checkReady()"><option value="">— Select your name —</option></select></div>
-    </div>
-    <div class="divider"></div>
-    <div class="field">
-      <div class="step-row"><span class="sn">3</span><span class="st">Enter Your 4-Digit PIN</span></div>
-      <div class="pin-row">
-        <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p0" autocomplete="off" oninput="onPin(0)" onkeydown="onPinKey(event,0)">
-        <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p1" autocomplete="off" oninput="onPin(1)" onkeydown="onPinKey(event,1)">
-        <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p2" autocomplete="off" oninput="onPin(2)" onkeydown="onPinKey(event,2)">
-        <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p3" autocomplete="off" oninput="onPin(3)" onkeydown="onPinKey(event,3)">
-      </div>
-      <div class="pin-note">💡 PIN = class number + student number &nbsp;(e.g. 4 Care #5 → <strong>1005</strong>)</div>
-    </div>
-    <button class="btn-login" id="btn-login" onclick="doLogin()" disabled>
-      <span class="btn-shine"></span>🚀 &nbsp;Enter the Island!
+    <!-- Google Sign-In (primary) -->
+    <button class="btn-google" onclick="doGoogleLogin()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+      Sign in with Student iCON
     </button>
+
+    <!-- Google name picker (shown when display name can't auto-match) -->
+    <div id="google-picker">
+      <p class="gp-info">Welcome! Please confirm who you are:</p>
+      <div class="field">
+        <div class="sw"><select id="gp-class" onchange="onGpClassChange()"><option value="">— Select your class —</option><option>4 Care</option><option>4 Graciousness</option><option>4 Resilience</option><option>4 Respect</option><option>4 Integrity</option><option>Family</option></select></div>
+      </div>
+      <div class="field">
+        <div class="sw"><select id="gp-name" disabled><option value="">— Select your name —</option></select></div>
+      </div>
+      <button class="btn-login" onclick="doGooglePickerLogin()" style="margin-top:8px">
+        <span class="btn-shine"></span>✅ &nbsp;Confirm &amp; Enter!
+      </button>
+    </div>
+
+    <div class="or-divider">or</div>
+
+    <!-- PIN fallback (hidden by default) -->
+    <div id="pin-section">
+      <div class="field">
+        <div class="step-row"><span class="sn">1</span><span class="st">Choose Your Class</span></div>
+        <div class="sw"><select id="sel-class" onchange="onClassChange()"><option value="">— Select your class —</option><option>4 Care</option><option>4 Graciousness</option><option>4 Resilience</option><option>4 Respect</option><option>4 Integrity</option><option>Family</option></select></div>
+      </div>
+      <div class="field">
+        <div class="step-row"><span class="sn">2</span><span class="st">Choose Your Name</span></div>
+        <div class="sw"><select id="sel-name" disabled onchange="checkReady()"><option value="">— Select your name —</option></select></div>
+      </div>
+      <div class="divider"></div>
+      <div class="field">
+        <div class="step-row"><span class="sn">3</span><span class="st">Enter Your 4-Digit PIN</span></div>
+        <div class="pin-row">
+          <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p0" autocomplete="off" oninput="onPin(0)" onkeydown="onPinKey(event,0)">
+          <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p1" autocomplete="off" oninput="onPin(1)" onkeydown="onPinKey(event,1)">
+          <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p2" autocomplete="off" oninput="onPin(2)" onkeydown="onPinKey(event,2)">
+          <input class="pin-box" type="password" inputmode="numeric" maxlength="1" id="p3" autocomplete="off" oninput="onPin(3)" onkeydown="onPinKey(event,3)">
+        </div>
+        <div class="pin-note">💡 PIN = class number + student number &nbsp;(e.g. 4 Care #5 → <strong>1005</strong>)</div>
+      </div>
+      <button class="btn-login" id="btn-login" onclick="doLogin()" disabled>
+        <span class="btn-shine"></span>🚀 &nbsp;Enter the Island!
+      </button>
+    </div>
+
+    <button class="link-pin" onclick="togglePinSection()">🔢 Use PIN instead</button>
     <div class="err-msg" id="err-msg"><span>⚠️</span><span id="err-txt">Wrong PIN.</span></div>
   </div>
 </div>
@@ -676,6 +717,86 @@ const ROSTER = {
     "Xu Zimo":"5033","Yuki Ito":"5034"
   }
 };
+
+// ── Google Sign-In ──────────────────────────────
+const ALLOWED_DOMAIN = 'students.edu.sg';
+
+function doGoogleLogin() {
+  hideErr();
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ hd: ALLOWED_DOMAIN });
+  firebase.auth().signInWithPopup(provider).then(result => {
+    const user = result.user;
+    const email = user.email || '';
+    if (!email.endsWith('@' + ALLOWED_DOMAIN)) {
+      firebase.auth().signOut();
+      showErr('Please use your school account (@' + ALLOWED_DOMAIN + ').');
+      return;
+    }
+    handleGoogleUser(user);
+  }).catch(err => {
+    if (err.code !== 'auth/popup-closed-by-user') showErr('Sign-in failed: ' + err.message);
+  });
+}
+
+function handleGoogleUser(user) {
+  const displayName = (user.displayName || '').trim();
+  // Try exact match (case-insensitive) across all classes
+  for (const cls of CLASSES) {
+    for (const name of Object.keys(ROSTER[cls])) {
+      if (name.toLowerCase() === displayName.toLowerCase()) {
+        _completeLogin(name, cls);
+        return;
+      }
+    }
+  }
+  // Try partial first-name match as fallback
+  const firstName = displayName.split(' ')[0].toLowerCase();
+  for (const cls of CLASSES) {
+    for (const name of Object.keys(ROSTER[cls])) {
+      if (name.toLowerCase().startsWith(firstName + ' ') || name.toLowerCase().startsWith(firstName + ',')) {
+        _completeLogin(name, cls);
+        return;
+      }
+    }
+  }
+  // No auto-match — show name picker
+  showGooglePicker();
+}
+
+function showGooglePicker() {
+  document.getElementById('google-picker').style.display = 'flex';
+  document.getElementById('pin-section').style.display = 'none';
+  document.querySelector('.btn-google').style.display = 'none';
+  document.querySelector('.or-divider').style.display = 'none';
+  document.querySelector('.link-pin').style.display = 'none';
+}
+
+function onGpClassChange() {
+  const cls = document.getElementById('gp-class').value;
+  const sel = document.getElementById('gp-name');
+  sel.innerHTML = '<option value="">— Select your name —</option>';
+  sel.disabled = !cls;
+  if (cls) {
+    Object.keys(ROSTER[cls]).forEach(n => {
+      const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o);
+    });
+  }
+}
+
+function doGooglePickerLogin() {
+  const cls = document.getElementById('gp-class').value;
+  const name = document.getElementById('gp-name').value;
+  if (!cls || !name) { showErr('Please select your class and name.'); return; }
+  _completeLogin(name, cls);
+}
+
+function togglePinSection() {
+  const ps = document.getElementById('pin-section');
+  const showing = ps.style.display === 'block';
+  ps.style.display = showing ? 'none' : 'block';
+  document.querySelector('.link-pin').textContent = showing ? '🔢 Use PIN instead' : '✖ Hide PIN login';
+}
 
 // Game config
 const GAMES = {
